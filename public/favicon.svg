@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <defs>
+    <style>
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </defs>
+  <g>
+    <g transform="translate(12,12)" style="transform-origin: 12px 12px; animation: spin 6s linear infinite;">
+      <g stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round">
+        <line x1="0" y1="-10.5" x2="0" y2="-6.5" />
+        <line x1="0" y1="6.5" x2="0" y2="10.5" />
+        <line x1="-10.5" y1="0" x2="-6.5" y2="0" />
+        <line x1="6.5" y1="0" x2="10.5" y2="0" />
+        <line x1="-8" y1="-8" x2="-4.8" y2="-4.8" />
+        <line x1="4.8" y1="4.8" x2="8" y2="8" />
+        <line x1="-8" y1="8" x2="-4.8" y2="4.8" />
+        <line x1="4.8" y1="-4.8" x2="8" y2="-8" />
+      </g>
+    </g>
+    <circle cx="12" cy="12" r="3.4" fill="#3b82f6" />
+  </g>
+</svg>
+
+

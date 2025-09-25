@@ -1,0 +1,248 @@
+/* FORCE DARK MODE - ULTIMATE OVERRIDE */
+
+/* Base Document */
+html.dark {
+  background: #0f172a !important;
+  color-scheme: dark !important;
+}
+
+html.dark body {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+  min-height: 100vh !important;
+}
+
+/* Override ALL elements with inline styles or classes */
+.dark *:not(img):not(svg):not(video):not(iframe) {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Specific overrides for common patterns */
+.dark div[class*="bg-white"],
+.dark div[class*="bg-gray-50"],
+.dark div[class*="bg-gray-100"],
+.dark section[class*="bg-white"],
+.dark section[class*="bg-gray-50"],
+.dark main[class*="bg-white"],
+.dark main[class*="bg-gray-50"],
+.dark header[class*="bg-white"],
+.dark aside[class*="bg-white"] {
+  background: #1e293b !important;
+}
+
+/* Cards and containers */
+.dark .card,
+.dark [class*="card"],
+.dark .panel,
+.dark [class*="panel"],
+.dark .box,
+.dark [class*="box"] {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* All text elements */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+.dark p, .dark span, .dark div, .dark a, .dark li, .dark td, .dark th,
+.dark label, .dark button {
+  color: #f1f5f9 !important;
+}
+
+/* Secondary text */
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-gray-700,
+.dark [class*="text-gray-5"],
+.dark [class*="text-gray-6"],
+.dark [class*="text-gray-7"] {
+  color: #94a3b8 !important;
+}
+
+/* Inputs and form elements */
+.dark input,
+.dark textarea,
+.dark select {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Buttons */
+.dark button:not(.primary):not([class*="primary"]) {
+  background: #334155 !important;
+  color: #f1f5f9 !important;
+  border-color: #475569 !important;
+}
+
+.dark button:hover:not(.primary):not([class*="primary"]) {
+  background: #475569 !important;
+}
+
+/* Tables */
+.dark table {
+  background: #1e293b !important;
+}
+
+.dark thead {
+  background: #0f172a !important;
+}
+
+.dark tbody tr {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark tbody tr:hover {
+  background: #334155 !important;
+}
+
+.dark th,
+.dark td {
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Modals and overlays */
+.dark .modal,
+.dark [class*="modal"] {
+  background: #1e293b !important;
+}
+
+.dark .overlay,
+.dark [class*="overlay"] {
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Dropdowns */
+.dark .dropdown,
+.dark [class*="dropdown"],
+.dark [role="menu"] {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark .dropdown-item:hover,
+.dark [class*="dropdown-item"]:hover {
+  background: #334155 !important;
+}
+
+/* Sidebar specific */
+.dark aside,
+.dark .sidebar,
+.dark [class*="sidebar"] {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Header specific */
+.dark header,
+.dark .header,
+.dark [class*="header"] {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Navigation items */
+.dark .nav-item,
+.dark [class*="nav-item"],
+.dark .menu-item,
+.dark [class*="menu-item"] {
+  color: #cbd5e1 !important;
+}
+
+.dark .nav-item:hover,
+.dark [class*="nav-item"]:hover,
+.dark .menu-item:hover,
+.dark [class*="menu-item"]:hover {
+  background: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .nav-item.active,
+.dark [class*="nav-item"].active,
+.dark .menu-item.active,
+.dark [class*="menu-item"].active {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+/* Borders */
+.dark .border,
+.dark [class*="border"] {
+  border-color: #334155 !important;
+}
+
+/* Shadows */
+.dark .shadow,
+.dark [class*="shadow"] {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Scrollbars */
+.dark ::-webkit-scrollbar {
+  background: #0f172a !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569 !important;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b !important;
+}
+
+/* Charts */
+.dark .recharts-text,
+.dark .recharts-cartesian-axis-tick-value {
+  fill: #94a3b8 !important;
+}
+
+.dark .recharts-cartesian-grid line {
+  stroke: #334155 !important;
+}
+
+/* Status colors - preserve these */
+.dark .bg-green-500,
+.dark .bg-red-500,
+.dark .bg-yellow-500,
+.dark .bg-blue-500,
+.dark [class*="bg-green-"],
+.dark [class*="bg-red-"],
+.dark [class*="bg-yellow-"],
+.dark [class*="bg-blue-"] {
+  opacity: 0.9 !important;
+}
+
+/* Final override for any missed elements */
+.dark div:not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-yellow"]):not([class*="bg-blue"]) {
+  background-color: transparent !important;
+}
+
+.dark div[style*="background-color: white"],
+.dark div[style*="background-color: rgb(255"],
+.dark div[style*="background: white"],
+.dark div[style*="background: rgb(255"] {
+  background: #1e293b !important;
+}
+
+/* React Hot Toast Dark Mode */
+.dark div[data-sonner-toaster] {
+  background: transparent !important;
+}
+
+.dark div[data-sonner-toast] {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Override any remaining white text on white background issues */
+.dark *:not(button):not(a) {
+  color: inherit !important;
+}

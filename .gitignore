@@ -1,0 +1,29 @@
+node_modules/
+**/node_modules/
+
+# Build outputs
+/dist/
+/functions/lib/
+/functions/.cache/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Env
+.env
+.env.*
+
+# Misc
+.DS_Store
+Thumbs.db
+coverage/
+.cache/
+.vscode/
+.idea/
+
+# Firebase/Netlify
+.firebase/
+.netlify/

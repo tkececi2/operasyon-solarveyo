@@ -1,0 +1,217 @@
+# 🌟 Solarveyo Arıza Takip - Cursor AI Kuralları v2.0
+
+## 🏢 Proje Kimliği
+**Proje**: Multi-Tenant SaaS Solar Enerji Yönetim Platformu  
+**Versiyon**: 2.0.0  
+**Firebase ID**: yenisirket-2ec3b  
+**Tech Stack**: Vite + React 18 + TypeScript + Firebase + TailwindCSS
+
+## 👥 Kullanıcı Rolleri
+- **SuperAdmin**: Tüm sistem yönetimi
+- **Yönetici**: Şirket yönetimi, ekip/müşteri yönetimi
+- **Mühendis**: Teknik işlemler, santral kurulumu
+- **Tekniker**: Arıza çözümleri, saha işlemleri
+- **Müşteri**: Sadece atanan saha/santral görüntüleme
+- **Bekçi**: Vardiya bildirimi, acil durum
+
+## 📊 Firebase Collections
+```
+companies/{companyId} - Şirket bilgileri ve abonelik
+kullanicilar/{userId} - Kullanıcı profilleri
+santraller/{santralId} - GES yönetimi
+  /aylikUretim/{yil} - Aylık üretim verileri (alt koleksiyon)
+  /uretimVerileri/{id} - Günlük üretim verileri (alt koleksiyon)
+arizalar/{arizaId} - Arıza kayıtları
+elektrikBakimlar/{id} - Elektrik bakım kayıtları
+mekanikBakimlar/{id} - Mekanik bakım kayıtları
+vardiyaBildirimleri/{id} - Vardiya bildirimleri
+stoklar/{id} - Stok yönetimi
+stokHareketleri/{id} - Stok hareketleri
+sahalar/{id} - Saha bilgileri
+musteriler/{id} - Müşteri kayıtları
+elektrikKesintileri/{id} - Elektrik kesinti kayıtları
+auditLogs/{id} - Denetim kayıtları
+notifications/{id} - Bildirimler
+```
+
+## 🔐 Güvenlik Kuralları
+
+### Müşteri İzolasyonu (KRİTİK!)
+```typescript
+// Her servis fonksiyonunda ZORUNLU:
+if (userProfile.rol === 'musteri') {
+  query = query.where('sahaId', 'in', userProfile.sahalar || []);
+  query = query.where('santralId', 'in', userProfile.santraller || []);
+}
+```
+
+### Company İzolasyonu
+```typescript
+// SuperAdmin hariç tüm sorgularda:
+if (userProfile.rol !== 'superadmin') {
+  query = query.where('companyId', '==', userProfile.companyId);
+}
+```
+
+## 💰 Abonelik Planları
+- **Trial**: 14 gün ücretsiz (3 kullanıcı, 2 saha, 1GB)
+- **Starter**: ₺999/ay (5 kullanıcı, 5 saha, 5GB)
+- **Professional**: ₺2499/ay (20 kullanıcı, 20 saha, 50GB) ⭐
+- **Enterprise**: ₺4999/ay (Sınırsız)
+
+## 🎨 UI/UX Standartları
+- **Grid**: 4 kolon kompakt kart (xl:grid-cols-4)
+- **Font**: Inter, Türkçe karakterler
+- **Icons**: Lucide React
+- **Animations**: Framer Motion
+- **Notifications**: react-hot-toast
+- **Forms**: react-hook-form + zod validation
+
+## 📝 Kod Standartları
+
+### TypeScript (Strict Mode)
+```typescript
+// ✅ DOĞRU
+interface ISantral {
+  id: string;
+  kapasite: number; // kW cinsinden
+}
+
+// ❌ YANLIŞ
+const santral: any = {};
+```
+
+### React (Functional Components)
+```tsx
+// ✅ DOĞRU
+const Component: React.FC<Props> = ({ prop }) => {
+  const [state, setState] = useState();
+  return <div>...</div>;
+};
+
+// ❌ YANLIŞ - Class component kullanma
+```
+
+### Firebase Services
+```typescript
+// Her servis fonksiyonunda:
+export async function getFunction(userProfile: User) {
+  try {
+    // 1. Rol kontrolü
+    // 2. Company izolasyonu
+    // 3. Query limit
+    // 4. Error handling
+  } catch (error) {
+    console.error('Hata:', error);
+    throw error;
+  }
+}
+```
+
+## ⚡ Performans
+- **Lazy Loading**: Route-based code splitting
+- **Caching**: Metrics cache kullan
+- **Query Limits**: Her query'de limit(20)
+- **Memoization**: useMemo, useCallback kullan
+- **Debouncing**: Arama inputlarında
+
+## 🌍 Lokalizasyon
+- **Güç**: kW (kilowatt) - MW DEĞİL!
+- **Üretim**: kWh (kilowatt-saat)
+- **Tarih**: dd.MM.yyyy HH:mm
+- **Para**: ₺ TRY formatı
+- **Dil**: Türkçe (yorumlar, mesajlar)
+
+## 🔑 Environment Variables
+```bash
+VITE_FIREBASE_API_KEY=AIzaSyAZdHmOkHazCMnRZuZ6STP17wjG4QMHaxk
+VITE_FIREBASE_PROJECT_ID=yenisirket-2ec3b
+VITE_GOOGLE_MAPS_API_KEY=AIzaSyBrlyyV7X54-Ysk338vXmLDdidimSHIeMI
+```
+
+## 🚫 YASAKLAR
+- ❌ any tipi (zorunlu değilse)
+- ❌ console.log (production'da)
+- ❌ Class components
+- ❌ Inline styles
+- ❌ Hardcoded değerler
+- ❌ MW birimi kullanımı
+- ❌ İngilizce yorum/değişken
+- ❌ Senkron Firebase çağrıları
+- ❌ Unhandled promises
+
+## ✅ ZORUNLULAR
+- ✅ TypeScript strict mode
+- ✅ Error boundaries
+- ✅ Loading states
+- ✅ Form validation (Zod)
+- ✅ Responsive design
+- ✅ Türkçe yorumlar
+- ✅ Try-catch blocks
+- ✅ Audit logging
+
+## 💬 Git Commit Format
+```
+<tip>: <açıklama>
+
+feat: yeni özellik
+fix: bug düzeltme
+perf: performans
+refactor: kod düzenleme
+docs: dokümantasyon
+```
+
+## 🤖 AI Asistan Kuralları
+1. **Her zaman Türkçe yanıt ver**
+2. **Kısa ve net açıklamalar yap**
+3. **Güvenlik kontrollerini ASLA atlama**
+4. **Performance impact belirt**
+5. **Alternatif çözümler sun**
+6. **Hata durumlarını her zaman handle et**
+7. **Test senaryoları öner**
+8. **Migration path göster**
+
+## 📚 Önemli Dosyalar
+- `/src/types/index.ts` - Tüm TypeScript tipleri
+- `/src/config/saas.config.ts` - Abonelik yapılandırması
+- `/src/services/` - Firebase servis fonksiyonları
+- `/firestore.rules` - Güvenlik kuralları
+
+## 🎯 Öncelikler
+1. Müşteri veri izolasyonu
+2. Performance optimizasyonu
+3. Mobile responsive
+4. Error handling
+5. Security updates
+
+## 🔧 Önemli Teknik Detaylar
+
+### Routing Yapısı
+- `/` - Landing page
+- `/login` - Giriş
+- `/register` - Kayıt
+- `/dashboard` - Ana panel
+- `/arizalar` - Arıza yönetimi
+- `/bakim` - Bakım yönetimi
+- `/ges-yonetimi` - Santral yönetimi
+- `/sahalar` - Saha yönetimi
+- `/ekip-yonetimi` - Ekip yönetimi
+- `/stok-kontrol` - Stok yönetimi
+- `/vardiya-bildirimleri` - Vardiya yönetimi
+
+### API Entegrasyonları
+- **Google Maps**: Harita ve konum servisleri
+- **PostHog**: Analytics
+- **Stripe**: Ödeme işlemleri (planlanıyor)
+- **WhatsApp Business**: Bildirimler (planlanıyor)
+
+### Önemli Kütüphaneler
+- **date-fns**: Tarih işlemleri
+- **recharts**: Grafikler
+- **jsPDF**: PDF export
+- **xlsx**: Excel export
+- **html2canvas**: Screenshot
+- **framer-motion**: Animasyonlar
+
+---
+**NOT**: Bu kurallar projeye özgüdür ve sürekli güncellenir!

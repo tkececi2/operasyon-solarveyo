@@ -1,0 +1,597 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Yardımcı fonksiyonlar
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/kullanicilar/$(request.auth.uid)).data;
+    }
+    
+    function getUserRole() {
+      return getUserData().rol;
+    }
+    
+    function getUserCompany() {
+      return getUserData().companyId;
+    }
+    
+    function getUserSahalar() {
+      return getUserData().sahalar;
+    }
+    
+    function getUserSantraller() {
+      return getUserData().santraller;
+    }
+    
+    function isSuperAdmin() {
+      return isAuthenticated() && getUserRole() == 'superadmin';
+    }
+    
+    function isYonetici() {
+      return isAuthenticated() && getUserRole() == 'yonetici';
+    }
+    
+    function isMuhendis() {
+      return isAuthenticated() && getUserRole() == 'muhendis';
+    }
+    
+    function isTekniker() {
+      return isAuthenticated() && getUserRole() == 'tekniker';
+    }
+    
+    function isMusteri() {
+      return isAuthenticated() && getUserRole() == 'musteri';
+    }
+    
+    function isBekci() {
+      return isAuthenticated() && getUserRole() == 'bekci';
+    }
+    
+    function sameCompany(companyId) {
+      return getUserCompany() == companyId;
+    }
+    
+    function canRead() {
+      return isSuperAdmin() || isYonetici() || isMuhendis() || isTekniker() || isMusteri() || isBekci();
+    }
+    
+    function canWrite() {
+      return isSuperAdmin() || isYonetici() || isMuhendis() || isTekniker() || isBekci();
+    }
+    
+    function canDelete() {
+      return isSuperAdmin() || isYonetici() || isMuhendis();
+    }
+    
+    function canManageEkip() {
+      return isSuperAdmin() || isYonetici();
+    }
+    
+    function canManageMusteri() {
+      return isSuperAdmin() || isYonetici();
+    }
+    
+    function canManageCompany() {
+      return isSuperAdmin() || isYonetici();
+    }
+    
+    // Abonelik Planları (Sadece SuperAdmin yönetebilir)
+    match /subscriptionPlans/{planId} {
+      allow read: if request.auth != null;
+      allow write: if isSuperAdmin();
+      allow create: if isSuperAdmin();
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // SaaS plan yapılandırması (config/saas_plans) - herkes okuyabilir, sadece SuperAdmin yazar
+    match /config/saas_plans {
+      allow read: if isAuthenticated();
+      allow write, update, delete: if isSuperAdmin();
+    }
+
+    // SuperAdmin kontrolü her collection'da ayrı yapılıyor
+    // Wildcard kaldırıldı - güvenlik için
+    
+    // Kullanıcı profilleri
+    match /kullanicilar/{userId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        request.auth.uid == userId || 
+        (sameCompany(resource.data.companyId) && canRead())
+      );
+      allow write: if isAuthenticated() && (
+        isSuperAdmin() ||
+        request.auth.uid == userId ||
+        (sameCompany(resource.data.companyId) && canManageEkip())
+      );
+      // Kayıt sırasında kendi profilini oluşturabilir
+      allow create: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        isSuperAdmin() || 
+        canManageEkip()
+      );
+      allow delete: if isAuthenticated() && (isSuperAdmin() || (canManageEkip() && request.auth.uid != userId));
+    }
+    
+    // Şirket bilgileri
+    match /companies/{companyId} {
+      allow read: if isAuthenticated() && (isSuperAdmin() || sameCompany(companyId));
+      allow write: if isAuthenticated() && (isSuperAdmin() || (sameCompany(companyId) && canManageCompany()));
+      // Kayıt sırasında şirket oluşturulabilir
+      allow create: if isAuthenticated() && (
+        companyId == "company_" + request.auth.uid ||
+        isSuperAdmin()
+      );
+    }
+    
+    // Arızalar
+    match /arizalar/{faultId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && (
+          canRead() ||
+          // Müşteri sadece atanan saha/santrallarını görebilir
+          (isMusteri() && (
+            resource.data.sahaId in getUserSahalar() ||
+            resource.data.santralId in getUserSantraller()
+          )) ||
+          // Tekniker/Bekçi sadece kendi raporladığını görebilir
+          ((isTekniker() || isBekci()) && resource.data.raporlayanId == request.auth.uid)
+        ))
+      );
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(request.resource.data.companyId) && (canWrite() || isBekci()))
+      );
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && (
+          isYonetici() || isMuhendis() ||
+          // Tekniker sadece çözüm ekleyebilir
+          (isTekniker() && resource.data.raporlayanId == request.auth.uid)
+        ))
+      );
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && canDelete())
+      );
+    }
+    
+    // Santraller (GES)
+    match /santraller/{santralId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && (
+          canRead() ||
+          // Müşteri sadece atanan santralları görebilir
+          (isMusteri() && santralId in getUserSantraller())
+        ))
+      );
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(request.resource.data.companyId) && (isYonetici() || isMuhendis()))
+      );
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && (isYonetici() || isMuhendis()))
+      );
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && canDelete())
+      );
+      
+      // Santral alt koleksiyonları
+      match /aylikUretim/{yil} {
+        allow read: if isAuthenticated() && (
+          isSuperAdmin() ||
+          sameCompany(get(/databases/$(database)/documents/santraller/$(santralId)).data.companyId)
+        );
+        allow write: if isAuthenticated() && (
+          isSuperAdmin() ||
+          (sameCompany(get(/databases/$(database)/documents/santraller/$(santralId)).data.companyId) && canWrite())
+        );
+      }
+      
+      match /uretimVerileri/{uretimId} {
+        allow read: if isAuthenticated() && (
+          isSuperAdmin() ||
+          sameCompany(get(/databases/$(database)/documents/santraller/$(santralId)).data.companyId)
+        );
+        allow write: if isAuthenticated() && (
+          isSuperAdmin() ||
+          (sameCompany(get(/databases/$(database)/documents/santraller/$(santralId)).data.companyId) && canWrite())
+        );
+      }
+    }
+    
+    // Bakım kayıtları
+    match /elektrikBakimlar/{bakimId} {
+      allow read: if isAuthenticated() && (isSuperAdmin() || (sameCompany(resource.data.companyId) && canRead()));
+      allow create: if isAuthenticated() && (isSuperAdmin() || (sameCompany(request.resource.data.companyId) && canWrite()));
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (sameCompany(resource.data.companyId) && (isYonetici() || isMuhendis()))
+      );
+      allow delete: if isAuthenticated() && (isSuperAdmin() || (sameCompany(resource.data.companyId) && canDelete()));
+    }
+    
+    match /mekanikBakimlar/{bakimId} {
+      allow read: if isAuthenticated() && (isSuperAdmin() || (sameCompany(resource.data.companyId) && canRead()));
+      allow create: if isAuthenticated() && (isSuperAdmin() || (sameCompany(request.resource.data.companyId) && canWrite()));
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (sameCompany(resource.data.companyId) && (isYonetici() || isMuhendis()))
+      );
+      allow delete: if isAuthenticated() && (isSuperAdmin() || (sameCompany(resource.data.companyId) && canDelete()));
+    }
+    
+    // Üretim verileri
+    match /uretimVerileri/{uretimId} {
+      allow read: if isAuthenticated() && sameCompany(resource.data.companyId) && canRead();
+      allow create: if isAuthenticated() && sameCompany(request.resource.data.companyId) && canWrite();
+      allow update: if isAuthenticated() && sameCompany(resource.data.companyId) && (
+        isSuperAdmin() || isYonetici() || isMuhendis()
+      );
+      allow delete: if isAuthenticated() && sameCompany(resource.data.companyId) && canDelete();
+    }
+    
+    // Sahalar
+    match /sahalar/{sahaId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && (
+          canRead() ||
+          // Müşteri sadece atanan sahaları görebilir
+          (isMusteri() && sahaId in getUserSahalar())
+        ))
+      );
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(request.resource.data.companyId) && (isYonetici() || isMuhendis()))
+      );
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && (isYonetici() || isMuhendis()))
+      );
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && canDelete())
+      );
+    }
+    
+    // Müşteriler
+    match /musteriler/{musteriId} {
+      // SuperAdmin tüm şirket müşteri kayıtlarını görebilmeli; diğer roller kendi şirketiyle sınırlı
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && canRead())
+      );
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(request.resource.data.companyId) && canManageMusteri())
+      );
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && canManageMusteri())
+      );
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && canManageMusteri())
+      );
+    }
+    
+    // Stok kayıtları
+    match /stoklar/{stokId} {
+      allow read: if isAuthenticated() && (isSuperAdmin() || (sameCompany(resource.data.companyId) && canRead()));
+      allow create: if isAuthenticated() && (isSuperAdmin() || (sameCompany(request.resource.data.companyId) && canWrite()));
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (sameCompany(resource.data.companyId) && (isYonetici() || isMuhendis()))
+      );
+      allow delete: if isAuthenticated() && (isSuperAdmin() || (sameCompany(resource.data.companyId) && canDelete()));
+    }
+    
+    // Stok hareketleri
+    match /stokHareketleri/{hareketId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || 
+        canRead()
+      );
+      allow list: if isAuthenticated() && (
+        isSuperAdmin() || 
+        canRead()
+      );
+      allow create: if isAuthenticated() && (isSuperAdmin() || (sameCompany(request.resource.data.companyId) && canWrite()));
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (sameCompany(resource.data.companyId) && (isYonetici() || isMuhendis()))
+      );
+      allow delete: if isAuthenticated() && (isSuperAdmin() || (sameCompany(resource.data.companyId) && canDelete()));
+    }
+    
+    // Vardiya bildirimleri
+    match /vardiyaBildirimleri/{vardiyaId} {
+      allow read: if isAuthenticated() && (isSuperAdmin() || (sameCompany(resource.data.companyId) && canRead()));
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(request.resource.data.companyId) && (canWrite() || isBekci()))
+      );
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (sameCompany(resource.data.companyId) && (
+          isYonetici() || isMuhendis() ||
+          // Bekçi sadece kendi vardiyasını düzenleyebilir
+          (isBekci() && resource.data.bekciId == request.auth.uid)
+        ))
+      );
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (sameCompany(resource.data.companyId) && (
+          isYonetici() || isMuhendis() || isTekniker() ||
+          // Bekçi sadece kendi oluşturduğu vardiyayı silebilir
+          (isBekci() && resource.data.olusturanId == request.auth.uid)
+        ))
+      );
+    }
+    
+    // Elektrik kesintileri
+    match /elektrikKesintileri/{kesintiId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(resource.data.companyId) && canRead())
+      );
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (sameCompany(request.resource.data.companyId) && canWrite())
+      );
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (sameCompany(resource.data.companyId) && (isYonetici() || isMuhendis()))
+      );
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (sameCompany(resource.data.companyId) && canDelete())
+      );
+    }
+    
+    // Müşteri Geri Bildirimleri
+    match /feedback/{feedbackId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || (
+          sameCompany(resource.data.companyId) && canRead()
+        )
+      );
+      // Oluşturma: Müşteri ana yorum, personel sadece yanıt
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() || (
+          // Müşteri: yetkili olduğu saha/santral için ana yorum
+          (isMusteri() && sameCompany(request.resource.data.companyId) &&
+            request.resource.data.userId == request.auth.uid && (
+              request.resource.data.sahaId in getUserSahalar() ||
+              request.resource.data.santralId in getUserSantraller()
+            )
+          ) ||
+          // Personel: sadece yanıt (parentId zorunlu)
+          ((isYonetici() || isMuhendis() || isTekniker()) && 
+            sameCompany(request.resource.data.companyId) &&
+            request.resource.data.parentId != null)
+        )
+      );
+      // Kullanıcı (müşteri/personel) kendi yorumunu/puanını güncelleyebilir
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() || (
+          (isMusteri() || isYonetici() || isMuhendis() || isTekniker()) &&
+          sameCompany(resource.data.companyId) && resource.data.userId == request.auth.uid
+        )
+      );
+      // Silme: kullanıcı kendi yorumunu silebilir, yönetici tüm yorumları silebilir
+      allow delete: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (resource.data.userId == request.auth.uid) ||
+        (sameCompany(resource.data.companyId) && isYonetici())
+      );
+
+      // Reaksiyon alt koleksiyonu (like)
+      match /likes/{userId} {
+        allow read: if isAuthenticated() && (
+          isSuperAdmin() || sameCompany(get(/databases/$(database)/documents/feedback/$(feedbackId)).data.companyId)
+        );
+        // Kullanıcı (müşteri/personel) kendi like kaydını oluşturur/siler
+        allow create, update, delete: if isAuthenticated() && (
+          (isMusteri() || isYonetici() || isMuhendis() || isTekniker()) &&
+          userId == request.auth.uid &&
+          sameCompany(get(/databases/$(database)/documents/feedback/$(feedbackId)).data.companyId)
+        );
+      }
+    }
+
+    // Bildirimler
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || (sameCompany(resource.data.companyId) && canRead())
+      );
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() || (sameCompany(request.resource.data.companyId) && canWrite())
+      );
+      // Okundu bilgisini ve gizleme işlemini tüm roller yapabilsin (şirket içi)
+      allow update: if isAuthenticated() && sameCompany(resource.data.companyId);
+      // Bildirimler artık silinmiyor, sadece gizleniyor (update ile)
+      allow delete: if isAuthenticated() && isSuperAdmin();
+    }
+    
+    // Audit Logları - SuperAdmin ve Yöneticiler okuyabilir
+    match /auditLogs/{logId} {
+      allow read: if isAuthenticated() && (isSuperAdmin() || isYonetici());
+      allow create: if isAuthenticated();
+      allow update: if false; // Loglar güncellenemez
+      allow delete: if isSuperAdmin(); // Sadece SuperAdmin silebilir
+    }
+    
+    // Abonelik bilgileri - Şirket kendi aboneliğini görebilir, SuperAdmin hepsini görebilir
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || 
+        subscriptionId == getUserCompany()
+      );
+      allow create: if isAuthenticated() && isSuperAdmin();
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (subscriptionId == getUserCompany() && isYonetici())
+      );
+      allow delete: if isAuthenticated() && isSuperAdmin();
+    }
+    
+    // Sistem Ayarları - Sadece SuperAdmin yönetebilir
+    match /systemSettings/{settingId} {
+      allow read: if isAuthenticated() && isSuperAdmin();
+      allow write: if isAuthenticated() && isSuperAdmin();
+      allow create: if isAuthenticated() && isSuperAdmin();
+      allow update: if isAuthenticated() && isSuperAdmin();
+      allow delete: if isAuthenticated() && isSuperAdmin();
+    }
+    
+    // Diğer tüm koleksiyonlar için temel kurallar
+    match /{collection}/{document} {
+      allow read: if isAuthenticated() && (
+        !exists(/databases/$(database)/documents/$(collection)/$(document)) ||
+        sameCompany(resource.data.companyId)
+      ) && canRead();
+      allow write: if isAuthenticated() && (
+        !exists(/databases/$(database)/documents/$(collection)/$(document)) ||
+        sameCompany(resource.data.companyId)
+      ) && canWrite();
+      allow delete: if isAuthenticated() && sameCompany(resource.data.companyId) && canDelete();
+    }
+    
+    // Backup kayıtları
+    match /backups/{backupId} {
+      allow read: if isAuthenticated() && 
+        (isSuperAdmin() || 
+         (getUserData().companyId == resource.data.companyId && 
+          getUserData().rol in ['yonetici', 'superadmin']));
+      allow write: if isAuthenticated() && 
+        (isSuperAdmin() || getUserData().rol in ['yonetici', 'superadmin']);
+      allow delete: if isAuthenticated() && 
+        (isSuperAdmin() || getUserData().rol == 'yonetici');
+    }
+    
+    // Backup logları
+    match /backupLogs/{logId} {
+      allow read: if isAuthenticated() && 
+        (isSuperAdmin() || getUserData().rol == 'yonetici');
+      allow write: if isAuthenticated();
+    }
+    
+    // SuperAdmin için eksik collection'lar
+    // subscriptionUpgradeRequests - Plan yükseltme talepleri
+    match /subscriptionUpgradeRequests/{requestId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (resource.data.companyId == getUserCompany() && isYonetici())
+      );
+      allow create: if isAuthenticated() && isYonetici();
+      allow update: if isAuthenticated() && isSuperAdmin();
+      allow delete: if isAuthenticated() && isSuperAdmin();
+    }
+    
+    // adminActivityLogs - Admin aktivite logları
+    match /adminActivityLogs/{logId} {
+      allow read: if isAuthenticated() && isSuperAdmin();
+      allow write: if isAuthenticated() && isSuperAdmin();
+      allow create: if isAuthenticated() && isSuperAdmin();
+      allow delete: if false; // Loglar silinmemeli
+    }
+    
+    // emailLogs - Email logları
+    match /emailLogs/{logId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || isYonetici()
+      );
+      allow write: if isAuthenticated();
+      allow delete: if false; // Email logları silinmemeli
+    }
+    
+    // auditLogs - Denetim logları
+    match /auditLogs/{logId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (resource.data.companyId == getUserCompany() && isYonetici())
+      );
+      allow write: if isAuthenticated();
+      allow delete: if false; // Audit loglar asla silinmemeli
+    }
+    
+    // metrics - Performance metrics (Dashboard için)
+    match /companies/{companyId}/metrics/{metricId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || 
+        companyId == getUserCompany()
+      );
+      allow write: if isAuthenticated() && (
+        isSuperAdmin() || 
+        (companyId == getUserCompany() && isYonetici())
+      );
+    }
+    
+    // İzin Yönetimi Koleksiyonları
+    // leaveRequests - İzin talepleri
+    match /leaveRequests/{requestId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || 
+        isYonetici() ||
+        resource.data.userId == request.auth.uid ||
+        resource.data.companyId == getUserCompany()
+      );
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        isSuperAdmin() || 
+        isYonetici() ||
+        (resource.data.userId == request.auth.uid && resource.data.status == 'beklemede')
+      );
+      allow delete: if isAuthenticated() && isSuperAdmin();
+    }
+    
+    // leaveBalances - İzin bakiyeleri
+    match /leaveBalances/{balanceId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || 
+        isYonetici() ||
+        resource.data.userId == request.auth.uid
+      );
+      allow write: if isAuthenticated() && (
+        isSuperAdmin() || 
+        isYonetici()
+      );
+    }
+    
+    // holidays - Resmi tatiller
+    match /holidays/{holidayId} {
+      allow read: if isAuthenticated() && 
+        resource.data.companyId == getUserCompany();
+      allow write: if isAuthenticated() && (
+        isSuperAdmin() || 
+        isYonetici()
+      );
+    }
+    
+    // shiftSchedules - Vardiya programları
+    match /shiftSchedules/{scheduleId} {
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() || 
+        isYonetici() ||
+        resource.data.userId == request.auth.uid ||
+        resource.data.companyId == getUserCompany()
+      );
+      allow write: if isAuthenticated() && (
+        isSuperAdmin() || 
+        isYonetici()
+      );
+    }
+  }
+}

@@ -1,0 +1,393 @@
+/* Dark Mode Styles */
+
+/* Base Dark Colors */
+.dark {
+  color-scheme: dark;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Form inputs dark mode */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6b7280;
+}
+
+/* Buttons dark mode */
+.dark .btn-primary {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.dark .btn-primary:hover {
+  background-color: #2563eb;
+}
+
+.dark .btn-secondary {
+  background-color: #374151;
+  color: #f3f4f6;
+}
+
+.dark .btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+/* Cards dark mode */
+.dark .card {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .card-header {
+  background-color: #111827;
+  border-color: #374151;
+}
+
+/* Tables dark mode */
+.dark table {
+  background-color: #1f2937;
+}
+
+.dark thead {
+  background-color: #111827;
+}
+
+.dark th {
+  color: #9ca3af;
+  border-color: #374151;
+}
+
+.dark td {
+  color: #f3f4f6;
+  border-color: #374151;
+}
+
+.dark tbody tr:hover {
+  background-color: #374151;
+}
+
+/* Modals dark mode */
+.dark .modal {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .modal-header {
+  background-color: #111827;
+  border-color: #374151;
+}
+
+.dark .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Tooltips dark mode */
+.dark .tooltip {
+  background-color: #111827;
+  color: #f3f4f6;
+  border-color: #374151;
+}
+
+/* Dropdown menus dark mode */
+.dark .dropdown-menu {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .dropdown-item:hover {
+  background-color: #374151;
+}
+
+/* Badges dark mode */
+.dark .badge {
+  background-color: #374151;
+  color: #f3f4f6;
+}
+
+.dark .badge-success {
+  background-color: #065f46;
+  color: #10b981;
+}
+
+.dark .badge-warning {
+  background-color: #713f12;
+  color: #f59e0b;
+}
+
+.dark .badge-danger {
+  background-color: #7f1d1d;
+  color: #ef4444;
+}
+
+.dark .badge-info {
+  background-color: #1e3a8a;
+  color: #3b82f6;
+}
+
+/* Alerts dark mode */
+.dark .alert {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+.dark .alert-success {
+  background-color: #064e3b;
+  border-color: #065f46;
+  color: #10b981;
+}
+
+.dark .alert-warning {
+  background-color: #78350f;
+  border-color: #92400e;
+  color: #fbbf24;
+}
+
+.dark .alert-danger {
+  background-color: #7f1d1d;
+  border-color: #991b1b;
+  color: #f87171;
+}
+
+/* Navigation dark mode */
+.dark .nav-link {
+  color: #9ca3af;
+}
+
+.dark .nav-link:hover {
+  color: #f3f4f6;
+  background-color: #374151;
+}
+
+.dark .nav-link.active {
+  color: #3b82f6;
+  background-color: #1e3a8a;
+}
+
+/* Sidebar dark mode */
+.dark .sidebar {
+  background-color: #111827;
+  border-color: #374151;
+}
+
+.dark .sidebar-item:hover {
+  background-color: #1f2937;
+}
+
+.dark .sidebar-item.active {
+  background-color: #1e3a8a;
+  color: #3b82f6;
+}
+
+/* Charts dark mode */
+.dark .recharts-cartesian-grid-horizontal line,
+.dark .recharts-cartesian-grid-vertical line {
+  stroke: #374151;
+}
+
+.dark .recharts-text {
+  fill: #9ca3af;
+}
+
+.dark .recharts-legend-item-text {
+  color: #9ca3af !important;
+}
+
+/* Loading states dark mode */
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    #1f2937 25%,
+    #374151 50%,
+    #1f2937 75%
+  );
+  background-size: 200% 100%;
+}
+
+.dark .spinner {
+  border-color: #374151;
+  border-top-color: #3b82f6;
+}
+
+/* Progress bars dark mode */
+.dark .progress {
+  background-color: #374151;
+}
+
+.dark .progress-bar {
+  background-color: #3b82f6;
+}
+
+/* Pagination dark mode */
+.dark .pagination-item {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #9ca3af;
+}
+
+.dark .pagination-item:hover {
+  background-color: #374151;
+  color: #f3f4f6;
+}
+
+.dark .pagination-item.active {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+/* Custom scrollbar for code blocks */
+.dark pre {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+.dark code {
+  background-color: #1f2937;
+  color: #f3f4f6;
+}
+
+/* Calendar dark mode */
+.dark .calendar {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .calendar-day {
+  color: #f3f4f6;
+}
+
+.dark .calendar-day:hover {
+  background-color: #374151;
+}
+
+.dark .calendar-day.selected {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* File upload dark mode */
+.dark .file-upload {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #9ca3af;
+}
+
+.dark .file-upload:hover {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+/* Toast notifications dark mode */
+.dark .toast {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  border-color: #374151;
+}
+
+/* Switches/toggles dark mode */
+.dark .switch {
+  background-color: #374151;
+}
+
+.dark .switch.checked {
+  background-color: #3b82f6;
+}
+
+.dark .switch-thumb {
+  background-color: #f3f4f6;
+}
+
+/* Tabs dark mode */
+.dark .tab {
+  color: #9ca3af;
+  border-color: #374151;
+}
+
+.dark .tab:hover {
+  color: #f3f4f6;
+}
+
+.dark .tab.active {
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Timeline dark mode */
+.dark .timeline-item::before {
+  background-color: #374151;
+}
+
+.dark .timeline-dot {
+  background-color: #3b82f6;
+  border-color: #1f2937;
+}
+
+/* Breadcrumbs dark mode */
+.dark .breadcrumb {
+  background-color: #1f2937;
+}
+
+.dark .breadcrumb-item {
+  color: #9ca3af;
+}
+
+.dark .breadcrumb-item.active {
+  color: #f3f4f6;
+}
+
+/* Search input dark mode */
+.dark .search-input {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #f3f4f6;
+}
+
+.dark .search-results {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .search-result-item:hover {
+  background-color: #374151;
+}

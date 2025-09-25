@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Force Dark Mode Styles */
+:root {
+  --dark-bg-primary: #0f172a;
+  --dark-bg-secondary: #1e293b;
+  --dark-bg-tertiary: #334155;
+  --dark-text-primary: #f1f5f9;
+  --dark-text-secondary: #cbd5e1;
+  --dark-border: #334155;
+}
+
+/* Dark mode base styles */
+@layer base {
+  html.dark,
+  html.dark body {
+    background-color: var(--dark-bg-primary) !important;
+    color: var(--dark-text-primary) !important;
+  }
+  
+  .dark * {
+    border-color: var(--dark-border) !important;
+  }
+  
+  /* Override all white backgrounds */
+  .dark .bg-white,
+  .dark [class*="bg-white"] {
+    background-color: var(--dark-bg-secondary) !important;
+  }
+  
+  /* Override all gray-50 backgrounds */
+  .dark .bg-gray-50,
+  .dark [class*="bg-gray-50"] {
+    background-color: var(--dark-bg-primary) !important;
+  }
+  
+  /* Override all text colors */
+  .dark .text-gray-900,
+  .dark [class*="text-gray-900"] {
+    color: var(--dark-text-primary) !important;
+  }
+  
+  .dark .text-gray-700,
+  .dark [class*="text-gray-700"],
+  .dark .text-gray-600,
+  .dark [class*="text-gray-600"] {
+    color: var(--dark-text-secondary) !important;
+  }
+}
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
