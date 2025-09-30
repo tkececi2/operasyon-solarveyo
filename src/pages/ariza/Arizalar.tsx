@@ -495,16 +495,11 @@ const Arizalar: React.FC = () => {
       const statusFilter = activeFilters.find(f => f.key === 'durum')?.value;
       const priorityFilter = activeFilters.find(f => f.key === 'oncelik')?.value;
       
-      // Saha seçimi varsa santralId'leri bul
-      let santralIdForFilter: string | undefined;
-      if (selectedSaha && sahaIdToSantralIds[selectedSaha]) {
-        // Saha seçilmişse, o sahaya ait ilk santralı kullan (Firebase tek santral filtresi destekliyor)
-        santralIdForFilter = sahaIdToSantralIds[selectedSaha][0];
-      }
+      // Saha filtresini client-side yapacağız (Firebase'de IN query limiti var)
       
-      // Filtreler varsa daha fazla veri çek
-      const hasActiveFilters = statusFilter || priorityFilter || selectedSaha || filterYear !== 'all' || filterMonth !== 'all';
-      const pageSize = hasActiveFilters ? 50 : 10;
+      // Filtreler varsa tüm veriyi çek, yoksa sayfalama kullan
+      const hasActiveFilters = statusFilter || priorityFilter || selectedSaha || filterYear !== 'all' || filterMonth !== 'all' || searchTerm;
+      const pageSize = hasActiveFilters ? 500 : 10; // Filtre varsa 500 kayıt çek
       
       const data = await arizaService.getFaults({
         companyId: userProfile.companyId,
@@ -514,7 +509,6 @@ const Arizalar: React.FC = () => {
         userId: userProfile.id,
         durum: statusFilter as any,
         oncelik: priorityFilter as any,
-        santralId: santralIdForFilter,
         pageSize,
         lastDoc: loadMore ? lastDocument : undefined,
         searchTerm: searchTerm
@@ -1408,37 +1402,60 @@ const Arizalar: React.FC = () => {
       </div>
 
 
-      {/* Daha Fazla Yükle Butonu */}
-      {hasMore && !hasFilters && (
-        <div className="flex justify-center mt-6 mb-6">
-          <Button
-            variant="secondary"
-            size="lg"
-            onClick={loadMoreArizalar}
-            disabled={loadingMore}
-            leftIcon={loadingMore ? undefined : <Plus className="w-5 h-5" />}
-          >
-            {loadingMore ? (
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Yükleniyor...</span>
-              </div>
-            ) : (
-              'Daha Fazla Yükle'
-            )}
-          </Button>
-        </div>
-      )}
-
-      {/* Tüm kayıtlar yüklendi mesajı */}
-      {!hasMore && arizalar.length > 0 && (
-        <div className="text-center py-4 text-gray-500 mb-6">
-          <div className="flex items-center justify-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            <span>Tüm arızalar yüklendi ({arizalar.length} kayıt)</span>
+      {/* Daha Fazla Yükle Butonu - Sadece filtre yokken göster */}
+      {(() => {
+        const hasActiveFilters = activeFilters.length > 0 || 
+                                selectedSaha || 
+                                filterYear !== 'all' || 
+                                filterMonth !== 'all' || 
+                                searchTerm;
+        
+        if (hasActiveFilters) {
+          // Filtre varken sonuç sayısını göster
+          return (
+            <div className="text-center py-4 text-gray-500">
+              {items.length === 0 ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Filter className="w-8 h-8 text-gray-300" />
+                  <span>Filtrelere uygun arıza bulunamadı</span>
+                </div>
+              ) : (
+                <span>{items.length} arıza bulundu</span>
+              )}
+            </div>
+          );
+        }
+        
+        // Filtre yokken sayfalama butonu
+        return hasMore ? (
+          <div className="flex justify-center mt-6 mb-6">
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={loadMoreArizalar}
+              disabled={loadingMore}
+              leftIcon={loadingMore ? undefined : <Plus className="w-5 h-5" />}
+            >
+              {loadingMore ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Yükleniyor...</span>
+                </div>
+              ) : (
+                'Daha Fazla Yükle'
+              )}
+            </Button>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-4 text-gray-500">
+            <div className="flex items-center justify-center gap-2">
+              <CheckCircle className="w-5 h-5 text-green-500" />
+              <span>Tüm arızalar yüklendi ({items.length} kayıt)</span>
+            </div>
+          </div>
+        );
+      })()}
+
 
       {/* Create/Edit Modal */}
       <Modal
