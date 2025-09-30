@@ -320,8 +320,8 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* KPI Cards - Mobilde 2 sütun */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      {/* KPI Cards - Mobilde 2, orta ekranlarda 3, genişte 4 sütun */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
         {kpiData.map((kpi, index) => (
           <Card key={index} className="p-3 md:p-6">
             <div className="flex flex-col items-center text-center">
@@ -344,7 +344,7 @@ const Dashboard: React.FC = () => {
             <CardTitle className="text-base md:text-lg">Program Özeti</CardTitle>
           </CardHeader>
           <CardContent className="">
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                 <div className="text-blue-700">
                   <Building2 className="h-6 w-6" />
@@ -465,13 +465,13 @@ const Dashboard: React.FC = () => {
           <CardTitle className="text-lg">Operasyon Haritası (Mini)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
             <div className="flex items-center gap-2 text-xs">
               <span className="text-gray-600">Harita:</span>
               <select 
                 value={mapType} 
                 onChange={(e)=>setMapType(e.target.value as any)} 
-                className="border rounded px-2 py-1 text-xs"
+                className="border rounded px-2 py-1 text-xs w-full sm:w-auto"
               >
                 <option value="terrain">Arazi</option>
                 <option value="satellite">Uydu</option>
