@@ -865,7 +865,7 @@ const Arizalar: React.FC = () => {
   return (
     <div className="space-y-6 pb-20 md:pb-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">ARIZALAR</h1>
           <p className="text-gray-600">
@@ -892,7 +892,7 @@ const Arizalar: React.FC = () => {
             Yeni Arıza
           </Button>
           )}
-          {/* Mobil ikonlar */}
+          {/* Mobil ikonlar ve görünüm seçici */}
           <div className="flex sm:hidden items-center gap-2" data-pdf-exclude="true">
             <Button variant="secondary" size="sm" className="px-2 py-1 text-xs" onClick={handleExportPdf} title="Rapor indir">
               <Download className="w-4 h-4" />
@@ -900,6 +900,10 @@ const Arizalar: React.FC = () => {
             <Button variant="secondary" size="sm" className="px-2 py-1 text-xs" onClick={handleExportExcel} title="Excel indir">
               <FileText className="w-4 h-4" />
             </Button>
+            <div className="inline-flex rounded-md overflow-hidden border">
+              <button className={`px-2.5 py-1.5 text-xs ${viewMode==='list'?'bg-gray-100 font-medium':''}`} onClick={()=>setViewMode('list')}>Liste</button>
+              <button className={`px-2.5 py-1.5 text-xs ${viewMode==='cards'?'bg-gray-100 font-medium':''}`} onClick={()=>setViewMode('cards')}>Kart</button>
+            </div>
             {canPerformAction('ariza_ekle') && (
               <Button size="sm" className="px-2 py-1 text-xs" onClick={() => { setSelectedAriza(null); setShowCreateModal(true); }} title="Yeni Arıza">
                 <Plus className="w-4 h-4" />
@@ -1126,7 +1130,7 @@ const Arizalar: React.FC = () => {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {items.map((ariza) => (
             <Card 
               key={ariza.id}
@@ -1137,7 +1141,7 @@ const Arizalar: React.FC = () => {
                 <img
                   src={(ariza.fotograflar && ariza.fotograflar[0]) || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'120\'></svg>'}
                   alt="thumb"
-                  className="w-full h-40 object-cover"
+                  className="w-full h-36 sm:h-40 object-cover"
                 />
                 <div className="absolute top-2 left-2 flex gap-2">
                   <div className="px-2 py-0.5 rounded-full bg-white/90 shadow text-xs"><StatusBadge status={ariza.durum} /></div>
