@@ -530,10 +530,16 @@ const Arizalar: React.FC = () => {
             return false;
           }
           
-          // Saha filtresi (birden fazla santral olabilir)
-          if (selectedSaha && sahaIdToSantralIds[selectedSaha]) {
-            const santralIds = sahaIdToSantralIds[selectedSaha];
-            if (!santralIds.includes(fault.santralId)) {
+          // Saha filtresi
+          if (selectedSaha) {
+            const santralIds = sahaIdToSantralIds[selectedSaha] || [];
+            const selectedSahaName = sahaOptions.find(o => o.value === selectedSaha)?.label || '';
+            
+            // Santral ID veya saha adı ile eşleştir
+            const matchesBySantral = fault.santralId && santralIds.length > 0 && santralIds.includes(fault.santralId);
+            const matchesBySahaName = fault.saha && fault.saha === selectedSahaName;
+            
+            if (!matchesBySantral && !matchesBySahaName) {
               return false;
             }
           }
@@ -566,16 +572,18 @@ const Arizalar: React.FC = () => {
     await fetchArizalar(false, true);
   };
 
-  // İlk yükleme
+  // İlk yükleme - sahalar yüklendikten sonra
+  const [sahasLoaded, setSahasLoaded] = useState(false);
+  
   useEffect(() => {
-    if (userProfile?.companyId) {
+    if (userProfile?.companyId && sahasLoaded) {
       fetchArizalar(true);
     }
-  }, [userProfile?.companyId, userProfile?.rol, userProfile?.sahalar, userProfile?.santraller]);
+  }, [userProfile?.companyId, userProfile?.rol, userProfile?.sahalar, userProfile?.santraller, sahasLoaded]);
 
   // Filtreler değiştiğinde veriyi yeniden yükle
   useEffect(() => {
-    if (!userProfile?.companyId) return;
+    if (!userProfile?.companyId || !sahasLoaded) return;
     
     // İlk yüklemeden sonra filtre değişikliklerinde çalış
     const timer = setTimeout(() => {
@@ -583,7 +591,7 @@ const Arizalar: React.FC = () => {
     }, 300); // Debounce için kısa gecikme
     
     return () => clearTimeout(timer);
-  }, [filterYear, filterMonth, selectedSaha, activeFilters.length, searchTerm]);
+  }, [filterYear, filterMonth, selectedSaha, activeFilters.length, searchTerm, sahasLoaded]);
 
 
   // Saha seçenekleri yükle (müşteri izolasyonu ile)
@@ -612,8 +620,12 @@ const Arizalar: React.FC = () => {
         const sm: Record<string, { id: string; ad: string }> = {};
         santrals.forEach(s => { sm[s.id] = { id: s.id, ad: s.ad }; });
         setSantralMap(sm);
+        
+        // Sahalar yüklendi işareti
+        setSahasLoaded(true);
       } catch (e) {
         console.error('Saha yükleme hatası', e);
+        setSahasLoaded(true); // Hata durumunda da devam et
       }
     };
     load();
