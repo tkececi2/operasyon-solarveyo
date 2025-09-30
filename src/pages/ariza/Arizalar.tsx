@@ -492,12 +492,17 @@ const Arizalar: React.FC = () => {
     }
   ];
 
-  // İlk verileri yükle (ilk 10 kayıt)
-  const fetchArizalar = async () => {
+  // İlk verileri yükle (ilk 10 kayıt) - filtreler ile birlikte
+  const fetchArizalar = async (reset: boolean = true) => {
     if (!userProfile?.companyId) return;
     
     try {
-      setIsLoading(true);
+      if (reset) {
+        setIsLoading(true);
+        setArizalar([]);
+        setLastDocument(null);
+      }
+      
       const data = await arizaService.getFaults({
         companyId: userProfile.companyId,
         userRole: userProfile.rol,
@@ -506,10 +511,16 @@ const Arizalar: React.FC = () => {
         userId: userProfile.id,
         pageSize: 10 // İlk 10 kaydı getir
       });
-      setArizalar(data.faults);
+      
+      if (reset) {
+        setArizalar(data.faults);
+      } else {
+        setArizalar(prev => [...prev, ...data.faults]);
+      }
+      
       setLastDocument(data.lastDoc);
       setHasMore(data.hasMore);
-      setTotalCount(data.faults.length);
+      setTotalCount(prev => reset ? data.faults.length : prev + data.faults.length);
     } catch (err) {
       console.error('Arızalar getirilemedi:', err);
       toast.error('Arızalar yüklenirken bir hata oluştu.');
@@ -546,8 +557,37 @@ const Arizalar: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchArizalar();
+    fetchArizalar(true);
   }, [userProfile?.companyId, userProfile?.rol, userProfile?.sahalar, userProfile?.santraller]);
+
+  // Yıl veya ay filtresi değiştiğinde tüm veriyi yeniden yükle
+  useEffect(() => {
+    if (userProfile?.companyId && (filterYear !== 'all' || filterMonth !== 'all')) {
+      // Filtrelenmiş veriyi göstermek için tüm kayıtları çek
+      (async () => {
+        try {
+          setIsLoading(true);
+          const data = await arizaService.getFaults({
+            companyId: userProfile.companyId,
+            userRole: userProfile.rol,
+            userSahalar: userProfile.sahalar as any,
+            userSantraller: userProfile.santraller as any,
+            userId: userProfile.id,
+            pageSize: 100 // Filtreleme için daha fazla kayıt getir
+          });
+          setArizalar(data.faults);
+          setLastDocument(data.lastDoc);
+          setHasMore(data.hasMore);
+        } catch (err) {
+          console.error('Filtrelenmiş arızalar getirilemedi:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+    } else if (userProfile?.companyId) {
+      fetchArizalar(true);
+    }
+  }, [filterYear, filterMonth]);
 
 
   // Saha seçenekleri yükle (müşteri izolasyonu ile)
@@ -1588,7 +1628,8 @@ const Arizalar: React.FC = () => {
                         <input 
                           type="datetime-local" 
                           className="border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                          onChange={(e:any)=>setCozumDate(e.target.value)} 
+                          value={cozumDate}
+                          onChange={(e)=>setCozumDate(e.target.value)} 
                         />
                         <input 
                           type="file" 
