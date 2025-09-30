@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Plus, Wrench, Zap, Cog, Calendar, Clock, CheckCircle, Eye, List, Grid3X3, Download, Search, Filter, Building2, MapPin, User, X, ChevronRight, Image as ImageIcon, FileText } from 'lucide-react';
+import { Plus, Wrench, Zap, Cog, Calendar, Clock, CheckCircle, Eye, Edit, List, Grid3X3, Download, Search, Filter, Building2, MapPin, User, X, ChevronRight, Image as ImageIcon, FileText } from 'lucide-react';
 import { Button, Card, CardContent, CardHeader, CardTitle, Modal, LoadingSpinner, Badge, Input, Select, LazyImage } from '../../components/ui';
 import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { BakimForm } from '../../components/forms/BakimForm';
@@ -266,6 +266,16 @@ const Bakim: React.FC = () => {
     // Eski ve yeni kayıt formatları için ham veriyi koruyoruz
     setSelectedMaintenance({ ...maintenance, type });
     setShowDetailModal(true);
+  };
+
+  // Düzenleme modalını aç
+  const handleEdit = (maintenance: any, type: string) => {
+    setSelectedMaintenance({ ...maintenance, type });
+    if (type === 'yapilanisler') {
+      setShowYapilanIsModal(true);
+    } else {
+      setShowBakimModal(true);
+    }
   };
 
   // Handle delete
@@ -624,6 +634,19 @@ const Bakim: React.FC = () => {
             <Eye className="h-4 w-4 mr-1" />
             Görüntüle
           </Button>
+          {canPerformAction('bakim_duzenle') && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEdit(bakim, type);
+              }}
+              title="Düzenle"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
           {canPerformAction('bakim_sil') && (
             <Button
               size="sm"
@@ -696,6 +719,16 @@ const Bakim: React.FC = () => {
           >
             <Eye className="h-4 w-4" />
           </Button>
+          {canPerformAction('bakim_duzenle') && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => handleEdit(bakim, type)}
+              title="Düzenle"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"
@@ -1071,26 +1104,48 @@ const Bakim: React.FC = () => {
       {/* Bakım Modal */}
       <Modal
         isOpen={showBakimModal}
-        onClose={() => setShowBakimModal(false)}
-        title="Yeni Bakım Kaydı"
+        onClose={() => {
+          setShowBakimModal(false);
+          setSelectedMaintenance(null);
+        }}
+        title={selectedMaintenance && selectedMaintenance.type !== 'yapilanis' ? 'Bakım Kaydı Düzenle' : 'Yeni Bakım Kaydı'}
         size="xl"
       >
         <BakimForm
-          onSuccess={handleMaintenanceCreated}
-          onCancel={() => setShowBakimModal(false)}
+          initialData={selectedMaintenance && selectedMaintenance.type !== 'yapilanis' ? (selectedMaintenance as any) : undefined}
+          onSuccess={() => {
+            handleMaintenanceCreated();
+            setShowBakimModal(false);
+            setSelectedMaintenance(null);
+          }}
+          onCancel={() => {
+            setShowBakimModal(false);
+            setSelectedMaintenance(null);
+          }}
         />
       </Modal>
 
       {/* Yapılan İş Modal */}
       <Modal
         isOpen={showYapilanIsModal}
-        onClose={() => setShowYapilanIsModal(false)}
-        title="Yeni İş Raporu"
+        onClose={() => {
+          setShowYapilanIsModal(false);
+          setSelectedMaintenance(null);
+        }}
+        title={selectedMaintenance && selectedMaintenance.type === 'yapilanis' ? 'İş Raporu Düzenle' : 'Yeni İş Raporu'}
         size="xl"
       >
         <YapilanIsForm
-          onSuccess={handleYapilanIsCreated}
-          onCancel={() => setShowYapilanIsModal(false)}
+          initialData={selectedMaintenance && selectedMaintenance.type === 'yapilanis' ? (selectedMaintenance as any) : undefined}
+          onSuccess={() => {
+            handleYapilanIsCreated();
+            setShowYapilanIsModal(false);
+            setSelectedMaintenance(null);
+          }}
+          onCancel={() => {
+            setShowYapilanIsModal(false);
+            setSelectedMaintenance(null);
+          }}
         />
       </Modal>
 

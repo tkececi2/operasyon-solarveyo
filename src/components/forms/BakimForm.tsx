@@ -28,9 +28,10 @@ type BakimFormData = z.infer<typeof bakimSchema>;
 interface BakimFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  initialData?: any;
 }
 
-export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel }) => {
+export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel, initialData }) => {
   const { userProfile } = useAuth();
   const { company } = useCompany();
   const [isLoading, setIsLoading] = useState(false);
@@ -48,10 +49,14 @@ export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel }) => 
   } = useForm<BakimFormData>({
     resolver: zodResolver(bakimSchema),
     defaultValues: {
-      bakimTipi: 'elektrik',
-      bakimTarihSaat: new Date().toISOString().slice(0, 16),
-      yapanKisi: userProfile?.ad || '',
-      genelDurum: 'iyi',
+      bakimTipi: initialData?.bakimTipi || 'elektrik',
+      bakimTarihSaat: initialData?.tarih
+        ? (initialData.tarih.toDate ? initialData.tarih.toDate() : new Date(initialData.tarih)).toISOString().slice(0, 16)
+        : new Date().toISOString().slice(0, 16),
+      yapanKisi: initialData?.yapanKisi || userProfile?.ad || '',
+      genelDurum: initialData?.genelDurum || 'iyi',
+      santralId: initialData?.santralId || undefined,
+      sahaId: initialData?.sahaId || undefined,
     },
   });
 
@@ -114,6 +119,18 @@ export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel }) => 
         // Sahaları yükle
         const sahalarData = await getAllSahalar(company.id, userProfile?.rol, userProfile?.sahalar as any);
         setSahaOptions(sahalarData.map(s => ({ value: s.id, label: s.ad })));
+
+        // Düzenleme modunda alanları doldur
+        if (initialData) {
+          if (initialData.santralId) setValue('santralId', initialData.santralId);
+          if (initialData.sahaId) setValue('sahaId', initialData.sahaId);
+          if (initialData.bakimTipi) setValue('bakimTipi', initialData.bakimTipi);
+          if (initialData.genelDurum) setValue('genelDurum', initialData.genelDurum);
+          if (initialData.yapanKisi) setValue('yapanKisi', initialData.yapanKisi);
+          if (initialData.kontroller && typeof initialData.kontroller === 'object') {
+            setKontrolListesi(initialData.kontroller);
+          }
+        }
       } catch (error) {
         console.error('Veri yükleme hatası:', error);
         toast.error('Veriler yüklenirken hata oluştu');
@@ -121,7 +138,7 @@ export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel }) => 
     };
     
     loadData();
-  }, [company?.id]);
+  }, [company?.id, initialData, setValue]);
 
   // Santral seçildiğinde ilgili sahayı otomatik seç
   useEffect(() => {
@@ -192,21 +209,34 @@ export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel }) => 
         fotograflar: [], // Service'de doldurulacak
       };
 
-      // Bakım tipine göre uygun servisi çağır
-      if (data.bakimTipi === 'elektrik') {
-        await bakimService.createElectricalMaintenance(bakimData, selectedFiles);
+      // Oluşturma/Düzenleme ayrımı
+      if (initialData?.id) {
+        const updates: any = {
+          ...bakimData,
+        };
+        if (data.bakimTipi === 'elektrik') {
+          await bakimService.updateElectricalMaintenance(initialData.id, updates, selectedFiles);
+        } else {
+          await bakimService.updateMechanicalMaintenance?.(initialData.id, updates, selectedFiles);
+        }
+        toast.success('Bakım kaydı güncellendi!');
       } else {
-        await bakimService.createMechanicalMaintenance(bakimData, selectedFiles);
+        // Bakım tipine göre uygun servisi çağır
+        if (data.bakimTipi === 'elektrik') {
+          await bakimService.createElectricalMaintenance(bakimData, selectedFiles);
+        } else {
+          await bakimService.createMechanicalMaintenance(bakimData, selectedFiles);
+        }
+        toast.success('Bakım kaydı başarıyla oluşturuldu!');
       }
 
-      toast.success('Bakım kaydı başarıyla oluşturuldu!');
       reset();
       setSelectedFiles([]);
       setKontrolListesi({});
       onSuccess?.();
     } catch (error) {
       console.error('Bakım kaydetme hatası:', error);
-      toast.error('Bakım kaydedilemedi. Tekrar deneyin.');
+      toast.error('Bakım kaydı işlenemedi. Tekrar deneyin.');
     } finally {
       setIsLoading(false);
     }
@@ -384,7 +414,7 @@ export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel }) => 
         )}
         <Button type="submit" loading={isLoading} disabled={isMusteri}>
           <Wrench className="h-4 w-4 mr-2" />
-          Bakım Kaydını Oluştur
+          {initialData?.id ? 'Bakım Kaydını Güncelle' : 'Bakım Kaydını Oluştur'}
         </Button>
       </div>
     </form>

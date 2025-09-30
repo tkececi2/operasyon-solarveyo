@@ -142,6 +142,38 @@ export const updateElectricalMaintenance = async (
   }
 };
 
+// Mekanik Bakım Güncelleme
+export const updateMechanicalMaintenance = async (
+  maintenanceId: string,
+  updates: Partial<MechanicalMaintenance>,
+  newPhotos?: File[]
+): Promise<void> => {
+  try {
+    const maintenanceRef = doc(db, 'mekanikBakimlar', maintenanceId);
+    // Yeni fotoğraflar varsa yükle
+    if (newPhotos && newPhotos.length > 0) {
+      const maintenanceDoc = await getDoc(maintenanceRef);
+      if (maintenanceDoc.exists()) {
+        const maintenanceData = maintenanceDoc.data() as MechanicalMaintenance;
+        const newPhotoUrls = await uploadBakimPhotos(
+          newPhotos,
+          maintenanceId,
+          maintenanceData.companyId,
+          'mekanik'
+        );
+        updates.fotograflar = [
+          ...(maintenanceData.fotograflar || []),
+          ...newPhotoUrls
+        ];
+      }
+    }
+    await updateDoc(maintenanceRef, updates);
+  } catch (error) {
+    console.error('Mekanik bakım güncelleme hatası:', error);
+    throw error;
+  }
+};
+
 // Şirkete ait elektrik bakımları getirme - MÜŞTERİ İZOLASYONU İLE
 export const getElectricalMaintenances = async (
   companyId: string,
@@ -475,10 +507,42 @@ export const deleteYapilanIs = async (yapilanIsId: string): Promise<void> => {
   }
 };
 
+// Yapılan iş güncelleme
+export const updateYapilanIs = async (
+  yapilanIsId: string,
+  updates: any,
+  newPhotos?: File[]
+): Promise<void> => {
+  try {
+    const yapilanIsRef = doc(db, 'yapilanIsler', yapilanIsId);
+    const yapilanIsDoc = await getDoc(yapilanIsRef);
+    if (yapilanIsDoc.exists()) {
+      const current = yapilanIsDoc.data() as any;
+      if (newPhotos && newPhotos.length > 0) {
+        const newPhotoUrls = await uploadBakimPhotos(
+          newPhotos,
+          yapilanIsId,
+          current.companyId,
+          'yapilanis'
+        );
+        updates.fotograflar = [
+          ...(current.fotograflar || []),
+          ...newPhotoUrls
+        ];
+      }
+    }
+    await updateDoc(yapilanIsRef, updates);
+  } catch (error) {
+    console.error('Yapılan iş güncelleme hatası:', error);
+    throw error;
+  }
+};
+
 export const bakimService = {
   createElectricalMaintenance,
   createMechanicalMaintenance,
   updateElectricalMaintenance,
+  updateMechanicalMaintenance,
   getElectricalMaintenances,
   getMechanicalMaintenances,
   getMaintenanceStatistics,
@@ -487,5 +551,6 @@ export const bakimService = {
   generateMaintenancePlan,
   createYapilanIs,
   getYapilanIsler,
-  deleteYapilanIs
+  deleteYapilanIs,
+  updateYapilanIs
 };

@@ -36,9 +36,10 @@ interface Malzeme {
 interface YapilanIsFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  initialData?: any;
 }
 
-export const YapilanIsForm: React.FC<YapilanIsFormProps> = ({ onSuccess, onCancel }) => {
+export const YapilanIsForm: React.FC<YapilanIsFormProps> = ({ onSuccess, onCancel, initialData }) => {
   const { userProfile } = useAuth();
   const { company } = useCompany();
   const [isLoading, setIsLoading] = useState(false);
@@ -55,10 +56,17 @@ export const YapilanIsForm: React.FC<YapilanIsFormProps> = ({ onSuccess, onCance
   } = useForm<YapilanIsFormData>({
     resolver: zodResolver(yapilanIsSchema),
     defaultValues: {
-      tarih: new Date().toISOString().split('T')[0],
-      baslangicSaati: '08:00',
-      bitisSaati: '17:00',
-      personel: userProfile?.ad || '',
+      baslik: initialData?.baslik || '',
+      santralId: initialData?.santralId || undefined,
+      sahaId: initialData?.sahaId || undefined,
+      tarih: initialData?.tarih
+        ? (initialData.tarih.toDate ? initialData.tarih.toDate() : new Date(initialData.tarih)).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
+      baslangicSaati: initialData?.baslangicSaati || '08:00',
+      bitisSaati: initialData?.bitisSaati || '17:00',
+      personel: initialData?.personel || userProfile?.ad || '',
+      yapilanIsler: initialData?.yapilanIsler || '',
+      aciklama: initialData?.aciklama || '',
     },
   });
 
@@ -82,6 +90,12 @@ export const YapilanIsForm: React.FC<YapilanIsFormProps> = ({ onSuccess, onCance
         // Sahaları yükle
         const sahalarData = await getAllSahalar(company.id);
         setSahaOptions(sahalarData.map(s => ({ value: s.id, label: s.ad })));
+
+        // Düzenleme modunda alanları doldur
+        if (initialData) {
+          if (initialData.santralId) setValue('santralId', initialData.santralId);
+          if (initialData.sahaId) setValue('sahaId', initialData.sahaId);
+        }
       } catch (error) {
         console.error('Veri yükleme hatası:', error);
         toast.error('Veriler yüklenirken hata oluştu');
@@ -89,7 +103,7 @@ export const YapilanIsForm: React.FC<YapilanIsFormProps> = ({ onSuccess, onCance
     };
     
     loadData();
-  }, [company?.id]);
+  }, [company?.id, initialData, setValue]);
 
   // Santral seçildiğinde ilgili sahayı otomatik seç
   useEffect(() => {
@@ -176,10 +190,15 @@ export const YapilanIsForm: React.FC<YapilanIsFormProps> = ({ onSuccess, onCance
         olusturmaTarihi: Timestamp.now(),
       };
 
-      // Yapılan iş kaydını oluştur
-      await bakimService.createYapilanIs?.(yapilanIsData, selectedFiles);
-
-      toast.success('İş raporu başarıyla oluşturuldu!');
+      if (initialData?.id) {
+        // Güncelleme (foto ekleme: mevcutlarla birleştirme servis tarafında yapılabilir)
+        await bakimService.updateYapilanIs?.(initialData.id, yapilanIsData, selectedFiles);
+        toast.success('İş raporu güncellendi!');
+      } else {
+        // Yapılan iş kaydını oluştur
+        await bakimService.createYapilanIs?.(yapilanIsData, selectedFiles);
+        toast.success('İş raporu başarıyla oluşturuldu!');
+      }
       reset();
       setSelectedFiles([]);
       setMalzemeler([{ ad: '', miktar: '', birim: 'adet' }]);

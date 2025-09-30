@@ -141,13 +141,13 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   ],
   
   tekniker: [
-    // Düzenleme/silme YAPAMAZ, ekip üyesi ekleme YAPAMAZ
+    // Arıza ve bakım işlemlerinde tam yetki, diğer alanlarda kısıtlı
     'ekip_goruntuleme', // ekleme/düzenleme/silme YAPAMAZ
     'musteri_goruntuleme', // ekleme YAPAMAZ
     'saha_goruntuleme', // ekleme/düzenleme/silme YAPAMAZ (bekçi/tekniker ekleyebilir sadece)
     'santral_goruntuleme', // ekleme/düzenleme/silme YAPAMAZ
-    'ariza_ekleme', 'ariza_goruntuleme', 'ariza_cozme', // düzenleme/silme YAPAMAZ
-    'bakim_ekleme', 'bakim_goruntuleme', // düzenleme/silme YAPAMAZ
+    'ariza_ekleme', 'ariza_duzenleme', 'ariza_silme', 'ariza_goruntuleme', 'ariza_cozme', // ARTIK tam yetki
+    'bakim_ekleme', 'bakim_duzenleme', 'bakim_silme', 'bakim_goruntuleme', // ARTIK tam yetki
     'uretim_ekleme', 'uretim_goruntuleme', // düzenleme/silme YAPAMAZ
     'stok_ekleme', 'stok_goruntuleme', // düzenleme/silme YAPAMAZ
     'vardiya_ekleme', 'vardiya_goruntuleme', // düzenleme/silme YAPAMAZ
