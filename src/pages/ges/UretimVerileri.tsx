@@ -359,13 +359,19 @@ const UretimVerileri: React.FC = () => {
               </div>
               <div className="mt-1 text-xs text-gray-500">Seçili: {selectedSantrals.length}</div>
             </div>
-            <div>
-              <Select
-                label="Yıl"
-                options={yearOptions}
-                value={String(viewYear)}
-                onChange={(e) => setViewYear(Number(e.target.value))}
-              />
+            <div className="flex items-end lg:justify-end">
+              <div className="w-full lg:w-auto">
+                <label className="sr-only">Yıl</label>
+                <select
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm w-28"
+                  value={String(viewYear)}
+                  onChange={(e) => setViewYear(Number(e.target.value))}
+                >
+                  {yearOptions.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </CardContent>

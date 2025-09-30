@@ -354,19 +354,7 @@ const VardiyaBildirimleri: React.FC = () => {
         <CardContent className="p-4">
           {/* Mobilde dikey, md+ tek satır ve kaydırmasız düzen */}
           <div className={`${showMobileFilters ? 'flex' : 'hidden md:flex'} flex-col md:flex-row md:items-center md:gap-2 md:flex-nowrap`}>
-            {/* Search */}
-            <div className="md:flex-1 md:min-w-[260px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <input
-                  type="text"
-                  placeholder="Bekçi adı, saha veya açıklama ara..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
+            {/* Search kaldırıldı */}
 
             {/* Saha Filter */}
             <div className="w-full md:w-48">
