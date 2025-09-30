@@ -940,10 +940,11 @@ const Arizalar: React.FC = () => {
               </Button>
             </div>
 
-            {/* Orta ve üzeri ekranlar: yatay hızlı filtreler */}
-            <div className="hidden md:flex items-center gap-2">
+            {/* Orta ve üzeri ekranlarda: tek satır, taşınca çok satırlı responsive grid */}
+            <div className="hidden md:grid grid-cols-2 lg:grid-cols-6 gap-2 items-center">
+              {/* Durum */}
               <select
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
                 value={activeFilters.find(f => f.key === 'durum')?.value || ''}
                 onChange={(e) => {
                   if (e.target.value) {
@@ -959,9 +960,9 @@ const Arizalar: React.FC = () => {
                 <option value="cozuldu">Çözüldü</option>
                 <option value="iptal">İptal</option>
               </select>
-
+              {/* Öncelik */}
               <select
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
                 value={activeFilters.find(f => f.key === 'oncelik')?.value || ''}
                 onChange={(e) => {
                   if (e.target.value) {
@@ -977,44 +978,45 @@ const Arizalar: React.FC = () => {
                 <option value="yuksek">Yüksek</option>
                 <option value="kritik">Kritik</option>
               </select>
-
-              {hasFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="text-red-600"
-                >
-                  Temizle
-                </Button>
-              )}
-            </div>
-
-            {/* Saha/Yıl/Ay + PDF: xl ve üstünde yan tarafta, mobilde panel içinde */}
-            <div className="hidden xl:flex items-center gap-2 ml-auto">
+              {/* Saha */}
               <select
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
                 value={selectedSaha}
                 onChange={(e)=>setSelectedSaha(e.target.value)}
               >
                 {sahaOptions.map(o => (<option key={o.value || 'all'} value={o.value}>{o.label}</option>))}
               </select>
+              {/* Yıl */}
               <select
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
                 value={String(filterYear)}
                 onChange={(e)=>setFilterYear(e.target.value==='all'?'all':Number(e.target.value))}
               >
                 {yearOptions.map(o => (<option key={o.value} value={o.value}>{o.label}</option>))}
               </select>
+              {/* Ay */}
               <select
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full"
                 value={String(filterMonth)}
                 onChange={(e)=>setFilterMonth(e.target.value==='all'?'all':Number(e.target.value))}
               >
                 {monthOptions.map(o => (<option key={o.value} value={o.value}>{o.label}</option>))}
               </select>
-              <Button variant="secondary" leftIcon={<Download className="w-4 h-4" />} onClick={handleExportPdf}>Rapor İndir</Button>
-              <Button variant="secondary" leftIcon={<FileText className="w-4 h-4" />} onClick={handleExportExcel}>Excel İndir</Button>
+              {/* Aksiyonlar */}
+              <div className="flex gap-2 justify-end">
+                {hasFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="text-red-600"
+                  >
+                    Temizle
+                  </Button>
+                )}
+                <Button variant="secondary" size="sm" leftIcon={<Download className="w-4 h-4" />} onClick={handleExportPdf}>Rapor</Button>
+                <Button variant="secondary" size="sm" leftIcon={<FileText className="w-4 h-4" />} onClick={handleExportExcel}>Excel</Button>
+              </div>
             </div>
 
             {/* Mobil filtre paneli */}
