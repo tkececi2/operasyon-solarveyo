@@ -22,6 +22,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import { getPlanById, getActivePlans } from '../../config/saas.config';
 import { getMergedPlans, subscribeToMergedPlans } from '../../services/planConfigService';
 import { getCompanyStatistics } from '../../services/statisticsService';
+import { recalculateStorageForCompany } from '../../services/recalculateStorageService';
 import { getStorageMetrics } from '../../services/storageService';
 import { toast } from 'react-hot-toast';
 
@@ -84,6 +85,13 @@ const ManagerSubscription: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [company]);
+
+  // Sayfa yüklendiğinde depolama verilerini de yükle
+  useEffect(() => {
+    if (company && !storageLoading) {
+      loadStorageAnalytics();
+    }
+  }, [company, effectiveStorageLimitMB]);
 
   // Plan güncellemelerini dinle
   useEffect(() => {
@@ -247,13 +255,32 @@ const ManagerSubscription: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Modern SaaS yaklaşımı: Cached metrics kullan
+  // Modern SaaS yaklaşımı: Cached metrics kullan, yoksa hesapla
   const loadStorageAnalytics = async () => {
     if (!company || realStorageQuota || storageLoading) return;
     
     try {
       setStorageLoading(true);
-      const storageMetrics = await getStorageMetrics(company.id);
+      let storageMetrics = await getStorageMetrics(company.id);
+      
+      // Eğer metrics yoksa veya 24 saatten eskiyse yeniden hesapla
+      const lastCalculated = storageMetrics.lastCalculated;
+      const isStale = !lastCalculated || 
+        (lastCalculated instanceof Date && 
+         (Date.now() - lastCalculated.getTime()) > 24 * 60 * 60 * 1000);
+      
+      if (!storageMetrics.isCached || isStale || storageMetrics.storageUsedMB === 0) {
+        console.log('📊 Depolama verileri yeniden hesaplanıyor...');
+        const recalculated = await recalculateStorageForCompany(company.id);
+        storageMetrics = {
+          storageUsedMB: recalculated.storageUsedMB,
+          fileCount: recalculated.fileCount,
+          lastCalculated: new Date(),
+          breakdown: recalculated.breakdown,
+          isCached: true
+        };
+      }
+      
       const storageLimit = (company.subscriptionLimits?.storageLimit ?? effectiveStorageLimitMB ?? 5 * 1024); // MB
       
       const used = storageMetrics.storageUsedMB;
