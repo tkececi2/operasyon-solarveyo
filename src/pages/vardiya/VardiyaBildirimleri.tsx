@@ -352,10 +352,10 @@ const VardiyaBildirimleri: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          {/* Mobilde aç/kapa, büyük ekranda her zaman görünür */}
-          <div className={`${showMobileFilters ? 'flex' : 'hidden md:flex'} flex-col gap-3 lg:grid lg:grid-cols-12 lg:items-center`}>
+          {/* Mobilde dikey, md+ tek satır ve kaydırmasız düzen */}
+          <div className={`${showMobileFilters ? 'flex' : 'hidden md:flex'} flex-col md:flex-row md:items-center md:gap-2 md:flex-nowrap`}>
             {/* Search */}
-            <div className="lg:col-span-4">
+            <div className="md:flex-1 md:min-w-[260px]">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <input
@@ -369,7 +369,7 @@ const VardiyaBildirimleri: React.FC = () => {
             </div>
 
             {/* Saha Filter */}
-            <div className="w-full lg:col-span-2">
+            <div className="w-full md:w-48">
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={sahaFilter}
@@ -383,7 +383,7 @@ const VardiyaBildirimleri: React.FC = () => {
             </div>
 
             {/* Status Filter */}
-            <div className="w-full lg:col-span-2">
+            <div className="w-full md:w-40">
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={statusFilter}
@@ -397,7 +397,7 @@ const VardiyaBildirimleri: React.FC = () => {
             </div>
 
             {/* Shift Type Filter */}
-            <div className="w-full lg:col-span-2">
+            <div className="w-full md:w-40">
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={shiftTypeFilter}
@@ -411,16 +411,8 @@ const VardiyaBildirimleri: React.FC = () => {
               </select>
             </div>
 
-            {/* Sadece benim sahalarım */}
-            <div className="w-full lg:col-span-2 flex items-center">
-              <label className="inline-flex items-center gap-2 text-sm cursor-pointer select-none bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                <input type="checkbox" checked={onlyMyAreas} onChange={(e)=>setOnlyMyAreas(e.target.checked)} className="h-4 w-4 text-blue-600" />
-                Sadece benim sahalarım
-              </label>
-            </div>
-
             {/* Tarih Aralığı */}
-            <div className="w-full lg:col-span-2 flex items-center gap-2">
+            <div className="w-full md:w-auto flex items-center gap-2">
               <input
                 type="date"
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -436,11 +428,10 @@ const VardiyaBildirimleri: React.FC = () => {
               />
             </div>
             {/* Hızlı Aralıklar */}
-            <div className="w-full lg:col-span-2 flex items-center gap-2">
+            <div className="w-full md:w-auto flex items-center gap-2">
               {([
                 { key: 'today', label: 'Bugün' },
                 { key: 'yesterday', label: 'Dün' },
-                { key: '7d', label: 'Son 7 gün' },
                 { key: 'month', label: 'Bu ay' }
               ] as const).map((o) => (
                 <button
@@ -457,10 +448,6 @@ const VardiyaBildirimleri: React.FC = () => {
                       const y = new Date(now); y.setDate(now.getDate()-1);
                       s = y.toISOString().split('T')[0];
                       e = s;
-                    } else if (o.key === '7d') {
-                      const sdt = new Date(now); sdt.setDate(now.getDate()-6);
-                      s = sdt.toISOString().split('T')[0];
-                      e = now.toISOString().split('T')[0];
                     } else if (o.key === 'month') {
                       const sdt = new Date(now.getFullYear(), now.getMonth(), 1);
                       s = sdt.toISOString().split('T')[0];
