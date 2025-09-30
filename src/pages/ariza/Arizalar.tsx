@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { Plus, Search, Eye, Edit, Trash2, Download, FileText, Filter, Clock, MapPin, Building2, User, CheckCircle, MessageSquare, Image as ImageIcon, ThumbsUp, Star, X } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Download, FileText, Filter, Clock, MapPin, Building2, User, CheckCircle, MessageSquare, Image as ImageIcon, ThumbsUp, Star, X, Camera, Calendar, AlertCircle } from 'lucide-react';
 import { 
   Button, 
   Card, 
@@ -45,6 +45,8 @@ const Arizalar: React.FC = () => {
   const [cozumText, setCozumText] = useState<string>('');
   const [cozumFiles, setCozumFiles] = useState<File[]>([]);
   const [cozumDate, setCozumDate] = useState<string>('');
+  const [showSolutionForm, setShowSolutionForm] = useState(false);
+  const [solutionLoading, setSolutionLoading] = useState(false);
   const [sahaOptions, setSahaOptions] = useState<{ value: string; label: string }[]>([]);
   const [selectedSaha, setSelectedSaha] = useState<string>(''); // sahaId
   const [sahaIdToSantralIds, setSahaIdToSantralIds] = useState<Record<string, string[]>>({});
@@ -770,6 +772,11 @@ const Arizalar: React.FC = () => {
   const handleViewDetail = (ariza: Fault) => {
     setSelectedAriza(ariza);
     setShowDetailModal(true);
+    // Form değerlerini sıfırla
+    setCozumText('');
+    setCozumFiles([]);
+    setCozumDate('');
+    setShowSolutionForm(false);
     // Raporlayan adını getir
     (async () => {
       try {
@@ -804,6 +811,49 @@ const Arizalar: React.FC = () => {
     const dataToExport = exportData();
     console.log('Exporting:', dataToExport);
     toast.success(`${dataToExport.length} kayıt dışa aktarılıyor...`);
+  };
+
+  // Arıza çözüm işlemi
+  const handleSolveFault = async () => {
+    if (!selectedAriza) return;
+    
+    if (!cozumText.trim()) {
+      toast.error('Lütfen çözüm açıklaması girin');
+      return;
+    }
+
+    try {
+      setSolutionLoading(true);
+      
+      // Tarih seçilmişse onu kullan, yoksa şu anki zamanı kullan
+      const resolvedDate = cozumDate ? new Date(cozumDate) : new Date();
+      
+      await arizaService.updateFaultStatus(
+        selectedAriza.id,
+        'cozuldu',
+        cozumText,
+        cozumFiles.length > 0 ? cozumFiles : undefined,
+        resolvedDate
+      );
+      
+      toast.success('Arıza başarıyla çözüldü olarak işaretlendi!');
+      
+      // Formu temizle ve kapat
+      setCozumText('');
+      setCozumFiles([]);
+      setCozumDate('');
+      setShowSolutionForm(false);
+      setShowDetailModal(false);
+      
+      // Listeyi yenile
+      fetchArizalar(true);
+      
+    } catch (error) {
+      console.error('Arıza çözüm hatası:', error);
+      toast.error('Arıza çözülürken bir hata oluştu');
+    } finally {
+      setSolutionLoading(false);
+    }
   };
 
   return (
@@ -1416,6 +1466,7 @@ const Arizalar: React.FC = () => {
         onClose={() => {
           setShowDetailModal(false);
           setSelectedAriza(null);
+          setShowSolutionForm(false);
         }}
         title={selectedAriza?.baslik || 'Arıza Detayları'}
         subtitle={selectedAriza ? `${santralMap[selectedAriza.santralId]?.ad || ''} • ${selectedAriza.saha}` : undefined}
@@ -1472,7 +1523,7 @@ const Arizalar: React.FC = () => {
           ...(selectedAriza?.fotograflar || []),
           ...(selectedAriza?.cozumFotograflari || [])
         ]}
-        actions={selectedAriza && selectedAriza.durum !== 'cozuldu' && canPerformAction('fault', 'update') ? [
+        actions={selectedAriza && selectedAriza.durum !== 'cozuldu' && canPerformAction('ariza_coz') ? [
           {
             label: 'Düzenle',
             onClick: () => {
@@ -1484,17 +1535,8 @@ const Arizalar: React.FC = () => {
           },
           {
             label: 'Çözüldü İşaretle',
-            onClick: async () => {
-              if (!selectedAriza) return;
-              try {
-                await arizaService.updateFaultStatus(selectedAriza.id, 'cozuldu');
-                toast.success('Arıza çözüldü olarak işaretlendi');
-                setShowDetailModal(false);
-                fetchArizalar();
-              } catch (e) {
-                console.error(e);
-                toast.error('Güncelleme başarısız');
-              }
+            onClick: () => {
+              setShowSolutionForm(true);
             },
             variant: 'primary' as const,
             icon: CheckCircle
@@ -1718,6 +1760,174 @@ const Arizalar: React.FC = () => {
             </div>
           </div>
         )}
+
+      {/* Çözüm Formu Modal */}
+      <Modal
+        isOpen={showSolutionForm && !!selectedAriza}
+        onClose={() => {
+          setShowSolutionForm(false);
+          setCozumText('');
+          setCozumFiles([]);
+          setCozumDate('');
+        }}
+        title="Arıza Çözüm Formu"
+        size="lg"
+      >
+        {selectedAriza && (
+          <div className="space-y-6">
+            {/* Arıza Bilgileri Özeti */}
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{selectedAriza.baslik}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{selectedAriza.aciklama}</p>
+                </div>
+                <PriorityBadge priority={selectedAriza.oncelik} />
+              </div>
+              <div className="flex items-center gap-4 text-xs text-gray-500 mt-3">
+                <div className="flex items-center gap-1">
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>{santralMap[selectedAriza.santralId]?.ad || 'Santral'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>{selectedAriza.saha}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{formatDate(selectedAriza.olusturmaTarihi.toDate())}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Çözüm Formu */}
+            <div className="space-y-4">
+              {/* Çözüm Açıklaması */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Çözüm Açıklaması <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  className="w-full border border-gray-300 rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows={4}
+                  placeholder="Arıza nasıl çözüldü? Detaylı açıklama yazın..."
+                  value={cozumText}
+                  onChange={(e) => setCozumText(e.target.value)}
+                />
+              </div>
+
+              {/* Tarih ve Saat Seçimi */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Calendar className="w-4 h-4 inline mr-1" />
+                  Çözüm Tarihi ve Saati
+                </label>
+                <input
+                  type="datetime-local"
+                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={cozumDate}
+                  onChange={(e) => setCozumDate(e.target.value)}
+                  max={new Date().toISOString().slice(0, 16)}
+                />
+                {!cozumDate && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    <AlertCircle className="w-3 h-3 inline mr-1" />
+                    Boş bırakırsanız şu anki tarih ve saat kullanılacaktır
+                  </p>
+                )}
+              </div>
+
+              {/* Fotoğraf Yükleme */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Camera className="w-4 h-4 inline mr-1" />
+                  Çözüm Fotoğrafları
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    id="cozum-photos"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      setCozumFiles(prev => [...prev, ...files]);
+                    }}
+                  />
+                  <label
+                    htmlFor="cozum-photos"
+                    className="cursor-pointer flex flex-col items-center justify-center"
+                  >
+                    <Camera className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-600">Fotoğraf eklemek için tıklayın</span>
+                    <span className="text-xs text-gray-500 mt-1">Birden fazla dosya seçebilirsiniz</span>
+                  </label>
+                </div>
+
+                {/* Seçilen Fotoğraflar */}
+                {cozumFiles.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs text-gray-600 font-medium">Seçilen Fotoğraflar ({cozumFiles.length})</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {cozumFiles.map((file, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`Çözüm ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setCozumFiles(prev => prev.filter((_, i) => i !== index))}
+                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                          <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-black bg-opacity-50 text-white text-xs rounded">
+                            {(file.size / 1024 / 1024).toFixed(1)} MB
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Butonlar */}
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowSolutionForm(false);
+                  setCozumText('');
+                  setCozumFiles([]);
+                  setCozumDate('');
+                }}
+                disabled={solutionLoading}
+              >
+                İptal
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSolveFault}
+                disabled={solutionLoading || !cozumText.trim()}
+                leftIcon={solutionLoading ? undefined : <CheckCircle className="w-4 h-4" />}
+              >
+                {solutionLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>İşleniyor...</span>
+                  </div>
+                ) : (
+                  'Çözüldü Olarak İşaretle'
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Feedback Modal - müşteri için kullanıcı dostu */}
       <Modal
