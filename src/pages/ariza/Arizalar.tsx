@@ -116,45 +116,29 @@ const Arizalar: React.FC = () => {
     }
   ];
 
-  // Baz veri: saha / yıl / ay filtreleri
-  const baseFiltered = useMemo(() => {
-    const selectedSahaName = selectedSaha
-      ? (sahaOptions.find(o => o.value === selectedSaha)?.label || '')
-      : '';
-    return arizalar.filter((a) => {
-      const d = a.olusturmaTarihi.toDate();
-      let bySaha = true;
-      if (selectedSaha) {
-        const santralIds = sahaIdToSantralIds[selectedSaha] || [];
-        bySaha = santralIds.includes(a.santralId) || (!!selectedSahaName && a.saha === selectedSahaName);
-      }
-      const byYear = filterYear === 'all' ? true : d.getFullYear() === filterYear;
-      const byMonth = filterMonth === 'all' ? true : d.getMonth() === filterMonth;
-      return bySaha && byYear && byMonth;
-    });
-  }, [arizalar, selectedSaha, filterYear, filterMonth, sahaIdToSantralIds, sahaOptions]);
-
-  // Advanced filter hook - sadece filtreleme için kullanıyoruz
+  // Advanced filter hook - sadece UI state yönetimi için kullanıyoruz
   const {
-    items,
-    totalItems,
     searchTerm,
     setSearchTerm,
     activeFilters,
     addFilter,
     removeFilter,
     clearFilters,
-    sortConfig,
-    handleSort,
-    exportData,
     hasFilters
   } = useAdvancedFilter({
-    data: baseFiltered,
+    data: [], // Veriyi artık doğrudan Firebase'den filtreliyoruz
     searchKeys: ['aciklama', 'saha', 'baslik'],
     filterConfigs,
     defaultSort: { key: 'olusturmaTarihi', direction: 'desc' },
-    itemsPerPage: 1000 // Tüm filtrelenmiş kayıtları göster
+    itemsPerPage: 1000
   });
+
+  // Gösterilecek veriler
+  const items = arizalar;
+  const totalItems = arizalar.length;
+  const sortConfig = null;
+  const handleSort = () => {};
+  const exportData = () => arizalar;
 
   // Görüntülenen kayıtlar için geri bildirim özetleri
   useEffect(() => {
@@ -494,8 +478,8 @@ const Arizalar: React.FC = () => {
     }
   ];
 
-  // İlk verileri yükle (ilk 10 kayıt) - filtreler ile birlikte
-  const fetchArizalar = async (reset: boolean = true) => {
+  // İlk verileri yükle - tüm filtrelerle birlikte
+  const fetchArizalar = async (reset: boolean = true, loadMore: boolean = false) => {
     if (!userProfile?.companyId) return;
     
     try {
@@ -503,7 +487,24 @@ const Arizalar: React.FC = () => {
         setIsLoading(true);
         setArizalar([]);
         setLastDocument(null);
+      } else if (loadMore) {
+        setLoadingMore(true);
       }
+      
+      // Aktif filtreleri kontrol et
+      const statusFilter = activeFilters.find(f => f.key === 'durum')?.value;
+      const priorityFilter = activeFilters.find(f => f.key === 'oncelik')?.value;
+      
+      // Saha seçimi varsa santralId'leri bul
+      let santralIdForFilter: string | undefined;
+      if (selectedSaha && sahaIdToSantralIds[selectedSaha]) {
+        // Saha seçilmişse, o sahaya ait ilk santralı kullan (Firebase tek santral filtresi destekliyor)
+        santralIdForFilter = sahaIdToSantralIds[selectedSaha][0];
+      }
+      
+      // Filtreler varsa daha fazla veri çek
+      const hasActiveFilters = statusFilter || priorityFilter || selectedSaha || filterYear !== 'all' || filterMonth !== 'all';
+      const pageSize = hasActiveFilters ? 50 : 10;
       
       const data = await arizaService.getFaults({
         companyId: userProfile.companyId,
@@ -511,119 +512,84 @@ const Arizalar: React.FC = () => {
         userSahalar: userProfile.sahalar as any,
         userSantraller: userProfile.santraller as any,
         userId: userProfile.id,
-        pageSize: 10 // İlk 10 kaydı getir
+        durum: statusFilter as any,
+        oncelik: priorityFilter as any,
+        santralId: santralIdForFilter,
+        pageSize,
+        lastDoc: loadMore ? lastDocument : undefined,
+        searchTerm: searchTerm
       });
       
+      // Tarih filtreleri için client-side filtreleme (Firebase tarih aralığı sorgusu karmaşık)
+      let filteredFaults = data.faults;
+      if (filterYear !== 'all' || filterMonth !== 'all' || selectedSaha) {
+        filteredFaults = data.faults.filter(fault => {
+          const date = fault.olusturmaTarihi.toDate();
+          
+          // Yıl filtresi
+          if (filterYear !== 'all' && date.getFullYear() !== filterYear) {
+            return false;
+          }
+          
+          // Ay filtresi
+          if (filterMonth !== 'all' && date.getMonth() !== filterMonth) {
+            return false;
+          }
+          
+          // Saha filtresi (birden fazla santral olabilir)
+          if (selectedSaha && sahaIdToSantralIds[selectedSaha]) {
+            const santralIds = sahaIdToSantralIds[selectedSaha];
+            if (!santralIds.includes(fault.santralId)) {
+              return false;
+            }
+          }
+          
+          return true;
+        });
+      }
+      
       if (reset) {
-        setArizalar(data.faults);
+        setArizalar(filteredFaults);
       } else {
-        setArizalar(prev => [...prev, ...data.faults]);
+        setArizalar(prev => [...prev, ...filteredFaults]);
       }
       
       setLastDocument(data.lastDoc);
       setHasMore(data.hasMore);
-      setTotalCount(prev => reset ? data.faults.length : prev + data.faults.length);
+      setTotalCount(prev => reset ? filteredFaults.length : prev + filteredFaults.length);
     } catch (err) {
       console.error('Arızalar getirilemedi:', err);
       toast.error('Arızalar yüklenirken bir hata oluştu.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Daha fazla veri yükle (sonraki 10 kayıt)
-  const loadMoreArizalar = async () => {
-    if (!userProfile?.companyId || !hasMore || loadingMore) return;
-    
-    try {
-      setLoadingMore(true);
-      const data = await arizaService.getFaults({
-        companyId: userProfile.companyId,
-        userRole: userProfile.rol,
-        userSahalar: userProfile.sahalar as any,
-        userSantraller: userProfile.santraller as any,
-        userId: userProfile.id,
-        pageSize: 10, // Sonraki 10 kaydı getir
-        lastDoc: lastDocument
-      });
-      setArizalar(prev => [...prev, ...data.faults]);
-      setLastDocument(data.lastDoc);
-      setHasMore(data.hasMore);
-      setTotalCount(prev => prev + data.faults.length);
-    } catch (err) {
-      console.error('Daha fazla arıza yüklenemedi:', err);
-      toast.error('Daha fazla arıza yüklenirken bir hata oluştu.');
-    } finally {
       setLoadingMore(false);
     }
   };
 
-  useEffect(() => {
-    fetchArizalar(true);
-  }, [userProfile?.companyId, userProfile?.rol, userProfile?.sahalar, userProfile?.santraller]);
+  // Daha fazla veri yükle
+  const loadMoreArizalar = async () => {
+    if (!userProfile?.companyId || !hasMore || loadingMore) return;
+    await fetchArizalar(false, true);
+  };
 
-  // Yıl veya ay filtresi değiştiğinde tüm veriyi yeniden yükle
+  // İlk yükleme
   useEffect(() => {
-    if (userProfile?.companyId && (filterYear !== 'all' || filterMonth !== 'all')) {
-      // Filtrelenmiş veriyi göstermek için tüm kayıtları çek
-      (async () => {
-        try {
-          setIsLoading(true);
-          const data = await arizaService.getFaults({
-            companyId: userProfile.companyId,
-            userRole: userProfile.rol,
-            userSahalar: userProfile.sahalar as any,
-            userSantraller: userProfile.santraller as any,
-            userId: userProfile.id,
-            pageSize: 100 // Filtreleme için daha fazla kayıt getir
-          });
-          setArizalar(data.faults);
-          setLastDocument(data.lastDoc);
-          setHasMore(data.hasMore);
-        } catch (err) {
-          console.error('Filtrelenmiş arızalar getirilemedi:', err);
-        } finally {
-          setIsLoading(false);
-        }
-      })();
-    } else if (userProfile?.companyId) {
+    if (userProfile?.companyId) {
       fetchArizalar(true);
     }
-  }, [filterYear, filterMonth]);
+  }, [userProfile?.companyId, userProfile?.rol, userProfile?.sahalar, userProfile?.santraller]);
 
-  // Durum veya öncelik filtresi değiştiğinde daha fazla veri yükle
+  // Filtreler değiştiğinde veriyi yeniden yükle
   useEffect(() => {
     if (!userProfile?.companyId) return;
     
-    const hasStatusOrPriorityFilter = activeFilters.some(f => f.key === 'durum' || f.key === 'oncelik');
-    
-    if (hasStatusOrPriorityFilter) {
-      // Filtreleme için daha fazla veri yükle
-      (async () => {
-        try {
-          setIsLoading(true);
-          const data = await arizaService.getFaults({
-            companyId: userProfile.companyId,
-            userRole: userProfile.rol,
-            userSahalar: userProfile.sahalar as any,
-            userSantraller: userProfile.santraller as any,
-            userId: userProfile.id,
-            pageSize: 100 // Filtreleme için daha fazla kayıt getir
-          });
-          setArizalar(data.faults);
-          setLastDocument(data.lastDoc);
-          setHasMore(data.hasMore);
-        } catch (err) {
-          console.error('Filtrelenmiş arızalar getirilemedi:', err);
-        } finally {
-          setIsLoading(false);
-        }
-      })();
-    } else if (activeFilters.length === 0) {
-      // Filtreler temizlendiğinde normal sayfalamaya dön
+    // İlk yüklemeden sonra filtre değişikliklerinde çalış
+    const timer = setTimeout(() => {
       fetchArizalar(true);
-    }
-  }, [activeFilters, userProfile?.companyId]);
+    }, 300); // Debounce için kısa gecikme
+    
+    return () => clearTimeout(timer);
+  }, [filterYear, filterMonth, selectedSaha, activeFilters.length, searchTerm]);
 
 
   // Saha seçenekleri yükle (müşteri izolasyonu ile)
