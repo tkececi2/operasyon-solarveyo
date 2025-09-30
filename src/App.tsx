@@ -12,6 +12,10 @@ import { LoadingSpinner, ErrorBoundary } from './components/ui';
 import { initializePlans } from './services/planConfigService';
 import { trackPageView } from './lib/posthog-events';
 import PageTracker from './components/analytics/PageTracker';
+import { StatusBar } from '@capacitor/status-bar';
+import { SplashScreen } from '@capacitor/splash-screen';
+import { Capacitor } from '@capacitor/core';
+import { platform } from './utils/platform';
 
 // Lazy loaded components
 const Home = React.lazy(() => import('./pages/marketing/Home'));
@@ -72,16 +76,33 @@ const CheckPlans = React.lazy(() => import('./pages/debug/CheckPlans'));
 const FixPlans = React.lazy(() => import('./pages/debug/FixPlans'));
 const ClearFirebasePlans = React.lazy(() => import('./pages/debug/ClearFirebasePlans'));
 const ResetPlans = React.lazy(() => import('./pages/debug/ResetPlans'));
+const RecalculateStorage = React.lazy(() => import('./pages/debug/RecalculateStorage'));
 const ProfileSettings = React.lazy(() => import('./pages/ProfileSettings'));
 const TestPasswordChange = React.lazy(() => import('./pages/TestPasswordChange'));
+const MoreMenu = React.lazy(() => import('./pages/MoreMenu'));
 
 // Legal pages removed - not needed
 
 function App() {
-  // Uygulama başladığında planları başlat
+  // Uygulama başladığında planları başlat ve iOS ayarlarını yap
   useEffect(() => {
     initializePlans();
+    
+    // iOS Native ayarları
+    if (Capacitor.isNativePlatform()) {
+      // Splash Screen'i gizle
+      setTimeout(() => {
+        SplashScreen.hide();
+      }, 500);
+      
+      // Status Bar ayarları
+      if (Capacitor.getPlatform() === 'ios') {
+        StatusBar.setStyle({ style: 'dark' });
+        StatusBar.setOverlaysWebView({ overlay: false });
+      }
+    }
   }, []);
+  
   return (
     <ErrorBoundary>
       <Router>
@@ -124,20 +145,26 @@ function App() {
               <Route path="/payment/callback" element={<PaymentCallback />} />
               <Route path="/payment/mock-checkout" element={<MockCheckout />} />
               <Route path="/payment/papara" element={<PaparaPayment />} />
-              <Route path="/" element={<Home />} />
-              <Route element={<MarketingLayout />}>
-                <Route path="/features" element={<FeaturesPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/integrations" element={<IntegrationsPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/scada" element={<ScadaPage />} />
-                <Route path="/support/scada" element={<SupportScadaPage />} />
-                <Route path="/privacy/scada" element={<PrivacyScadaPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/contact/scada" element={<ContactScadaPage />} />
-                <Route path="/blog" element={<BlogPage />} />
-              </Route>
+              
+              {/* Ana sayfa: Mobilde login, Web'de landing page */}
+              <Route path="/" element={platform.isNative() ? <Navigate to="/login" replace /> : <Home />} />
+              
+              {/* Marketing sayfaları sadece web'de */}
+              {!platform.isNative() && (
+                <Route element={<MarketingLayout />}>
+                  <Route path="/features" element={<FeaturesPage />} />
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/integrations" element={<IntegrationsPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/scada" element={<ScadaPage />} />
+                  <Route path="/support/scada" element={<SupportScadaPage />} />
+                  <Route path="/privacy/scada" element={<PrivacyScadaPage />} />
+                  <Route path="/terms" element={<TermsPage />} />
+                  <Route path="/contact/scada" element={<ContactScadaPage />} />
+                  <Route path="/blog" element={<BlogPage />} />
+                </Route>
+              )}
               
               {/* Legal Pages removed */}
               
@@ -245,6 +272,7 @@ function App() {
                     <CompanySettings />
                   </ProtectedRoute>
                 } />
+                <Route path="menu" element={<MoreMenu />} />
                 <Route path="profile" element={<ProfileSettings />} />
                 <Route path="backup" element={
                   <ProtectedRoute allowedRoles={['yonetici']}>
@@ -302,6 +330,7 @@ function App() {
               <Route path="/debug/fix-plans" element={<FixPlans />} />
               <Route path="/debug/clear-firebase-plans" element={<ClearFirebasePlans />} />
               <Route path="/debug/reset-plans" element={<ResetPlans />} />
+              <Route path="/debug/recalculate-storage" element={<RecalculateStorage />} />
               
               {/* 404 */}
               <Route path="*" element={<Navigate to="/login" replace />} />

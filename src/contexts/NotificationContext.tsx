@@ -63,13 +63,30 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         userProfile.companyId,
         userProfile.id,
         (userProfile.sahalar as string[]) || [],
-        (userProfile.santraller as string[]) || []
+        (userProfile.santraller as string[]) || [],
+        50,
+        userProfile.rol
       );
+      
+      console.log('📬 Bildirimler geldi:', {
+        toplam: list.length,
+        rol: userProfile.rol,
+        userId: userProfile.id,
+        ilk5: list.slice(0, 5).map(n => ({
+          title: n.title,
+          userId: (n as any).userId,
+          metadata: n.metadata
+        }))
+      });
+      
       const filtered = filterByRole(list).map(n => ({
         ...n,
         // Önce kullanıcı-bazlı okundu, yoksa legacy 'read' alanı
         read: (n.readBy || []).includes(userProfile.id) || (!n.readBy && (n as any).read === true)
       }));
+      
+      console.log('📬 Filtrelenmiş bildirimler:', filtered.length);
+      
       setNotifications(filtered);
       setUnreadCount(filtered.filter(n => !n.read).length);
     } catch (error) {
@@ -113,7 +130,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
         setNotifications(filtered);
         setUnreadCount(filtered.filter(n => !n.read).length);
-      }
+      },
+      userProfile.rol
     );
 
     return unsubscribe;

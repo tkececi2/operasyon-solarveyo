@@ -31,6 +31,7 @@ import {
   DropdownMenu,
   LoadingSpinner
 } from '../../components/ui';
+import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { SahaForm } from '../../components/forms/SahaForm';
 import { MusteriForm } from '../../components/forms/MusteriForm';
 import { SahaDetailCard } from '../../components/saha/SahaDetailCard';
@@ -302,54 +303,46 @@ const Sahalar: React.FC = () => {
         message={`${sahalar.length} / ${sahaLimit} saha. Yeni saha eklemek için planınızı yükseltin.`}
       />
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Stats - 2 sütunlu düzen */}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <MapPin className="h-8 w-8 text-blue-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{sahaStats.toplam}</p>
-                <p className="text-sm text-gray-600">Toplam Saha</p>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <MapPin className="h-10 w-10 text-blue-500 mb-2" />
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{sahaStats.toplam}</p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Toplam Saha</p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Building2 className="h-8 w-8 text-green-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{sahaStats.aktif}</p>
-                <p className="text-sm text-gray-600">Aktif Saha</p>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <Building2 className="h-10 w-10 text-green-500 mb-2" />
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{sahaStats.aktif}</p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Aktif Saha</p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Users className="h-8 w-8 text-purple-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{sahaStats.toplamMusteri}</p>
-                <p className="text-sm text-gray-600">Aktif Müşteri</p>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <Users className="h-10 w-10 text-purple-500 mb-2" />
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{sahaStats.toplamMusteri}</p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Aktif Müşteri</p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Building2 className="h-8 w-8 text-orange-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatNumber(sahaStats.toplamKapasite, 0)} kW
-                </p>
-                <p className="text-sm text-gray-600">Toplam Kapasite</p>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <Building2 className="h-10 w-10 text-orange-500 mb-2" />
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {formatNumber(sahaStats.toplamKapasite, 0)} kW
+              </p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Toplam Kapasite</p>
             </div>
           </CardContent>
         </Card>
@@ -529,23 +522,40 @@ const Sahalar: React.FC = () => {
                       <WeatherCard lat={saha.konum.lat} lng={saha.konum.lng} sahaAd={saha.ad} />
                     )}
                   </div>
-                  <CardContent className="p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold text-gray-900">{saha.ad}</div>
-                      <Badge variant={saha.aktif ? 'success' : 'secondary'}>{saha.aktif ? 'Aktif' : 'Pasif'}</Badge>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg text-gray-900 mb-2">{saha.ad}</h3>
+                    <Badge variant={saha.aktif ? 'success' : 'secondary'} className="mb-3">{saha.aktif ? 'Aktif' : 'Pasif'}</Badge>
+                    <div className="space-y-2 text-sm text-gray-600 mb-4">
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-2" />
+                        <span className="truncate">{saha.konum.adres}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Building2 className="h-4 w-4 mr-2" />
+                        <span>{(saha.santralIds?.length || 0)} Santral</span>
+                      </div>
+                      <div className="font-medium text-gray-900">
+                        {formatNumber(saha.toplamKapasite,0)} kW
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-600 flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      <span className="truncate">{saha.konum.adres}</span>
-                    </div>
-                    <div className="text-sm text-gray-600 flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
-                      <span>{(saha.santralIds?.length || 0)} Santral • {formatNumber(saha.toplamKapasite,0)} kW</span>
-                    </div>
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" className="flex-1" variant="secondary" onClick={()=>{setSelectedSaha(saha); setShowSahaDetail(true);}}>Görüntüle</Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        className="flex-1" 
+                        variant="secondary" 
+                        onClick={()=>{setSelectedSaha(saha); setShowSahaDetail(true);}}
+                      >
+                        Görüntüle
+                      </Button>
                       {canPerformAction('saha_duzenle') && (
-                        <Button size="sm" variant="ghost" onClick={()=>{setSelectedSaha(saha); setShowSahaModal(true);}}>Düzenle</Button>
+                        <Button 
+                          size="sm" 
+                          className="flex-1" 
+                          variant="ghost" 
+                          onClick={()=>{setSelectedSaha(saha); setShowSahaModal(true);}}
+                        >
+                          Düzenle
+                        </Button>
                       )}
                     </div>
                   </CardContent>

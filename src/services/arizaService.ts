@@ -91,6 +91,7 @@ export const createFault = async (
           }
           
           // Kullanıcıya özel bildirim
+          console.log(`📨 Kritik/Yüksek bildirim oluşturuluyor: ${userData.ad} (${userData.rol}) - userId: ${userDoc.id}`);
           await createNotification({
             companyId: faultData.companyId,
             userId: userDoc.id,
@@ -139,36 +140,43 @@ export const createFault = async (
           }
         }
       } else {
-        // Düşük ve orta öncelikli arızalar için bekçi ve müşterilere bildirim gönder
+        // Düşük ve orta öncelikli arızalar için TÜM rollere bildirim gönder
         const usersSnapshot = await getDocs(
           query(
             collection(db, 'kullanicilar'),
             where('companyId', '==', faultData.companyId),
-            where('rol', 'in', ['bekci', 'musteri'])
+            where('rol', 'in', ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri'])
           )
         );
         
         for (const userDoc of usersSnapshot.docs) {
           const userData = userDoc.data();
-          const userSahalar = userData.sahalar || [];
           
-          // Bu sahaya atanmışsa bildirim gönder
-          if (userSahalar.includes(faultData.sahaId)) {
-            await createNotification({
-              companyId: faultData.companyId,
-              userId: userDoc.id,
-              title: `🔧 Yeni Arıza - ${faultData.baslik}`,
-              message: `${faultData.saha} sahasında yeni arıza bildirimi`,
-              type: 'info',
-              actionUrl: `/arizalar/${docRef.id}`,
-              metadata: {
-                faultId: docRef.id,
-                santralId: faultData.santralId,
-                sahaId: faultData.sahaId,
-                oncelik: faultData.oncelik
-              }
-            });
+          // Bekçi ve Müşteri rolleri için saha kontrolü
+          if (userData.rol === 'bekci' || userData.rol === 'musteri') {
+            const userSahalar = userData.sahalar || [];
+            // Bu sahaya atanmamışsa bildirim gönderme
+            if (!userSahalar.includes(faultData.sahaId)) {
+              continue;
+            }
           }
+          
+          // Kullanıcıya özel bildirim
+          console.log(`📨 Normal/Düşük bildirim oluşturuluyor: ${userData.ad} (${userData.rol}) - userId: ${userDoc.id}`);
+          await createNotification({
+            companyId: faultData.companyId,
+            userId: userDoc.id,
+            title: `🔧 Yeni Arıza - ${faultData.baslik}`,
+            message: `${faultData.saha} sahasında yeni arıza bildirimi`,
+            type: 'info',
+            actionUrl: `/arizalar/${docRef.id}`,
+            metadata: {
+              faultId: docRef.id,
+              santralId: faultData.santralId,
+              sahaId: faultData.sahaId,
+              oncelik: faultData.oncelik
+            }
+          });
         }
       }
     } catch (notificationError) {
@@ -334,7 +342,7 @@ export const getFaults = async (options: GetFaultsOptions) => {
       oncelik,
       santralId,
       raporlayanId,
-      pageSize = 20,
+      pageSize = 10, // Sayfa başına 10 kayıt göster
       lastDoc,
       searchTerm,
       userRole,

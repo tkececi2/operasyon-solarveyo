@@ -61,12 +61,17 @@ export const MiniClusterMap: React.FC<{ points: Point[]; mapType?: 'roadmap' | '
 
   useEffect(() => {
     const init = async () => {
-      const apiKey = getGoogleMapsApiKey();
-      if (!apiKey || points.length === 0) return;
+      // API key kontrolünü kaldır, HTML'de zaten yükleniyor
+      if (points.length === 0) return;
 
-      await loadScript(`https://maps.googleapis.com/maps/api/js?key=${apiKey}`);
-      await waitForGoogleMaps();
-      await loadScript('https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js');
+      try {
+        // Google Maps yüklenene kadar bekle
+        if (!window.google || !window.google.maps) {
+          await waitForGoogleMaps();
+        }
+        
+        // MarkerClusterer'ı yükle
+        await loadScript('https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js');
 
       // Harita oluştur
       const defaultCenter = {
@@ -176,6 +181,10 @@ export const MiniClusterMap: React.FC<{ points: Point[]; mapType?: 'roadmap' | '
         } else {
           map.fitBounds(bounds, 48);
         }
+      }
+      } catch (error) {
+        console.error('MiniClusterMap error:', error);
+        // Hata durumunda boş div göster
       }
     };
 

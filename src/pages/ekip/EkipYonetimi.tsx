@@ -350,45 +350,45 @@ const EkipYonetimi: React.FC = () => {
         message={`${ekipUyeleri.length} / ${userLimit} kullanıcı. Yeni kullanıcı eklemek için planınızı yükseltin.`}
       />
 
-      {/* Rol İstatistikleri */}
+      {/* Rol İstatistikleri - 2 sütunlu düzen */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{roleStats.yonetici}</div>
-              <div className="text-sm text-gray-600">Yönetici</div>
+              <div className="text-xl md:text-2xl font-bold text-blue-600">{roleStats.yonetici}</div>
+              <div className="text-xs md:text-sm text-gray-600">Yönetici</div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{roleStats.muhendis}</div>
-              <div className="text-sm text-gray-600">Mühendis</div>
+              <div className="text-xl md:text-2xl font-bold text-green-600">{roleStats.muhendis}</div>
+              <div className="text-xs md:text-sm text-gray-600">Mühendis</div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{roleStats.tekniker}</div>
-              <div className="text-sm text-gray-600">Tekniker</div>
+              <div className="text-xl md:text-2xl font-bold text-yellow-600">{roleStats.tekniker}</div>
+              <div className="text-xs md:text-sm text-gray-600">Tekniker</div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-600">{roleStats.musteri}</div>
-              <div className="text-sm text-gray-600">Müşteri</div>
+              <div className="text-xl md:text-2xl font-bold text-gray-600">{roleStats.musteri}</div>
+              <div className="text-xs md:text-sm text-gray-600">Müşteri</div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{roleStats.bekci}</div>
-              <div className="text-sm text-gray-600">Bekçi</div>
+              <div className="text-xl md:text-2xl font-bold text-orange-600">{roleStats.bekci}</div>
+              <div className="text-xs md:text-sm text-gray-600">Bekçi</div>
             </div>
           </CardContent>
         </Card>

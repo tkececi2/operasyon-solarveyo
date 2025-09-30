@@ -12,13 +12,20 @@ export interface Coordinates {
 }
 
 // Environment'dan Google Maps API Key'i al
+// iOS için ayrı key kullanabilirsiniz
 export const getGoogleMapsApiKey = (): string => {
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  if (!apiKey) {
-    console.warn('Google Maps API Key bulunamadı. .env dosyasında VITE_GOOGLE_MAPS_API_KEY tanımlayın.');
-    return '';
+  // Platform kontrolü
+  const isIOS = window.location.protocol === 'capacitor:' || 
+                (window.location.protocol === 'https:' && window.location.hostname === 'localhost');
+  
+  // iOS için direkt key kullan, web için env'den al
+  if (isIOS) {
+    return 'AIzaSyBzuuTRlWJAj292Py1iJdG349LRrU5XoEc';
   }
-  return apiKey;
+  
+  // Web için environment variable'dan al
+  const webApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBrlyyV7X54-Ysk338vXmLDdidimSHIeMI';
+  return webApiKey;
 };
 
 // Google Maps URL'leri oluştur

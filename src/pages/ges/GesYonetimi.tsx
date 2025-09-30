@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Sun, MapPin, Zap, Calendar, TrendingUp, Users, Settings, Eye, Image, List, Grid as GridIcon, Layers, AlertCircle } from 'lucide-react';
+import { Plus, Sun, MapPin, Zap, Calendar, TrendingUp, Users, Settings, Eye, Image, List, Grid as GridIcon, Layers, AlertCircle, Activity } from 'lucide-react';
 import { Button, Card, CardContent, CardHeader, CardTitle, Modal, LoadingSpinner } from '../../components/ui';
+import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { SantralForm } from '../../components/forms/SantralForm';
 import { getAllSantraller, getSantralIstatistikleri } from '../../services/santralService';
@@ -253,54 +254,46 @@ const GesYonetimi: React.FC = () => {
         message={`${santraller.length} / ${santralLimit} santral. Yeni santral eklemek için planınızı yükseltin.`}
       />
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Summary Stats - 2 sütunlu düzen */}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Sun className="h-8 w-8 text-solar-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{formatNumber(toplamKapasite, 0)} kW</p>
-                <p className="text-sm text-gray-600">Toplam Kapasite</p>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <Sun className="h-10 w-10 text-solar-500 mb-2" />
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{formatNumber(toplamKapasite, 0)} kW</p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Toplam Kapasite</p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Zap className="h-8 w-8 text-green-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{aktifSantraller}</p>
-                <p className="text-sm text-gray-600">Aktif Santral</p>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <Zap className="h-10 w-10 text-green-500 mb-2" />
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{aktifSantraller}</p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Aktif Santral</p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <TrendingUp className="h-8 w-8 text-blue-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {toplamUretim.toLocaleString()} kWh
-                </p>
-                <p className="text-sm text-gray-600">Bugünkü Üretim</p>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <TrendingUp className="h-10 w-10 text-blue-500 mb-2" />
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {toplamUretim.toLocaleString()} kWh
+              </p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Bugünkü Üretim</p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <TrendingUp className="h-8 w-8 text-primary-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">%{ortalamaPerformans}</p>
-                <p className="text-sm text-gray-600">Ortalama Performans</p>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <Activity className="h-10 w-10 text-primary-500 mb-2" />
+              <p className="text-xl md:text-2xl font-bold text-gray-900">%{ortalamaPerformans}</p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">Ortalama Performans</p>
             </div>
           </CardContent>
         </Card>
@@ -333,26 +326,53 @@ const GesYonetimi: React.FC = () => {
                   </div>
                 )}
                 <div className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    {getDurumIcon(santral.durum)}
-                    <h3 className="text-base font-semibold text-gray-900">{santral.ad}</h3>
-                    <span className={`ml-auto px-2 py-0.5 text-xs font-medium rounded-full ${getDurumBadge(santral.durum)}`}>{getDurumText(santral.durum)}</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-gray-900">{santral.ad}</h3>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getDurumBadge(santral.durum)}`}>
+                      {getDurumText(santral.durum)}
+                    </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-3">
-                    <div className="flex items-center"><Zap className="h-3.5 w-3.5 mr-2" />{formatNumber(santral.kapasite, 0)} kW</div>
-                    <div className="flex items-center"><MapPin className="h-3.5 w-3.5 mr-2" />{santral.konum.adres}</div>
+                  <div className="space-y-2 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center">
+                      <Zap className="h-4 w-4 mr-2" />
+                      <span>{formatNumber(santral.kapasite, 0)} kW</span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      <span className="truncate">{santral.konum.adres}</span>
+                    </div>
                     {santral.sahaAdi && (
-                      <div className="col-span-2 flex items-center"><Layers className="h-3.5 w-3.5 mr-2" />Saha: {santral.sahaAdi}</div>
+                      <div className="flex items-center">
+                        <Layers className="h-4 w-4 mr-2" />
+                        <span>Saha: {santral.sahaAdi}</span>
+                      </div>
                     )}
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium text-gray-900">{santral.yillikHedefUretim?.toLocaleString() || 0} kWh</div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => { setSelectedSantral(santral); setShowDetailModal(true); }}>Detay</Button>
-                      {canPerformAction('santral_duzenle') && (
-                        <Button size="sm" variant="ghost" onClick={() => { setSelectedSantral(santral); setShowCreateModal(true); }}>Düzenle</Button>
-                      )}
+                  <div className="border-t pt-3 mb-3">
+                    <div className="text-lg font-medium text-gray-900">
+                      {santral.yillikHedefUretim?.toLocaleString() || 0} kWh
                     </div>
+                    <div className="text-xs text-gray-500">Yıllık Hedef Üretim</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="secondary" 
+                      className="flex-1" 
+                      onClick={() => { setSelectedSantral(santral); setShowDetailModal(true); }}
+                    >
+                      Detay
+                    </Button>
+                    {canPerformAction('santral_duzenle') && (
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="flex-1" 
+                        onClick={() => { setSelectedSantral(santral); setShowCreateModal(true); }}
+                      >
+                        Düzenle
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardContent>

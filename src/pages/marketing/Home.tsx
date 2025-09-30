@@ -46,7 +46,7 @@ const Nav: React.FC = () => {
             to="/register"
             className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700"
           >
-            Ücretsiz Deneyin
+            Ücretsiz Kullanım
           </Link>
         </div>
       </div>
@@ -129,7 +129,7 @@ const Hero: React.FC<{ onOpenVideo?: () => void }> = ({ onOpenVideo }) => {
                 className="group relative inline-flex items-center rounded-md px-[2px] py-[2px] text-sm font-medium transition-shadow bg-gradient-to-r from-primary-600 via-emerald-500 to-purple-600 hover:shadow-lg"
               >
                 <span className="relative inline-flex items-center rounded-[6px] bg-gray-900 text-white px-5 py-2.5 dark:bg-gray-100 dark:text-gray-900 overflow-hidden">
-                15 Gün Ücretsiz Dene
+                🎉 Ücretsiz Kullanmaya Başla
                 <ArrowRight className="ml-2 w-4 h-4" />
                   <span className="pointer-events-none absolute -left-1 top-0 h-full w-8 bg-gradient-to-r from-white/0 via-white/40 to-white/0 translate-x-[-20%] group-hover:animate-[shine_1.2s_ease]" />
                 </span>
@@ -627,7 +627,7 @@ const Testimonials: React.FC = () => {
 
 const FAQ: React.FC = () => {
   const faqs = [
-    { q: 'Deneme süresi gerçekten ücretsiz mi?', a: 'Evet, 15 gün boyunca kredi kartı gerekmeden tüm özellikleri deneyebilirsiniz.' },
+    { q: 'Ücretsiz kullanım nasıl çalışır?', a: 'Herhangi bir ödeme bilgisi gerekmeden platformu kullanmaya başlayabilirsiniz. İlerleyen dönemde premium özellikleri tercih edebilirsiniz.' },
     { q: 'Saha bazlı fiyatlandırma nasıl çalışır?', a: 'Portföyünüzdeki saha sayısına göre esneyen şeffaf bir model uygularız.' },
     { q: 'Verilerim güvende mi?', a: 'RBAC, şirket bazlı izolasyon, audit loglar ve KVKK uyumu ile güvendedir.' },
     { q: 'İptal edebilir miyim?', a: 'İstediğiniz zaman planınızı iptal edebilir veya yükseltebilirsiniz.' },
@@ -758,11 +758,11 @@ const CTA: React.FC = () => {
           <div className="md:flex items-center justify-between gap-8">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold">SolarVeyo ile operasyonlarınızı dijitalleştirin</h3>
-              <p className="mt-2 text-white/90">15 gün ücretsiz deneme ile tüm özellikleri test edin. Kredi kartı gerekmez.</p>
+              <p className="mt-2 text-white/90">Ücretsiz kullanmaya başlayın. Tüm temel özelliklere anında erişin. Kredi kartı gerekmez.</p>
             </div>
             <div className="mt-6 md:mt-0 flex flex-col sm:flex-row items-center gap-3">
               <Link to="/register" className="rounded-md bg-white text-blue-700 px-6 py-3 text-sm font-medium shadow hover:bg-blue-50 w-full sm:w-auto text-center">
-                Ücretsiz Deneyin
+                Ücretsiz Kullanım
               </Link>
               <a 
                 href="https://api.whatsapp.com/send?phone=905318984145&text=Merhaba%2C%20SolarVeyo%20sat%C4%B1%C5%9F%20ekibiyle%20g%C3%B6r%C3%BC%C5%9Fmek%20istiyorum"
@@ -793,7 +793,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     document.title = 'SolarVeyo — Güneş Enerjisi Yönetim Platformu';
     const meta = document.querySelector('meta[name="description"]');
-    const content = 'Arıza takibi, bakım, vardiya kontrolü ve şeffaf müşteri hizmetini tek platformda yönetin. 15 gün ücretsiz deneyin.';
+    const content = 'Arıza takibi, bakım, vardiya kontrolü ve şeffaf müşteri hizmetini tek platformda yönetin. Ücretsiz kullanmaya başlayın.';
     if (meta) {
       meta.setAttribute('content', content);
     } else {

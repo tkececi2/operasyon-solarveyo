@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Sun, Mail, Lock, Eye, EyeOff, Home } from 'lucide-react';
 import Logo from '../../components/ui/Logo';
 import { useAuth } from '../../contexts/AuthContext';
+import { platform } from '../../utils/platform';
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui';
 import toast from 'react-hot-toast';
 import TwoFactorVerification from '../../components/auth/TwoFactorVerification';
@@ -88,8 +89,26 @@ const Login: React.FC = () => {
             navigate('/dashboard');
           }
         }
-      } catch (loginError) {
-        // Login hatası toast ile gösterilecek
+      } catch (loginError: any) {
+        // Login hatası detaylı göster
+        console.error('Login error:', loginError);
+        
+        // Firebase hata kodlarına göre özel mesajlar
+        if (loginError?.code === 'auth/invalid-email') {
+          toast.error('Geçersiz email adresi');
+        } else if (loginError?.code === 'auth/user-disabled') {
+          toast.error('Bu hesap devre dışı bırakılmış');
+        } else if (loginError?.code === 'auth/user-not-found') {
+          toast.error('Kullanıcı bulunamadı');
+        } else if (loginError?.code === 'auth/wrong-password') {
+          toast.error('Hatalı şifre');
+        } else if (loginError?.code === 'auth/network-request-failed') {
+          toast.error('Ağ bağlantısı hatası. İnternet bağlantınızı kontrol edin.');
+        } else if (loginError?.message === 'account-disabled') {
+          toast.error('Hesabınız pasif durumda. Yöneticinizle iletişime geçin.');
+        } else {
+          toast.error(loginError?.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
+        }
       }
     } finally {
       setIsLoading(false);
@@ -135,22 +154,24 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      {/* Ana Sayfaya Dön Butonu */}
-      <Link 
-        to="/" 
-        className="absolute top-4 left-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-      >
-        <Home className="w-5 h-5" />
-        <span className="text-sm font-medium">Ana Sayfa</span>
-      </Link>
+      {/* Ana Sayfaya Dön Butonu - Sadece Web'de göster */}
+      {!platform.isNative() && (
+        <Link 
+          to="/" 
+          className="absolute top-4 left-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <Home className="w-5 h-5" />
+          <span className="text-sm font-medium">Ana Sayfa</span>
+        </Link>
+      )}
 
       <div className="w-full max-w-md">
         {/* Logo ve Başlık */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-2">
-            <Logo />
+          <div className="flex flex-col items-center justify-center">
+            <Logo showSubtitle={true} />
           </div>
-          <p className="text-gray-600 mt-1">Solar Enerji Santralı Yönetim Sistemi</p>
+          <p className="text-gray-600 mt-3">Solar Enerji Santralı Yönetim Sistemi</p>
         </div>
 
         {/* Giriş Formu */}

@@ -548,7 +548,7 @@ const StokKontrol: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6" ref={contentRef}>
+    <div className="space-y-6 pb-20 md:pb-0" ref={contentRef}>
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -602,13 +602,13 @@ const StokKontrol: React.FC = () => {
         </div>
       </div>
 
-      {/* İstatistikler */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      {/* İstatistikler - Mobilde 2 sütun */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-gray-900">{stats.toplam}</div>
-              <div className="text-sm text-gray-600">Toplam Malzeme</div>
+              <div className="text-xs md:text-sm text-gray-600">Toplam Malzeme</div>
             </div>
           </CardContent>
         </Card>
@@ -616,7 +616,7 @@ const StokKontrol: React.FC = () => {
           <CardContent className="p-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">{stats.normal}</div>
-              <div className="text-sm text-gray-600">Normal Stok</div>
+              <div className="text-xs md:text-sm text-gray-600">Normal Stok</div>
             </div>
           </CardContent>
         </Card>
@@ -624,7 +624,7 @@ const StokKontrol: React.FC = () => {
           <CardContent className="p-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">{stats.dusuk}</div>
-              <div className="text-sm text-gray-600">Düşük Stok</div>
+              <div className="text-xs md:text-sm text-gray-600">Düşük Stok</div>
             </div>
           </CardContent>
         </Card>
@@ -632,7 +632,7 @@ const StokKontrol: React.FC = () => {
           <CardContent className="p-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600">{stats.kritik}</div>
-              <div className="text-sm text-gray-600">Kritik Stok</div>
+              <div className="text-xs md:text-sm text-gray-600">Kritik Stok</div>
             </div>
           </CardContent>
         </Card>
@@ -642,7 +642,7 @@ const StokKontrol: React.FC = () => {
               <div className="text-2xl font-bold text-primary-600">
                 {formatCurrency(stats.toplamDeger)}
               </div>
-              <div className="text-sm text-gray-600">Toplam Değer</div>
+              <div className="text-xs md:text-sm text-gray-600">Toplam Değer</div>
             </div>
           </CardContent>
         </Card>

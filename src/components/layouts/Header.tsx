@@ -9,7 +9,8 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Shield
+  Shield,
+  Grid3x3
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCompany } from '../../contexts/CompanyContext';
@@ -19,6 +20,7 @@ import { formatRelativeTime } from '../../utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../ui/Logo';
 import ThemeToggle from '../ui/ThemeToggle';
+import { platform } from '../../utils/platform';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -89,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
+    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 ios-safe-area-top">
       <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
         {/* Left side */}
         <div className="flex items-center space-x-4">

@@ -54,7 +54,8 @@ export const SahaDetailCard: React.FC<SahaDetailCardProps> = ({
   const [santrallerLoading, setSantrallerLoading] = useState<boolean>(false);
 
   const hasCoordinates = validateCoordinates(saha.konum.lat, saha.konum.lng);
-  const googleMapsApiKey = getGoogleMapsApiKey();
+  // iOS için direkt API key kullan
+  const googleMapsApiKey = 'AIzaSyBzuuTRlWJAj292Py1iJdG349LRrU5XoEc';
   const googleMapsUrls = hasCoordinates ? generateGoogleMapsUrls(saha.konum, saha.ad) : null;
 
   // Koordinatları kopyalama

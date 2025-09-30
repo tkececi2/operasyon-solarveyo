@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Plus, Wrench, Zap, Cog, Calendar, Clock, CheckCircle, Eye, List, Grid3X3, Download, Search, Filter, Building2, MapPin, User, X, ChevronRight, Image as ImageIcon, FileText } from 'lucide-react';
 import { Button, Card, CardContent, CardHeader, CardTitle, Modal, LoadingSpinner, Badge, Input, Select, LazyImage } from '../../components/ui';
+import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { BakimForm } from '../../components/forms/BakimForm';
 import { YapilanIsForm } from '../../components/forms/YapilanIsForm';
 import { useAuth } from '../../contexts/AuthContext';
@@ -261,6 +262,8 @@ const Bakim: React.FC = () => {
 
   // Detay modalını aç
   const handleViewDetails = (maintenance: any, type: string) => {
+    // Kartta gösterilen kontrol etiketlerini aynen taşı
+    // Eski ve yeni kayıt formatları için ham veriyi koruyoruz
     setSelectedMaintenance({ ...maintenance, type });
     setShowDetailModal(true);
   };
@@ -741,7 +744,7 @@ const Bakim: React.FC = () => {
   const filteredYapilanIsler = filterMaintenanceData(yapilanIsler);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-0">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -1091,9 +1094,9 @@ const Bakim: React.FC = () => {
         />
       </Modal>
 
-      {/* Detail Modal */}
+      {/* Detail Modal - Responsive for Mobile */}
       {selectedMaintenance && (
-        <Modal
+        <ResponsiveDetailModal
           isOpen={showDetailModal}
           onClose={() => {
             setShowDetailModal(false);
@@ -1101,11 +1104,128 @@ const Bakim: React.FC = () => {
           }}
           title={
             selectedMaintenance.type === 'yapilanis' 
-              ? 'İş Raporu Detayları' 
-              : `${selectedMaintenance.type === 'elektrik' ? 'Elektrik' : 'Mekanik'} Bakım Detayları`
+              ? selectedMaintenance.baslik || 'İş Raporu' 
+              : `${selectedMaintenance.type === 'elektrik' ? 'Elektrik' : 'Mekanik'} Bakım`
           }
-          size="lg"
-        >
+          subtitle={`${santralMap[selectedMaintenance.santralId]?.ad || ''} • ${sahaMap[selectedMaintenance.sahaId]?.ad || ''}`}
+          status={selectedMaintenance.genelDurum ? {
+            label: translateStatus(selectedMaintenance.genelDurum),
+            variant: selectedMaintenance.genelDurum === 'tamamlandi' ? 'success' : 
+                    selectedMaintenance.genelDurum === 'devam-ediyor' ? 'warning' : 'default'
+          } : undefined}
+          details={[
+            // Temel Bilgiler
+            {
+              label: selectedMaintenance.type === 'yapilanis' ? 'Saha/Santral' : 'Santral',
+              value: santralMap[selectedMaintenance.santralId]?.ad || sahaMap[selectedMaintenance.sahaId]?.ad || '-',
+              icon: Building2
+            },
+            ...(selectedMaintenance.saha ? [{
+              label: 'Saha',
+              value: selectedMaintenance.saha,
+              icon: MapPin as any
+            }] : []),
+            {
+              label: 'Personel',
+              value: selectedMaintenance.yapanKisiId && userMap[selectedMaintenance.yapanKisiId] 
+                ? userMap[selectedMaintenance.yapanKisiId].ad 
+                : selectedMaintenance.yapanKisi || selectedMaintenance.personel || '-',
+              icon: User
+            },
+            {
+              label: 'Tarih',
+              value: selectedMaintenance.tarih?.toDate 
+                ? formatDate(selectedMaintenance.tarih.toDate()) 
+                : formatDate(new Date(selectedMaintenance.tarih || Date.now())),
+              icon: Calendar
+            },
+            ...(selectedMaintenance.baslangicSaati ? [{
+              label: 'Başlangıç Saati',
+              value: selectedMaintenance.baslangicSaati,
+              icon: Clock as any
+            }] : []),
+            ...(selectedMaintenance.bitisSaati ? [{
+              label: 'Bitiş Saati',
+              value: selectedMaintenance.bitisSaati,
+              icon: Clock as any
+            }] : []),
+            
+            // Açıklama ve Notlar
+            ...(selectedMaintenance.aciklama ? [{
+              label: 'Açıklama',
+              value: selectedMaintenance.aciklama,
+              fullWidth: true
+            }] : []),
+            ...(selectedMaintenance.notlar ? [{
+              label: 'Notlar',
+              value: selectedMaintenance.notlar,
+              fullWidth: true
+            }] : []),
+            
+            // Yapılan İşler (Yapılan İş formu için)
+            ...(selectedMaintenance.type === 'yapilanis' && selectedMaintenance.yapilanIsler ? [{
+              label: 'Yapılan İşler',
+              value: selectedMaintenance.yapilanIsler,
+              fullWidth: true
+            }] : []),
+            
+            // Kullanılan Malzemeler
+            ...(selectedMaintenance.kullanilanMalzemeler && selectedMaintenance.kullanilanMalzemeler.length > 0 ? [{
+              label: 'Kullanılan Malzemeler',
+              value: selectedMaintenance.kullanilanMalzemeler.join(', '),
+              fullWidth: true
+            }] : []),
+            
+            // Kontrol Listesi - Kartla bire bir aynı etiketler
+            ...(selectedMaintenance.kontroller ? [{
+              label: 'Kontrol Listesi',
+              fullWidth: true,
+              value: (
+                <div className="flex flex-wrap gap-1.5">
+                  {(() => {
+                    const raw = selectedMaintenance.kontroller || {} as Record<string, any>;
+                    const entries = Object.entries(raw);
+                    // Eğer değerler boolean ise sadece true olanları al
+                    const labels = (entries.length > 0 && typeof entries[0][1] === 'boolean')
+                      ? entries.filter(([, v]) => v === true).map(([k]) => k)
+                      : Object.keys(raw);
+                    return labels.map((label: string, i: number) => (
+                      <span key={`${label}-${i}`} className="px-2 py-0.5 rounded-full bg-gray-50 text-gray-700">
+                        {label}
+                      </span>
+                    ));
+                  })()}
+                </div>
+              )
+            }] : [])
+          ]}
+          images={selectedMaintenance.fotograflar || []}
+          actions={[
+            ...(canPerformAction('maintenance', 'update') && selectedMaintenance.genelDurum !== 'tamamlandi' ? [{
+              label: 'Tamamlandı İşaretle',
+              onClick: async () => {
+                try {
+                  await bakimService.updateMaintenanceStatus(
+                    selectedMaintenance.id,
+                    selectedMaintenance.type,
+                    'tamamlandi'
+                  );
+                  toast.success('Bakım tamamlandı olarak işaretlendi');
+                  setShowDetailModal(false);
+                  fetchMaintenanceData();
+                } catch (error) {
+                  toast.error('Güncelleme başarısız');
+                }
+              },
+              variant: 'primary' as const,
+              icon: CheckCircle
+            }] : [])
+          ]}
+        />
+      )}
+
+      {/* Eski modal içeriği - artık kullanılmıyor */}
+      {false && (
           <div className="space-y-6">
             {/* Status and Date Badges */}
             <div className="flex flex-wrap gap-2">
@@ -1302,7 +1422,6 @@ const Bakim: React.FC = () => {
               </div>
             )}
           </div>
-        </Modal>
       )}
     </div>
   );

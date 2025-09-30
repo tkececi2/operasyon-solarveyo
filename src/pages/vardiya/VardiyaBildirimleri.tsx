@@ -34,6 +34,7 @@ import {
   Badge,
   LoadingSpinner
 } from '../../components/ui';
+import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { VardiyaForm } from '../../components/forms/VardiyaForm';
 import { useAuth } from '../../hooks/useAuth';
 import { useCompany } from '../../hooks/useCompany';
@@ -275,7 +276,7 @@ const VardiyaBildirimleri: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-0">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -327,24 +328,22 @@ const VardiyaBildirimleri: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards - sade kurumsal */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Cards - Mobilde 2 sütun */}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[{
-          label: 'Toplam Bildirim', value: stats.toplam, icon: <Shield className="h-6 w-6 text-slate-400" />
+          label: 'Toplam Bildirim', value: stats.toplam, icon: <Shield className="h-8 w-8 text-slate-400" />, color: 'slate'
         }, {
-          label: 'Normal Durum', value: stats.normal, icon: <CheckCircle className="h-6 w-6 text-slate-400" />
+          label: 'Normal Durum', value: stats.normal, icon: <CheckCircle className="h-8 w-8 text-green-500" />, color: 'green'
         }, {
-          label: 'Dikkat Gerekli', value: stats.dikkat, icon: <AlertTriangle className="h-6 w-6 text-slate-400" />
+          label: 'Dikkat Gerekli', value: stats.dikkat, icon: <AlertTriangle className="h-8 w-8 text-yellow-500" />, color: 'yellow'
         }, {
-          label: 'Acil Durum', value: stats.acil, icon: <AlertTriangle className="h-6 w-6 text-slate-400" />
+          label: 'Acil Durum', value: stats.acil, icon: <AlertTriangle className="h-8 w-8 text-red-500" />, color: 'red'
         }].map((k, i) => (
-          <div key={i} className="rounded-xl p-5 bg-white border border-slate-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-semibold text-slate-900">{k.value}</p>
-                <p className="text-slate-500 text-sm mt-1">{k.label}</p>
-              </div>
+          <div key={i} className="rounded-xl p-4 md:p-5 bg-white border border-slate-200">
+            <div className="flex flex-col items-center text-center">
               {k.icon}
+              <p className="text-2xl md:text-3xl font-bold text-slate-900 mt-2">{k.value}</p>
+              <p className="text-xs md:text-sm text-slate-500 mt-1">{k.label}</p>
             </div>
           </div>
         ))}

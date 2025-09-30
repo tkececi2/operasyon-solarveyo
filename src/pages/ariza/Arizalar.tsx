@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { Plus, Search, Eye, Edit, Trash2, Download, FileText, Filter, Clock, MapPin, Building2, User, CheckCircle, MessageSquare, Image as ImageIcon, ThumbsUp, Star, X } from 'lucide-react';
@@ -9,10 +9,10 @@ import {
   Modal,
   Input,
   DataTable,
-  DataTablePagination,
   StatusBadge,
   PriorityBadge
 } from '../../components/ui';
+import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { ArizaForm } from '../../components/forms/ArizaForm';
 import { useAuth } from '../../hooks/useAuth';
 import { useAdvancedFilter, FilterConfig } from '../../hooks/useAdvancedFilter';
@@ -36,6 +36,10 @@ const Arizalar: React.FC = () => {
   const [selectedAriza, setSelectedAriza] = useState<Fault | null>(null);
   const [arizalar, setArizalar] = useState<Fault[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [lastDocument, setLastDocument] = useState<any>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
   const [raporlayanAd, setRaporlayanAd] = useState<string>('');
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('cards');
   const [cozumText, setCozumText] = useState<string>('');
@@ -128,7 +132,7 @@ const Arizalar: React.FC = () => {
     });
   }, [arizalar, selectedSaha, filterYear, filterMonth, sahaIdToSantralIds, sahaOptions]);
 
-  // Advanced filter hook
+  // Advanced filter hook - sadece filtreleme için kullanıyoruz
   const {
     items,
     totalItems,
@@ -140,14 +144,6 @@ const Arizalar: React.FC = () => {
     clearFilters,
     sortConfig,
     handleSort,
-    currentPage,
-    totalPages,
-    itemsPerPage,
-    startIndex,
-    endIndex,
-    goToPage,
-    nextPage,
-    prevPage,
     exportData,
     hasFilters
   } = useAdvancedFilter({
@@ -155,7 +151,7 @@ const Arizalar: React.FC = () => {
     searchKeys: ['aciklama', 'saha', 'baslik'],
     filterConfigs,
     defaultSort: { key: 'olusturmaTarihi', direction: 'desc' },
-    itemsPerPage: 10
+    itemsPerPage: 1000 // Tüm filtrelenmiş kayıtları göster
   });
 
   // Görüntülenen kayıtlar için geri bildirim özetleri
@@ -496,7 +492,7 @@ const Arizalar: React.FC = () => {
     }
   ];
 
-  // Fetch data (müşteri izolasyonu ile)
+  // İlk verileri yükle (ilk 10 kayıt)
   const fetchArizalar = async () => {
     if (!userProfile?.companyId) return;
     
@@ -507,9 +503,13 @@ const Arizalar: React.FC = () => {
         userRole: userProfile.rol,
         userSahalar: userProfile.sahalar as any,
         userSantraller: userProfile.santraller as any,
-        userId: userProfile.id
+        userId: userProfile.id,
+        pageSize: 10 // İlk 10 kaydı getir
       });
       setArizalar(data.faults);
+      setLastDocument(data.lastDoc);
+      setHasMore(data.hasMore);
+      setTotalCount(data.faults.length);
     } catch (err) {
       console.error('Arızalar getirilemedi:', err);
       toast.error('Arızalar yüklenirken bir hata oluştu.');
@@ -518,9 +518,37 @@ const Arizalar: React.FC = () => {
     }
   };
 
+  // Daha fazla veri yükle (sonraki 10 kayıt)
+  const loadMoreArizalar = async () => {
+    if (!userProfile?.companyId || !hasMore || loadingMore) return;
+    
+    try {
+      setLoadingMore(true);
+      const data = await arizaService.getFaults({
+        companyId: userProfile.companyId,
+        userRole: userProfile.rol,
+        userSahalar: userProfile.sahalar as any,
+        userSantraller: userProfile.santraller as any,
+        userId: userProfile.id,
+        pageSize: 10, // Sonraki 10 kaydı getir
+        lastDoc: lastDocument
+      });
+      setArizalar(prev => [...prev, ...data.faults]);
+      setLastDocument(data.lastDoc);
+      setHasMore(data.hasMore);
+      setTotalCount(prev => prev + data.faults.length);
+    } catch (err) {
+      console.error('Daha fazla arıza yüklenemedi:', err);
+      toast.error('Daha fazla arıza yüklenirken bir hata oluştu.');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
     fetchArizalar();
   }, [userProfile?.companyId, userProfile?.rol, userProfile?.sahalar, userProfile?.santraller]);
+
 
   // Saha seçenekleri yükle (müşteri izolasyonu ile)
   useEffect(() => {
@@ -739,13 +767,16 @@ const Arizalar: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-0">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">ARIZALAR</h1>
           <p className="text-gray-600">
-            Toplam {totalItems} arıza{hasFilters && ' (filtrelenmiş)'}
+            {isLoading ? 'Yükleniyor...' : 
+             hasMore ? `${arizalar.length} arıza gösteriliyor (daha fazla var)` : 
+             `Toplam ${arizalar.length} arıza`}
+            {hasFilters && ' (filtrelenmiş)'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -1282,18 +1313,38 @@ const Arizalar: React.FC = () => {
       )}
       </div>
 
-      {/* Pagination */}
-      <DataTablePagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        startIndex={startIndex}
-        endIndex={endIndex}
-        onPageChange={goToPage}
-        onPrevious={prevPage}
-        onNext={nextPage}
-      />
+
+      {/* Daha Fazla Yükle Butonu */}
+      {hasMore && !hasFilters && (
+        <div className="flex justify-center mt-6 mb-6">
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={loadMoreArizalar}
+            disabled={loadingMore}
+            leftIcon={loadingMore ? undefined : <Plus className="w-5 h-5" />}
+          >
+            {loadingMore ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Yükleniyor...</span>
+              </div>
+            ) : (
+              'Daha Fazla Yükle'
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* Tüm kayıtlar yüklendi mesajı */}
+      {!hasMore && arizalar.length > 0 && (
+        <div className="text-center py-4 text-gray-500 mb-6">
+          <div className="flex items-center justify-center gap-2">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+            <span>Tüm arızalar yüklendi ({arizalar.length} kayıt)</span>
+          </div>
+        </div>
+      )}
 
       {/* Create/Edit Modal */}
       <Modal
@@ -1319,18 +1370,100 @@ const Arizalar: React.FC = () => {
         />
       </Modal>
 
-      {/* Detail Modal - Professional Design */}
-            <Modal 
-        isOpen={showDetailModal} 
+      {/* Detail Modal - Responsive for Mobile */}
+      <ResponsiveDetailModal
+        isOpen={showDetailModal}
         onClose={() => {
           setShowDetailModal(false);
           setSelectedAriza(null);
         }}
-        title=""
-        size="full"
-        showCloseButton={true}
-      >
-        {selectedAriza && (
+        title={selectedAriza?.baslik || 'Arıza Detayları'}
+        subtitle={selectedAriza ? `${santralMap[selectedAriza.santralId]?.ad || ''} • ${selectedAriza.saha}` : undefined}
+        status={selectedAriza ? {
+          label: selectedAriza.durum === 'cozuldu' ? 'Çözüldü' : 
+                 selectedAriza.durum === 'acik' ? 'Açık' :
+                 selectedAriza.durum === 'devam-ediyor' ? 'Devam Ediyor' : 'İptal',
+          variant: selectedAriza.durum === 'cozuldu' ? 'success' : 
+                   selectedAriza.durum === 'acik' ? 'error' :
+                   selectedAriza.durum === 'devam-ediyor' ? 'warning' : 'default'
+        } : undefined}
+        details={selectedAriza ? [
+          {
+            label: 'Açıklama',
+            value: selectedAriza.aciklama,
+            fullWidth: true
+          },
+          {
+            label: 'Santral',
+            value: santralMap[selectedAriza.santralId]?.ad || '-',
+            icon: Building2
+          },
+          {
+            label: 'Saha',
+            value: selectedAriza.saha,
+            icon: MapPin
+          },
+          {
+            label: 'Öncelik',
+            value: <PriorityBadge priority={selectedAriza.oncelik} />
+          },
+          {
+            label: 'Raporlayan',
+            value: raporlayanAd || selectedAriza.raporlayanId,
+            icon: User
+          },
+          {
+            label: 'Tarih',
+            value: formatDate(selectedAriza.olusturmaTarihi.toDate()),
+            icon: Clock
+          },
+          ...(selectedAriza.cozumTarihi ? [{
+            label: 'Çözüm Tarihi',
+            value: formatDate(selectedAriza.cozumTarihi.toDate()),
+            icon: CheckCircle as any
+          }] : []),
+          ...(selectedAriza.cozumAciklamasi ? [{
+            label: 'Çözüm Açıklaması',
+            value: selectedAriza.cozumAciklamasi,
+            fullWidth: true
+          }] : [])
+        ] : []}
+        images={[
+          ...(selectedAriza?.fotograflar || []),
+          ...(selectedAriza?.cozumFotograflari || [])
+        ]}
+        actions={selectedAriza && selectedAriza.durum !== 'cozuldu' && canPerformAction('fault', 'update') ? [
+          {
+            label: 'Düzenle',
+            onClick: () => {
+              setShowDetailModal(false);
+              handleEdit(selectedAriza);
+            },
+            variant: 'secondary' as const,
+            icon: Edit
+          },
+          {
+            label: 'Çözüldü İşaretle',
+            onClick: async () => {
+              if (!selectedAriza) return;
+              try {
+                await arizaService.updateFaultStatus(selectedAriza.id, 'cozuldu');
+                toast.success('Arıza çözüldü olarak işaretlendi');
+                setShowDetailModal(false);
+                fetchArizalar();
+              } catch (e) {
+                console.error(e);
+                toast.error('Güncelleme başarısız');
+              }
+            },
+            variant: 'primary' as const,
+            icon: CheckCircle
+          }
+        ] : []}
+      />
+
+      {/* Eski modal içeriği - artık kullanılmıyor */}
+      {false && selectedAriza && (
           <div className="max-h-[75vh] overflow-y-auto p-2">
             {/* Clean Header */}
             <div className="border-b border-gray-200 pb-2 mb-3">
@@ -1544,7 +1677,6 @@ const Arizalar: React.FC = () => {
             </div>
           </div>
         )}
-      </Modal>
 
       {/* Feedback Modal - müşteri için kullanıcı dostu */}
       <Modal

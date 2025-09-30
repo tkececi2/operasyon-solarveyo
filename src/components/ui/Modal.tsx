@@ -80,7 +80,7 @@ export const Modal: React.FC<ModalProps> = ({
           )}
 
           {/* Content */}
-          <div className={size === 'full' ? 'p-4' : 'p-6'}>
+          <div className={`${size === 'full' ? 'p-4' : 'p-6'} max-h-[calc(100vh-200px)] overflow-y-auto pb-20 md:pb-6`}>
             {children}
           </div>
         </div>

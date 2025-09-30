@@ -384,7 +384,7 @@ const IzinYonetimi: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-0">
       {/* Başlık ve Aksiyonlar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -464,125 +464,109 @@ const IzinYonetimi: React.FC = () => {
         </div>
       </div>
 
-      {/* İstatistik Kartları */}
+      {/* İstatistik Kartları - 2 sütunlu düzen */}
       {!isManager && leaveBalance && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Yıllık İzin</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {leaveBalance.annualLeaveRemaining}/{leaveBalance.annualLeaveTotal}
-                </p>
-                <p className="text-xs text-gray-500">Kalan/Toplam Gün</p>
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 bg-blue-100 rounded-full mb-2">
+                <CalendarDays className="h-8 w-8 text-blue-600" />
               </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <CalendarDays className="h-6 w-6 text-blue-600" />
-              </div>
+              <p className="text-xs md:text-sm text-gray-600">Yıllık İzin</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {leaveBalance.annualLeaveRemaining}/{leaveBalance.annualLeaveTotal}
+              </p>
+              <p className="text-xs text-gray-500">Kalan/Toplam Gün</p>
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Hastalık İzni</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {leaveBalance.sickLeaveRemaining}/{leaveBalance.sickLeaveTotal}
-                </p>
-                <p className="text-xs text-gray-500">Kalan/Toplam Gün</p>
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 bg-red-100 rounded-full mb-2">
+                <AlertCircle className="h-8 w-8 text-red-600" />
               </div>
-              <div className="p-3 bg-red-100 rounded-full">
-                <AlertCircle className="h-6 w-6 text-red-600" />
-              </div>
+              <p className="text-xs md:text-sm text-gray-600">Hastalık İzni</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {leaveBalance.sickLeaveRemaining}/{leaveBalance.sickLeaveTotal}
+              </p>
+              <p className="text-xs text-gray-500">Kalan/Toplam Gün</p>
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Kullanılan İzin</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {leaveBalance.annualLeaveUsed + leaveBalance.sickLeaveUsed}
-                </p>
-                <p className="text-xs text-gray-500">Toplam Gün</p>
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 bg-green-100 rounded-full mb-2">
+                <UserCheck className="h-8 w-8 text-green-600" />
               </div>
-              <div className="p-3 bg-green-100 rounded-full">
-                <UserCheck className="h-6 w-6 text-green-600" />
-              </div>
+              <p className="text-xs md:text-sm text-gray-600">Kullanılan İzin</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {leaveBalance.annualLeaveUsed + leaveBalance.sickLeaveUsed}
+              </p>
+              <p className="text-xs text-gray-500">Toplam Gün</p>
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Devreden</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {leaveBalance.carryOverDays}
-                </p>
-                <p className="text-xs text-gray-500">Geçen Yıldan</p>
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 bg-purple-100 rounded-full mb-2">
+                <TrendingUp className="h-8 w-8 text-purple-600" />
               </div>
-              <div className="p-3 bg-purple-100 rounded-full">
-                <TrendingUp className="h-6 w-6 text-purple-600" />
-              </div>
+              <p className="text-xs md:text-sm text-gray-600">Devreden</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">
+                {leaveBalance.carryOverDays}
+              </p>
+              <p className="text-xs text-gray-500">Geçen Yıldan</p>
             </div>
           </Card>
         </div>
       )}
 
-      {/* Yönetici İstatistikleri */}
+      {/* Yönetici İstatistikleri - 2 sütunlu düzen */}
       {isManager && statistics && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Toplam Talep</p>
-                <p className="text-2xl font-bold text-gray-900">{statistics.totalRequests}</p>
-                <p className="text-xs text-gray-500">{selectedYear}</p>
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 bg-blue-100 rounded-full mb-2">
+                <FileText className="h-8 w-8 text-blue-600" />
               </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <FileText className="h-6 w-6 text-blue-600" />
-              </div>
+              <p className="text-xs md:text-sm text-gray-600">Toplam Talep</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{statistics.totalRequests}</p>
+              <p className="text-xs text-gray-500">{selectedYear}</p>
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Onaylanan</p>
-                <p className="text-2xl font-bold text-green-600">{statistics.approvedRequests}</p>
-                <p className="text-xs text-gray-500">
-                  %{Math.round((statistics.approvedRequests / statistics.totalRequests) * 100 || 0)}
-                </p>
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 bg-green-100 rounded-full mb-2">
+                <Check className="h-8 w-8 text-green-600" />
               </div>
-              <div className="p-3 bg-green-100 rounded-full">
-                <Check className="h-6 w-6 text-green-600" />
-              </div>
+              <p className="text-xs md:text-sm text-gray-600">Onaylanan</p>
+              <p className="text-xl md:text-2xl font-bold text-green-600">{statistics.approvedRequests}</p>
+              <p className="text-xs text-gray-500">
+                %{Math.round((statistics.approvedRequests / statistics.totalRequests) * 100 || 0)} Onay
+              </p>
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Bekleyen</p>
-                <p className="text-2xl font-bold text-yellow-600">{statistics.pendingRequests}</p>
-                <p className="text-xs text-gray-500">Onay bekliyor</p>
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 bg-yellow-100 rounded-full mb-2">
+                <Clock className="h-8 w-8 text-yellow-600" />
               </div>
-              <div className="p-3 bg-yellow-100 rounded-full">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
+              <p className="text-xs md:text-sm text-gray-600">Bekleyen</p>
+              <p className="text-xl md:text-2xl font-bold text-yellow-600">{statistics.pendingRequests}</p>
+              <p className="text-xs text-gray-500">Onay bekliyor</p>
             </div>
           </Card>
 
           <Card className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Ort. İzin</p>
-                <p className="text-2xl font-bold text-gray-900">{statistics.averageLeaveDays}</p>
-                <p className="text-xs text-gray-500">Gün/Kişi</p>
+            <div className="flex flex-col items-center text-center">
+              <div className="p-3 bg-purple-100 rounded-full mb-2">
+                <BarChart3 className="h-8 w-8 text-purple-600" />
               </div>
-              <div className="p-3 bg-purple-100 rounded-full">
-                <BarChart3 className="h-6 w-6 text-purple-600" />
-              </div>
+              <p className="text-xs md:text-sm text-gray-600">Ort. İzin</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900">{statistics.averageLeaveDays}</p>
+              <p className="text-xs text-gray-500">Gün/Kişi</p>
             </div>
           </Card>
         </div>

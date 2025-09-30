@@ -303,10 +303,10 @@ const UretimVerileri: React.FC = () => {
         </div>
       </div>
 
-      {/* Filtreler - en üstte */}
+      {/* Filtreler - iOS'ta her zaman görünür */}
       <Card>
-        <CardContent className="p-6">
-          <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 ${showMobileFilters ? '' : 'hidden md:grid'}`}>
+        <CardContent className="p-4 md:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
               <div className="text-sm font-medium text-gray-700 mb-2">Santral (Çoklu Seçim)</div>
               <div className="flex items-center gap-2 mb-2">
@@ -412,48 +412,47 @@ const UretimVerileri: React.FC = () => {
         <div className="min-h-[120px] flex items-center justify-center"><LoadingSpinner /></div>
       )}
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Summary Stats - Mobilde özel düzen */}
+      <div className="space-y-4">
+        {/* İlk satır - Toplam Üretim (tek kart, tam genişlik) */}
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Sun className="h-8 w-8 text-solar-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {toplamUretim.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-600">kWh Toplam Üretim</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Leaf className="h-8 w-8 text-green-600 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {toplamCO2Tasarruf.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-600">kg CO₂ Tasarruf</p>
-              </div>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <Sun className="h-12 w-12 text-solar-500 mb-3" />
+              <p className="text-2xl md:text-3xl font-bold text-gray-900">
+                {toplamUretim.toLocaleString()}
+              </p>
+              <p className="text-sm md:text-base text-gray-600 mt-1">kWh Toplam Üretim</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <TrendingUp className="h-8 w-8 text-blue-500 mr-3" />
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
+        {/* İkinci satır - CO2 ve Performans (2 sütun) */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="p-4 md:p-6">
+              <div className="flex flex-col items-center text-center">
+                <Leaf className="h-10 w-10 text-green-600 mb-2" />
+                <p className="text-xl md:text-2xl font-bold text-gray-900">
+                  {toplamCO2Tasarruf.toLocaleString()}
+                </p>
+                <p className="text-xs md:text-sm text-gray-600">kg CO₂ Tasarruf</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 md:p-6">
+              <div className="flex flex-col items-center text-center">
+                <TrendingUp className="h-10 w-10 text-blue-500 mb-2" />
+                <p className="text-xl md:text-2xl font-bold text-gray-900">
                   %{ortalamaPerformans}
                 </p>
-                <p className="text-sm text-gray-600">Ortalama Performans</p>
+                <p className="text-xs md:text-sm text-gray-600">Ortalama Performans</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Performans Grafikleri (Aylık) */}
@@ -520,7 +519,7 @@ const UretimVerileri: React.FC = () => {
         title="Toplu Aylık Üretim Girişi"
         size="xl"
       >
-        <div className="space-y-6">
+        <div className="space-y-6 pb-20 md:pb-0">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Select
               label="Santral"
@@ -600,11 +599,11 @@ const UretimVerileri: React.FC = () => {
 
       {/* Hava Durumu Etkisi kaldırıldı */}
 
-      {/* Özet Kartları */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Özet Kartları - Mobilde 2 sütun */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 pb-20 md:pb-0">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">En Yüksek Üretim</CardTitle>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-base md:text-lg">En Yüksek Üretim</CardTitle>
           </CardHeader>
           <CardContent>
             {(() => {
@@ -637,8 +636,8 @@ const UretimVerileri: React.FC = () => {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">En Yüksek Performans</CardTitle>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-base md:text-lg">En Yüksek Performans</CardTitle>
           </CardHeader>
           <CardContent>
             {(() => {
@@ -673,8 +672,8 @@ const UretimVerileri: React.FC = () => {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">En Büyük Sapma</CardTitle>
+          <CardHeader className="pb-2 md:pb-4">
+            <CardTitle className="text-base md:text-lg">En Büyük Sapma</CardTitle>
           </CardHeader>
           <CardContent>
             {(() => {

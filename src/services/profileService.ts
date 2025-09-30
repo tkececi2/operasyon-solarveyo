@@ -25,6 +25,7 @@ import {
 } from 'firebase/storage';
 import { db, storage, auth } from '@/lib/firebase';
 import { User } from '@/types';
+import { updateStorageMetricsOnUpload, updateStorageMetricsOnDelete } from './storageService';
 
 interface ProfileUpdateData {
   ad?: string;
@@ -81,17 +82,28 @@ export async function uploadProfilePhoto(
       throw new Error('Sadece resim dosyaları yüklenebilir (JPEG, PNG, GIF, WebP)');
     }
 
-    // Storage referansı
+    // Kullanıcı bilgilerini al (companyId için)
+    const userRef = doc(db, 'kullanicilar', userId);
+    const userDoc = await getDoc(userRef);
+    if (!userDoc.exists()) {
+      throw new Error('Kullanıcı bulunamadı');
+    }
+    const userData = userDoc.data() as User;
+    const companyId = userData.companyId;
+
+    // Storage referansı (şirket altında)
     const timestamp = Date.now();
-    const fileName = `profile-photos/${userId}/${timestamp}_${file.name}`;
+    const fileName = `companies/${companyId}/profile-photos/${userId}/${timestamp}_${file.name}`;
     const storageRef = ref(storage, fileName);
 
     // Dosyayı yükle
     const snapshot = await uploadBytes(storageRef, file);
     const downloadURL = await getDownloadURL(snapshot.ref);
 
+    // Storage metrics güncelle (otomatik)
+    await updateStorageMetricsOnUpload(companyId, fileName, 'other');
+
     // Veritabanını güncelle (auth UID ile)
-    const userRef = doc(db, 'kullanicilar', userId);
     await updateDoc(userRef, {
       fotoURL: downloadURL,
       guncellenmeTarihi: Timestamp.now()
@@ -108,6 +120,36 @@ export async function uploadProfilePhoto(
 export async function removeProfilePhoto(userId: string): Promise<void> {
   try {
     const userRef = doc(db, 'kullanicilar', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (!userDoc.exists()) {
+      throw new Error('Kullanıcı bulunamadı');
+    }
+
+    const userData = userDoc.data() as User;
+    const companyId = userData.companyId;
+    const fotoURL = userData.fotoURL;
+
+    // Eğer fotoğraf varsa, Storage'dan sil
+    if (fotoURL && companyId) {
+      try {
+        // URL'den path çıkar
+        const filePath = fotoURL.split('/o/')[1]?.split('?')[0];
+        if (filePath) {
+          const decodedPath = decodeURIComponent(filePath);
+          const fileRef = ref(storage, decodedPath);
+          
+          // Storage metrics güncelle (silmeden önce)
+          await updateStorageMetricsOnDelete(companyId, decodedPath, 'other');
+          
+          // Dosyayı sil
+          await deleteObject(fileRef);
+        }
+      } catch (storageError) {
+        console.warn('Storage dosyası silinemedi (zaten silinmiş olabilir):', storageError);
+        // Devam et, veritabanını güncelle
+      }
+    }
     
     // Veritabanını güncelle
     await updateDoc(userRef, {

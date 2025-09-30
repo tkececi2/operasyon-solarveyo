@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>SolarVeyo — Güneş Enerjisi Yönetim Platformu</title>
     <meta name="description" content="Arıza, bakım, üretim takibi ve daha fazlasını tek platformda yönetin. 15 gün ücretsiz deneyin." />
     <meta name="theme-color" content="#2563eb" />
@@ -17,5 +19,17 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Google Maps API -->
+    <script>
+      // Google Maps callback
+      window.initGoogleMaps = function() {
+        console.log('Google Maps API loaded successfully');
+        window.googleMapsLoaded = true;
+      }
+    </script>
+    <!-- iOS için kısıtlamasız API key kullan -->
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBzuuTRlWJAj292Py1iJdG349LRrU5XoEc&callback=initGoogleMaps&libraries=places">
+    </script>
   </body>
 </html>

@@ -1,0 +1,70 @@
+<!-- iOS Info.plist İzinleri - Bu içeriği ios/App/App/Info.plist dosyasına ekleyin -->
+
+<!-- Kamera İzinleri -->
+<key>NSCameraUsageDescription</key>
+<string>Arıza fotoğraflarını çekmek için kamera erişimi gereklidir.</string>
+
+<!-- Fotoğraf Galerisi İzinleri -->
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Arıza fotoğraflarını galeriden seçmek için erişim gereklidir.</string>
+
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>Çekilen fotoğrafları galerinize kaydetmek için izin gereklidir.</string>
+
+<!-- Konum İzinleri -->
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Saha konumunuzu doğrulamak için konum erişimi gereklidir.</string>
+
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>Saha konumunuzu doğrulamak ve takip etmek için konum erişimi gereklidir.</string>
+
+<!-- Arka Plan Modları -->
+<key>UIBackgroundModes</key>
+<array>
+  <string>fetch</string>
+  <string>remote-notification</string>
+  <string>location</string>
+</array>
+
+<!-- Push Notification -->
+<key>UIUserNotificationSettings</key>
+<dict>
+  <key>UIUserNotificationTypeAlert</key>
+  <true/>
+  <key>UIUserNotificationTypeBadge</key>
+  <true/>
+  <key>UIUserNotificationTypeSound</key>
+  <true/>
+</dict>
+
+<!-- App Transport Security (Firebase için) -->
+<key>NSAppTransportSecurity</key>
+<dict>
+  <key>NSAllowsArbitraryLoads</key>
+  <false/>
+  <key>NSExceptionDomains</key>
+  <dict>
+    <key>firebaseapp.com</key>
+    <dict>
+      <key>NSIncludesSubdomains</key>
+      <true/>
+      <key>NSThirdPartyExceptionRequiresForwardSecrecy</key>
+      <false/>
+    </dict>
+    <key>googleapis.com</key>
+    <dict>
+      <key>NSIncludesSubdomains</key>
+      <true/>
+      <key>NSThirdPartyExceptionRequiresForwardSecrecy</key>
+      <false/>
+    </dict>
+  </dict>
+</dict>
+
+<!-- Face ID / Touch ID (Gelecekte 2FA için) -->
+<key>NSFaceIDUsageDescription</key>
+<string>Güvenli giriş için Face ID kullanmak istiyor musunuz?</string>
+
+<!-- Mikrofon (Gelecekte sesli not için) -->
+<key>NSMicrophoneUsageDescription</key>
+<string>Sesli not kaydetmek için mikrofon erişimi gereklidir.</string>

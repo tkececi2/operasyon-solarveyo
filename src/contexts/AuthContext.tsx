@@ -16,6 +16,8 @@ import toast from 'react-hot-toast';
 import { logUserAction, logSecurityEvent } from '../services/auditLogService';
 import { analyticsService } from '../services/analyticsService';
 import { SAAS_CONFIG } from '../config/saas.config';
+import { MobileNotificationService } from '../services/mobile/notificationService';
+import { platform } from '../utils/platform';
 
 interface AuthContextType {
   currentUser: FirebaseUser | null;
@@ -134,6 +136,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Local profile'ı da güncelle
         userProfile.sonGiris = Timestamp.now();
         setUserProfile(userProfile);
+        
+        // Mobile platform ise push notification'ı başlat
+        if (platform.isNative()) {
+          try {
+            await MobileNotificationService.initialize(user.uid);
+            console.log('Push notification başarıyla başlatıldı');
+          } catch (error) {
+            console.error('Push notification başlatma hatası:', error);
+            // Hata olsa bile giriş işlemine devam et
+          }
+        }
       }
       
       if (!userProfile) {

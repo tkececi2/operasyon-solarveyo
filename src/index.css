@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* iOS Specific Styles */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  height: 100%;
+  height: -webkit-fill-available;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  position: relative;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* iOS Safe Area - Sadece header için */
+.ios-safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* iOS Safe Area - Sadece bottom navigation için */
+.ios-safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Smooth scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Force Dark Mode Styles */
 :root {
   --dark-bg-primary: #0f172a;

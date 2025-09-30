@@ -271,7 +271,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
   };
 
   return (
-    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white dark:bg-gray-800 shadow-lg h-screen flex flex-col transition-all duration-300`}>
+    <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white dark:bg-gray-800 shadow-lg h-screen sticky top-0 flex flex-col transition-all duration-300`}>
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center space-x-3">

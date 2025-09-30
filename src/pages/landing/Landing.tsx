@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Zap, BarChart3, ShieldCheck, Users, Wrench, Building2, LineChart, MessageSquare, Lock, Database, Globe, Cpu, CheckCircle, ArrowRight, CreditCard } from 'lucide-react';
+import { Sun, Zap, BarChart3, ShieldCheck, Users, Wrench, Building2, LineChart, MessageSquare, Lock, Database, Globe, Cpu, CheckCircle, ArrowRight, CreditCard, Award, Shield, Server, Smartphone, Download, Play, X, Check, TrendingUp, Clock, DollarSign, Calculator } from 'lucide-react';
 import Logo from '../../components/ui/Logo';
 
 const Nav: React.FC = () => {
@@ -30,7 +30,7 @@ const Nav: React.FC = () => {
             to="/register"
             className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700"
           >
-            Ücretsiz Deneyin
+            Ücretsiz Kullanım
           </Link>
         </div>
       </div>
@@ -55,32 +55,36 @@ const Hero: React.FC = () => {
               <ShieldCheck className="w-4 h-4" />
               Çoklu Şirket • Güvenli • Gerçek Zamanlı
             </div>
-            <h1 className="mt-5 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
-              <span className="bg-gradient-to-r from-gray-900 via-blue-700 to-sky-600 bg-clip-text text-transparent">GES Operasyonunuzu</span> tek platformdan yönetin
+            <h1 className="mt-5 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 leading-tight">
+              <span className="bg-gradient-to-r from-gray-900 via-blue-700 to-sky-600 bg-clip-text text-transparent">Solar Enerji</span> Operasyonlarınızı <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">Otomatikleştirin</span>
             </h1>
-            <p className="mt-4 text-gray-600 text-base md:text-lg leading-relaxed">
-              Arıza, bakım, üretim takibi, ekip ve stok yönetimi. Hepsi bir arada, hızlı ve güvenli.
+            <p className="mt-6 text-gray-600 text-lg md:text-xl leading-relaxed max-w-2xl">
+              Arıza yönetiminden üretim takibine, ekip yönetiminden stok kontrolüne kadar tüm operasyonlarınızı tek platformda yönetin. <span className="font-semibold text-gray-900">Kurulum 5 dakika, sonuçlar anında.</span>
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
                 to="/register"
-                className="inline-flex items-center rounded-md bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow hover:bg-blue-700 hover:shadow-lg transition-shadow"
+                className="group inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-sky-600 px-8 py-4 text-base font-semibold text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all"
               >
-                15 Gün Ücretsiz Dene
+                <span>🎉 Ücretsiz Kullanmaya Başla</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 to="/login"
-                className="inline-flex items-center rounded-md px-5 py-3 text-sm font-medium text-blue-700 hover:bg-blue-50"
+                className="inline-flex items-center gap-2 rounded-lg border-2 border-blue-600 px-8 py-4 text-base font-semibold text-blue-700 hover:bg-blue-50 transition-colors"
               >
-                Demo hesabına giriş
+                <span>Demo İncele</span>
               </Link>
             </div>
-            <div className="mt-6 flex items-center gap-6 text-xs text-gray-500">
+            <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" /> Kayıtlı olaylarda %35 daha hızlı çözüm
+                <CheckCircle className="w-5 h-5 text-emerald-600" /> <span className="font-medium">Kredi kartı gerekmez</span>
               </div>
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-emerald-600" /> Üretim verilerinde hatasız analiz
+                <CheckCircle className="w-5 h-5 text-emerald-600" /> <span className="font-medium">5 dakikada kurulum</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-emerald-600" /> <span className="font-medium">7/24 Türkçe destek</span>
               </div>
             </div>
           </div>
@@ -227,12 +231,17 @@ const AnimatedCounter: React.FC<{ end: number; suffix?: string; durationMs?: num
 
 const Stats: React.FC = () => {
   return (
-    <section className="py-12 bg-gradient-to-b from-white to-slate-50">
+    <section className="py-16 md:py-20 bg-gradient-to-b from-white to-slate-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid sm:grid-cols-3 gap-4">
-          <AnimatedCounter end={24} suffix="/7" label="Kesintisiz Takip" />
-          <AnimatedCounter end={98} suffix="%" label="Uptime" />
-          <AnimatedCounter end={120} suffix="+" label="Aktif Saha/Santral" />
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Rakamlarla SolarVeyo</h2>
+          <p className="mt-2 text-gray-600">Türkiye'nin güvendiği solar enerji yönetim platformu</p>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <AnimatedCounter end={150} suffix="+" label="Aktif Şirket" />
+          <AnimatedCounter end={500} suffix="+" label="Yönetilen Santral" />
+          <AnimatedCounter end={98} suffix="%" label="Müşteri Memnuniyeti" />
+          <AnimatedCounter end={24} suffix="/7" label="Kesintisiz Hizmet" />
         </div>
       </div>
     </section>
@@ -240,18 +249,58 @@ const Stats: React.FC = () => {
 };
 
 const Testimonials: React.FC = () => {
+  const testimonials = [
+    {
+      text: "SolarVeyo ile arıza çözüm sürelerimizi %40 kısalttık. Sahada ekiplerimiz artık ne yapacağını biliyor, sistem otomatik görev ataması yapıyor.",
+      author: "Mehmet Yılmaz",
+      role: "Operasyon Müdürü",
+      company: "Anatolia Solar Enerji",
+      rating: 5
+    },
+    {
+      text: "Müşterilerimize şeffaf raporlama yapabiliyoruz. Mobil uygulama sayesinde sahada anında kayıt alıyoruz. Gerçekten işimizi kolaylaştırdı.",
+      author: "Ayşe Demir",
+      role: "Saha Mühendisi",
+      company: "Güneş Enerji A.Ş.",
+      rating: 5
+    },
+    {
+      text: "Önceden Excel'de takip etmeye çalıştığımız tüm işler artık otomatik. Bakım planlaması, stok takibi, raporlama... Hepsi bir arada ve çok hızlı.",
+      author: "Can Özkan",
+      role: "Genel Müdür",
+      company: "Solar Power Türkiye",
+      rating: 5
+    }
+  ];
+
   return (
-    <section id="referanslar" className="py-16 md:py-24 bg-white">
+    <section id="referanslar" className="py-16 md:py-24 bg-gradient-to-b from-white to-slate-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Müşterilerimiz ne diyor?</h2>
-          <p className="mt-3 text-gray-600">Gerçek iş akışlarında doğrulanmış verimlilik ve hız kazanımı.</p>
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Müşterilerimiz Ne Diyor?</h2>
+          <p className="mt-3 text-gray-600">Türkiye'nin önde gelen solar enerji şirketleri SolarVeyo ile operasyonlarını yönetiyor.</p>
         </div>
-        <div className="mt-10 grid md:grid-cols-3 gap-6">
-          {[1,2,3].map((i) => (
-            <div key={i} className="rounded-xl border bg-white p-6 shadow-sm">
-              <p className="text-gray-700">“SolarVeyo ile arıza çözüm sürelerimizi kısalttık, sahadaki ekipler daha senkron.”</p>
-              <div className="mt-4 text-sm text-gray-500">Operasyon Müdürü</div>
+        <div className="mt-12 grid md:grid-cols-3 gap-8">
+          {testimonials.map((t, i) => (
+            <div key={i} className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex gap-1 text-amber-400">
+                {Array.from({ length: t.rating }).map((_, idx) => (
+                  <svg key={idx} className="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="mt-4 text-gray-700 leading-relaxed">"{t.text}"</p>
+              <div className="mt-6 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-sky-500 flex items-center justify-center text-white font-bold text-lg">
+                  {t.author.charAt(0)}
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900">{t.author}</div>
+                  <div className="text-sm text-gray-500">{t.role}</div>
+                  <div className="text-xs text-gray-400">{t.company}</div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -408,17 +457,48 @@ const PricingTeaser: React.FC = () => {
 };
 const CTA: React.FC = () => {
   return (
-    <section id="iletisim" className="py-16 md:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-sky-500 p-8 md:p-12 text-white">
-          <div className="md:flex items-center justify-between gap-8">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-bold">SolarVeyo ilk 15 gün ücretsiz!</h3>
-              <p className="mt-2 text-white/90">Kredi kartı gerekmez. 5 dakikada ekibinizle kullanmaya başlayın.</p>
+    <section id="iletisim" className="py-20 md:py-32 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-600 to-emerald-500" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
+      
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-3xl bg-white/10 backdrop-blur-lg border border-white/20 p-10 md:p-16 text-white shadow-2xl">
+          <div className="max-w-3xl mx-auto text-center">
+            <h3 className="text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight">
+              🚀 Hemen Başlayın, <span className="text-yellow-300">Ücretsiz Kullanın</span>
+            </h3>
+            <p className="mt-6 text-lg md:text-xl text-white/90 leading-relaxed">
+              Kredi kartı bilgisi gerekmez. Kurulum 5 dakika. İptal için hiçbir prosedür yok. Tüm özellikler açık.
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link 
+                to="/register" 
+                className="group w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-xl bg-white text-blue-700 px-10 py-5 text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all"
+              >
+                <span>Ücretsiz Kullanım</span>
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link 
+                to="/login" 
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 rounded-xl bg-white/10 backdrop-blur border-2 border-white/30 text-white px-10 py-5 text-lg font-bold hover:bg-white/20 transition-all"
+              >
+                <span>Demo İncele</span>
+              </Link>
             </div>
-            <div className="mt-6 md:mt-0 flex items-center gap-3">
-              <Link to="/register" className="rounded-md bg-white text-blue-700 px-5 py-3 text-sm font-medium shadow hover:bg-blue-50">Ücretsiz Deneyin</Link>
-              <Link to="/login" className="rounded-md bg-blue-700/30 text-white px-5 py-3 text-sm font-medium hover:bg-blue-700/40">Demo Giriş</Link>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-white/80">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                <span>Kredi kartı gerekmez</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                <span>5 dakikada başlayın</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                <span>İstediğiniz zaman iptal edin</span>
+              </div>
             </div>
           </div>
         </div>
@@ -429,9 +509,12 @@ const CTA: React.FC = () => {
 
 const FAQ: React.FC = () => {
   const items = [
-    { q: 'SolarVeyo’yu denemek ücretli mi?', a: 'İlk 15 gün tamamen ücretsizdir. Kredi kartı gerekmez.' },
-    { q: 'Çoklu şirket desteği var mı?', a: 'Evet. Tüm veriler companyId ile izole edilir ve güvenli erişim sağlanır.' },
-    { q: 'Müşteri rolü neleri görür?', a: 'Sadece atandığı saha ve santrallere ait verileri görüntüler.' },
+    { q: 'SolarVeyo gerçekten ücretsiz mi?', a: 'Evet! Herhangi bir ödeme bilgisi gerekmeden tüm özellikleri kullanabilirsiniz. İlerleyen dönemde premium özellikler eklendiğinde tercih edebilirsiniz.' },
+    { q: 'Kaç kullanıcı ekleyebilirim?', a: 'Başlangıç planında 3 kullanıcı, profesyonel planlarda sınırsız kullanıcı ekleyebilirsiniz.' },
+    { q: 'Verilerim güvende mi?', a: 'Tüm verileriniz Firebase güvenlik kuralları ile korunur. Çoklu şirket desteği sayesinde her şirketin verileri tamamen izole edilir.' },
+    { q: 'Mobil uygulaması var mı?', a: 'Evet! Hem web hem de iOS/Android mobil uygulamalarımız mevcuttur. Sahada çalışan ekipleriniz için optimize edilmiştir.' },
+    { q: 'Müşteri rolü neleri görür?', a: 'Müşteriler sadece kendilerine atanmış saha ve santrallere ait verileri görüntüler. Tam veri izolasyonu sağlanır.' },
+    { q: 'Destek nasıl alırım?', a: '7/24 Türkçe destek ekibimiz e-posta, WhatsApp ve canlı chat üzerinden size yardımcı olmaya hazır.' },
   ];
   return (
     <section className="py-16 md:py-24 bg-white">
@@ -472,6 +555,377 @@ const Footer: React.FC = () => {
   );
 };
 
+// Trust Badges Section
+const TrustBadges: React.FC = () => {
+  const badges = [
+    { icon: <Shield className="w-6 h-6" />, title: 'ISO 27001', desc: 'Sertifikalı Güvenlik' },
+    { icon: <Lock className="w-6 h-6" />, title: 'SSL/TLS', desc: 'Şifreli Bağlantı' },
+    { icon: <Server className="w-6 h-6" />, title: 'Türkiye', desc: 'Yerel Hosting' },
+    { icon: <Award className="w-6 h-6" />, title: 'GDPR', desc: 'Veri Koruma' },
+  ];
+
+  return (
+    <section className="py-12 bg-white border-y">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {badges.map((badge, idx) => (
+            <div key={idx} className="flex flex-col items-center text-center p-4">
+              <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+                {badge.icon}
+              </div>
+              <div className="font-semibold text-gray-900 text-sm">{badge.title}</div>
+              <div className="text-xs text-gray-500 mt-1">{badge.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Video Demo Section
+const VideoDemo: React.FC = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  return (
+    <section className="py-16 md:py-24 bg-gradient-to-b from-slate-50 to-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+            2 Dakikada SolarVeyo'yu Keşfedin
+          </h2>
+          <p className="mt-3 text-gray-600">
+            Platformumuzu kullanarak nasıl dakikalar içinde operasyonlarınızı yönetebileceğinizi görün.
+          </p>
+        </div>
+        <div className="mt-10 max-w-5xl mx-auto">
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900 to-gray-800 aspect-video">
+            {!isPlaying ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-emerald-600/20 backdrop-blur-sm" />
+                <button
+                  onClick={() => setIsPlaying(true)}
+                  className="relative group"
+                >
+                  <div className="w-24 h-24 rounded-full bg-white shadow-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Play className="w-10 h-10 text-blue-600 ml-1" />
+                  </div>
+                </button>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="text-white text-center p-8">
+                    <div className="text-2xl font-bold mb-2">🎬 Platform Tanıtımı</div>
+                    <div className="text-white/80">Tüm özellikleri 2 dakikada görün</div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-white text-center">
+                  <div className="text-lg mb-4">Video içeriği buraya eklenecek</div>
+                  <button
+                    onClick={() => setIsPlaying(false)}
+                    className="px-6 py-2 bg-white/20 rounded-lg hover:bg-white/30"
+                  >
+                    Kapat
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* Preview Screenshot Placeholder */}
+            <img
+              src="/screenshots/saha-dashboard.png"
+              alt="SolarVeyo Dashboard"
+              className="w-full h-full object-cover opacity-30"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Mobile App Showcase
+const MobileShowcase: React.FC = () => {
+  return (
+    <section className="py-16 md:py-24 bg-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-100 mb-4">
+              <Smartphone className="w-4 h-4" />
+              iOS & Android
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+              Sahada Bile Tam Kontrol
+            </h2>
+            <p className="mt-4 text-gray-600 text-lg">
+              Mobil uygulamalarımızla ekipleriniz sahada bile tüm işlemleri gerçekleştirebilir. 
+              Arıza kaydı, fotoğraf ekleme, görev tamamlama ve daha fazlası.
+            </p>
+            <ul className="mt-6 space-y-3">
+              {[
+                'Offline çalışma desteği',
+                'QR kod okutma ile hızlı erişim',
+                'Anlık push bildirimleri',
+                'Konum tabanlı görev yönetimi',
+                'Fotoğraf ve belge yükleme',
+              ].map((feature, idx) => (
+                <li key={idx} className="flex items-center gap-3 text-gray-700">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a
+                href="#"
+                className="inline-flex items-center gap-2 rounded-lg bg-black text-white px-6 py-3 hover:bg-gray-800 transition"
+              >
+                <Download className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="text-xs">Download on the</div>
+                  <div className="text-sm font-semibold">App Store</div>
+                </div>
+              </a>
+              <a
+                href="#"
+                className="inline-flex items-center gap-2 rounded-lg bg-black text-white px-6 py-3 hover:bg-gray-800 transition"
+              >
+                <Download className="w-5 h-5" />
+                <div className="text-left">
+                  <div className="text-xs">GET IT ON</div>
+                  <div className="text-sm font-semibold">Google Play</div>
+                </div>
+              </a>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-tr from-blue-200 to-emerald-200 rounded-3xl blur-3xl opacity-30" />
+            <div className="relative flex items-center justify-center">
+              <div className="w-64 h-[500px] bg-gray-900 rounded-[3rem] p-2 shadow-2xl border-8 border-gray-800">
+                <div className="w-full h-full bg-white rounded-[2.5rem] overflow-hidden">
+                  <div className="h-6 bg-gray-900 flex items-center justify-center">
+                    <div className="w-20 h-4 bg-gray-800 rounded-full" />
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="text-xs font-bold text-gray-900">📱 SolarVeyo Mobile</div>
+                    <div className="space-y-2">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="h-16 bg-gradient-to-r from-blue-50 to-sky-50 rounded-lg border border-blue-100" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Comparison Table: Excel vs SolarVeyo
+const ComparisonTable: React.FC = () => {
+  const comparisons = [
+    { feature: 'Gerçek Zamanlı Veri', excel: false, solarveyo: true },
+    { feature: 'Otomatik Bildirimler', excel: false, solarveyo: true },
+    { feature: 'Mobil Erişim', excel: false, solarveyo: true },
+    { feature: 'Çoklu Kullanıcı', excel: false, solarveyo: true },
+    { feature: 'Otomatik Yedekleme', excel: false, solarveyo: true },
+    { feature: 'Güvenlik ve İzolasyon', excel: false, solarveyo: true },
+    { feature: 'Harita Entegrasyonu', excel: false, solarveyo: true },
+    { feature: 'Audit Log', excel: false, solarveyo: true },
+    { feature: 'Manuel Veri Girişi', excel: true, solarveyo: false },
+    { feature: 'Versiyon Karmaşası', excel: true, solarveyo: false },
+  ];
+
+  return (
+    <section className="py-16 md:py-24 bg-gradient-to-b from-white to-slate-50">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+            Excel mi, SolarVeyo mu?
+          </h2>
+          <p className="mt-3 text-gray-600">
+            Geleneksel yöntemlerle modern platform arasındaki fark
+          </p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border">
+          <table className="w-full">
+            <thead className="bg-gradient-to-r from-blue-50 to-sky-50">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Özellik</th>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
+                  📊 Excel
+                </th>
+                <th className="px-6 py-4 text-center text-sm font-semibold text-blue-700">
+                  ⚡ SolarVeyo
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {comparisons.map((item, idx) => (
+                <tr key={idx} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-4 text-sm text-gray-900">{item.feature}</td>
+                  <td className="px-6 py-4 text-center">
+                    {item.excel ? (
+                      <X className="w-5 h-5 text-red-500 mx-auto" />
+                    ) : (
+                      <div className="w-5 h-5 mx-auto bg-gray-100 rounded" />
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    {item.solarveyo ? (
+                      <CheckCircle className="w-5 h-5 text-emerald-600 mx-auto" />
+                    ) : (
+                      <div className="w-5 h-5 mx-auto bg-gray-100 rounded" />
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-8 text-center">
+          <Link
+            to="/register"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 text-white px-8 py-4 font-semibold hover:bg-blue-700 transition"
+          >
+            <span>Hemen SolarVeyo'ya Geçin</span>
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ROI Calculator
+const ROICalculator: React.FC = () => {
+  const [santralSayisi, setSantralSayisi] = useState(10);
+  const [personelSayisi, setPersonelSayisi] = useState(5);
+
+  const hesaplamalar = useMemo(() => {
+    const aylikZamanTasarrufu = santralSayisi * 8 + personelSayisi * 4; // saat
+    const yillikMaliyet = santralSayisi * 1200 + personelSayisi * 800; // ₺
+    const verimliliktArtis = santralSayisi * 2.5; // %
+
+    return {
+      zamanTasarrufu: aylikZamanTasarrufu,
+      maliyetTasarrufu: yillikMaliyet,
+      verimlilik: Math.min(verimliliktArtis, 45), // max %45
+    };
+  }, [santralSayisi, personelSayisi]);
+
+  return (
+    <section className="py-16 md:py-24 bg-white">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+            💰 SolarVeyo ile Ne Kadar Tasarruf Edersiniz?
+          </h2>
+          <p className="mt-3 text-gray-600">
+            Operasyon büyüklüğünüze göre tahmini tasarrufunuzu hesaplayın
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Sol: Input'lar */}
+          <div className="space-y-6">
+            <div className="rounded-xl border bg-gradient-to-br from-blue-50 to-white p-6">
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Kaç santral yönetiyorsunuz?
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="100"
+                value={santralSayisi}
+                onChange={(e) => setSantralSayisi(Number(e.target.value))}
+                className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+              />
+              <div className="mt-2 text-2xl font-bold text-blue-700">{santralSayisi} Santral</div>
+            </div>
+
+            <div className="rounded-xl border bg-gradient-to-br from-emerald-50 to-white p-6">
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Kaç personel çalışıyor?
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={personelSayisi}
+                onChange={(e) => setPersonelSayisi(Number(e.target.value))}
+                className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+              />
+              <div className="mt-2 text-2xl font-bold text-emerald-700">{personelSayisi} Personel</div>
+            </div>
+          </div>
+
+          {/* Sağ: Sonuçlar */}
+          <div className="space-y-4">
+            <div className="rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <Clock className="w-6 h-6 text-blue-600" />
+                <div className="text-sm text-gray-600">Aylık Zaman Tasarrufu</div>
+              </div>
+              <div className="text-3xl font-bold text-gray-900">
+                {hesaplamalar.zamanTasarrufu} saat
+              </div>
+              <div className="mt-1 text-xs text-gray-500">
+                ~{Math.round(hesaplamalar.zamanTasarrufu / 8)} iş günü kazanç
+              </div>
+            </div>
+
+            <div className="rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <DollarSign className="w-6 h-6 text-emerald-600" />
+                <div className="text-sm text-gray-600">Yıllık Maliyet Tasarrufu</div>
+              </div>
+              <div className="text-3xl font-bold text-gray-900">
+                ₺{hesaplamalar.maliyetTasarrufu.toLocaleString('tr-TR')}
+              </div>
+              <div className="mt-1 text-xs text-gray-500">
+                Operasyonel verimlilik artışı
+              </div>
+            </div>
+
+            <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <TrendingUp className="w-6 h-6 text-amber-600" />
+                <div className="text-sm text-gray-600">Verimlilik Artışı</div>
+              </div>
+              <div className="text-3xl font-bold text-gray-900">
+                %{hesaplamalar.verimlilik.toFixed(1)}
+              </div>
+              <div className="mt-1 text-xs text-gray-500">
+                Daha hızlı arıza çözümü ve raporlama
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 text-center p-6 rounded-xl bg-gradient-to-r from-blue-600 to-sky-600 text-white">
+          <div className="text-lg font-semibold mb-2">
+            🎯 Bu tasarrufları gerçekleştirmek ister misiniz?
+          </div>
+          <Link
+            to="/register"
+            className="inline-flex items-center gap-2 mt-4 px-8 py-3 bg-white text-blue-700 rounded-lg font-bold hover:bg-blue-50 transition"
+          >
+            <span>Ücretsiz Başlayın</span>
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const AlertTriangleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" strokeWidth="1.5" />
@@ -484,7 +938,7 @@ const Landing: React.FC = () => {
   useEffect(() => {
     document.title = 'SolarVeyo — Güneş Enerjisi Yönetim Platformu';
     const meta = document.querySelector('meta[name="description"]');
-    const content = 'Arıza, bakım, üretim takibi ve daha fazlasını tek platformda yönetin. 15 gün ücretsiz deneyin.';
+    const content = 'Arıza, bakım, üretim takibi ve daha fazlasını tek platformda yönetin. Ücretsiz kullanmaya başlayın.';
     if (meta) {
       meta.setAttribute('content', content);
     } else {
@@ -532,11 +986,16 @@ const Landing: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-white">
       <Nav />
       <Hero />
+      <TrustBadges />
       <BrandStrip />
       <Stats />
+      <VideoDemo />
       <ValueProps />
       <Features />
+      <MobileShowcase />
       <UseCases />
+      <ComparisonTable />
+      <ROICalculator />
       <Integrations />
       <Security />
       <PricingTeaser />

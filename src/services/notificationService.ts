@@ -187,7 +187,8 @@ export const getScopedUserNotifications = async (
   userId: string,
   userSahalar: string[] = [],
   userSantraller: string[] = [],
-  limit: number = 50
+  limit: number = 50,
+  role?: string
 ): Promise<Notification[]> => {
   try {
     const q = query(
@@ -199,21 +200,40 @@ export const getScopedUserNotifications = async (
 
     const snapshot = await getDocs(q);
     let items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
+    
+    console.log('🔍 Ham bildirimler:', {
+      toplam: items.length,
+      ilk3: items.slice(0, 3).map(n => ({
+        id: n.id,
+        userId: n.userId,
+        title: n.title
+      }))
+    });
 
     // Kullanıcıya özel ve gizlenenleri ayıkla
+    const beforeFilter = items.length;
     items = items.filter(n => {
       const hiddenBy = n.hiddenBy || [];
       if (hiddenBy.includes(userId)) return false;
-      return !('userId' in n) || n.userId === userId;
+      const userMatch = !('userId' in n) || n.userId === userId;
+      if (!userMatch && n.userId) {
+        console.log(`❌ Bildirim filtrelendi - userId eşleşmedi: ${n.userId} !== ${userId}`);
+      }
+      return userMatch;
     });
+    
+    console.log(`🔍 userId filtresi sonrası: ${beforeFilter} -> ${items.length}`);
 
-    // Saha/santral izolasyonu: eğer metadata.sahaId/santralId varsa, atanmış listede olmalı
-    items = items.filter(n => {
-      const md = (n.metadata || {}) as Record<string, any>;
-      const sahaOk = md.sahaId ? userSahalar.includes(md.sahaId) : true;
-      const santralOk = md.santralId ? userSantraller.includes(md.santralId) : true;
-      return sahaOk && santralOk;
-    });
+    // Saha/santral izolasyonu (yalnızca musteri ve bekci için uygula)
+    const shouldApplyScope = role === 'musteri' || role === 'bekci';
+    if (shouldApplyScope) {
+      items = items.filter(n => {
+        const md = (n.metadata || {}) as Record<string, any>;
+        const sahaOk = md.sahaId ? userSahalar.includes(md.sahaId) : true;
+        const santralOk = md.santralId ? userSantraller.includes(md.santralId) : true;
+        return sahaOk && santralOk;
+      });
+    }
 
     return items as Notification[];
   } catch (error) {
@@ -333,7 +353,8 @@ export const subscribeToScopedNotifications = (
   userId: string,
   userSahalar: string[] = [],
   userSantraller: string[] = [],
-  callback: (notifications: Notification[]) => void
+  callback: (notifications: Notification[]) => void,
+  role?: string
 ) => {
   const q = query(
     collection(db, 'notifications'),
@@ -350,13 +371,16 @@ export const subscribeToScopedNotifications = (
       if (hiddenBy.includes(userId)) return false;
       return !('userId' in n) || n.userId === userId;
     });
-    // Saha/santral izolasyonu
-    notifications = notifications.filter(n => {
-      const md = (n.metadata || {}) as Record<string, any>;
-      const sahaOk = md.sahaId ? userSahalar.includes(md.sahaId) : true;
-      const santralOk = md.santralId ? userSantraller.includes(md.santralId) : true;
-      return sahaOk && santralOk;
-    });
+    // Saha/santral izolasyonu (yalnızca musteri ve bekci için uygula)
+    const shouldApplyScope = role === 'musteri' || role === 'bekci';
+    if (shouldApplyScope) {
+      notifications = notifications.filter(n => {
+        const md = (n.metadata || {}) as Record<string, any>;
+        const sahaOk = md.sahaId ? userSahalar.includes(md.sahaId) : true;
+        const santralOk = md.santralId ? userSantraller.includes(md.santralId) : true;
+        return sahaOk && santralOk;
+      });
+    }
     callback(notifications as Notification[]);
   });
 };

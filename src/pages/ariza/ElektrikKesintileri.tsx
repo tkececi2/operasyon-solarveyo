@@ -395,65 +395,65 @@ const ElektrikKesintileri: React.FC = () => {
           </div>
         </div>
 
-        {/* İstatistik Kartları */}
+        {/* İstatistik Kartları - 5 sütunlu düzen */}
         {istatistikler && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Toplam Kesinti</p>
+                    <p className="text-sm text-gray-600 mb-1">Toplam Kesinti</p>
                     <p className="text-2xl font-bold">{istatistikler.toplamKesinti}</p>
                   </div>
-                  <Zap className="w-8 h-8 text-gray-400" />
+                  <Zap className="w-8 h-8 text-yellow-500" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Devam Eden</p>
+                    <p className="text-sm text-gray-600 mb-1">Devam Eden</p>
                     <p className="text-2xl font-bold text-orange-600">{istatistikler.devamEdenKesinti}</p>
                   </div>
-                  <AlertTriangle className="w-8 h-8 text-orange-400" />
+                  <AlertTriangle className="w-8 h-8 text-orange-500" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Toplam Süre</p>
+                    <p className="text-sm text-gray-600 mb-1">Toplam Süre</p>
                     <p className="text-2xl font-bold">{formatSure(istatistikler.toplamSure)}</p>
                   </div>
-                  <Clock className="w-8 h-8 text-gray-400" />
+                  <Clock className="w-8 h-8 text-blue-500" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Kayıp Üretim</p>
+                    <p className="text-sm text-gray-600 mb-1">Kayıp Üretim</p>
                     <p className="text-2xl font-bold">{istatistikler.toplamKayipUretim.toFixed(0)} kWh</p>
                   </div>
-                  <TrendingDown className="w-8 h-8 text-red-400" />
+                  <TrendingDown className="w-8 h-8 text-red-500" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Kayıp Gelir</p>
-                    <p className="text-2xl font-bold">₺{istatistikler.toplamKayipGelir.toFixed(0)}</p>
+                    <p className="text-sm text-gray-600 mb-1">Kayıp Gelir</p>
+                    <p className="text-2xl font-bold text-red-600">₺{istatistikler.toplamKayipGelir.toFixed(0)}</p>
                   </div>
-                  <TrendingDown className="w-8 h-8 text-red-400" />
+                  <TrendingDown className="w-8 h-8 text-red-600" />
                 </div>
               </CardContent>
             </Card>

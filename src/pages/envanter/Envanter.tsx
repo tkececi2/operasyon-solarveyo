@@ -200,7 +200,7 @@ const EnvanterPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6" ref={contentRef}>
+    <div className="space-y-6 pb-20 md:pb-0" ref={contentRef}>
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold flex items-center gap-2"><Package className="w-6 h-6"/>Envanter</h1>

@@ -27,7 +27,8 @@ import {
   Battery,
   ArrowUpRight,
   ArrowDownRight,
-  Activity
+  Activity,
+  Building2
 } from 'lucide-react';
 // Removed unused import - SUBSCRIPTION_PLANS not used in this component
 import { useSubscription } from '../../hooks/useSubscription';
@@ -108,7 +109,8 @@ const Dashboard: React.FC = () => {
           userRole: userProfile.rol,
           userSahalar: userProfile.sahalar as any,
           userSantraller: userProfile.santraller as any,
-          userId: userProfile.id
+          userId: userProfile.id,
+          pageSize: 50 // Dashboard için son 50 arızayı göster
         }),
         getAllSahalar(userProfile.companyId, userProfile.rol, userProfile.sahalar as any),
         getAllSantraller(userProfile.companyId, userProfile.rol, userProfile.santraller as any),
@@ -292,7 +294,8 @@ const Dashboard: React.FC = () => {
     return <LoadingSpinner />;
   }
 
-  return (
+
+  const content = (
     <div className="space-y-4 lg:space-y-6">
       {/* Welcome Section */}
       <div className="mb-8">
@@ -317,8 +320,21 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* KPI Cards */}
-      <KPICards data={kpiData} />
+      {/* KPI Cards - Mobilde 2 sütun */}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {kpiData.map((kpi, index) => (
+          <Card key={index} className="p-3 md:p-6">
+            <div className="flex flex-col items-center text-center">
+              <div className={`p-3 rounded-full bg-${kpi.color}-100 mb-2`}>
+                {kpi.icon === 'alert' && <AlertTriangle className={`h-6 w-6 text-${kpi.color}-600`} />}
+                {kpi.icon === 'power' && <Wrench className={`h-6 w-6 text-${kpi.color}-600`} />}
+              </div>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900">{kpi.value}</p>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">{kpi.title}</p>
+            </div>
+          </Card>
+        ))}
+      </div>
 
       {/* Üst Grid - 3 Kolon: Program Özeti, Hava Durumu, Hızlı Erişim */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
@@ -328,41 +344,41 @@ const Dashboard: React.FC = () => {
             <CardTitle className="text-base md:text-lg">Program Özeti</CardTitle>
           </CardHeader>
           <CardContent className="">
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-3">
-              <div className="rounded-lg border p-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
-                  <Sun className="h-4 w-4" />
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="text-blue-700">
+                  <Building2 className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-lg md:text-xl font-bold text-gray-900">{dashboardStats.toplamSahalar}</div>
-                  <div className="text-[11px] md:text-xs text-gray-600">Toplam Saha</div>
+                  <div className="text-2xl font-bold text-gray-900">{dashboardStats.toplamSahalar}</div>
+                  <div className="text-sm text-gray-600">Toplam Saha</div>
                 </div>
               </div>
-              <div className="rounded-lg border p-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center">
-                  <Sun className="h-4 w-4" />
+              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="text-green-700">
+                  <Sun className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-lg md:text-xl font-bold text-gray-900">{dashboardStats.toplamSantraller}</div>
-                  <div className="text-[11px] md:text-xs text-gray-600">Toplam Santral</div>
+                  <div className="text-2xl font-bold text-gray-900">{dashboardStats.toplamSantraller}</div>
+                  <div className="text-sm text-gray-600">Toplam Santral</div>
                 </div>
               </div>
-              <div className="rounded-lg border p-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center">
-                  <Users className="h-4 w-4" />
+              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="text-purple-700">
+                  <Users className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-lg md:text-xl font-bold text-gray-900">{dashboardStats.toplamEkipUyeleri}</div>
-                  <div className="text-[11px] md:text-xs text-gray-600">Ekip Üyeleri</div>
+                  <div className="text-2xl font-bold text-gray-900">{dashboardStats.toplamEkipUyeleri}</div>
+                  <div className="text-sm text-gray-600">Ekip Üyeleri</div>
                 </div>
               </div>
-              <div className="rounded-lg border p-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center">
-                  <Wrench className="h-4 w-4" />
+              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="text-orange-700">
+                  <Wrench className="h-6 w-6" />
                 </div>
                 <div>
-                  <div className="text-lg md:text-xl font-bold text-gray-900">{dashboardStats.buAyBakimSayisi || 0}</div>
-                  <div className="text-[11px] md:text-xs text-gray-600">Bu Ay Bakımlar</div>
+                  <div className="text-2xl font-bold text-gray-900">{dashboardStats.buAyBakimSayisi || 0}</div>
+                  <div className="text-sm text-gray-600">Bu Ay Bakımlar</div>
                 </div>
               </div>
             </div>
@@ -422,22 +438,22 @@ const Dashboard: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-4 gap-3">
-            <div className="rounded-lg border p-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="rounded-lg border p-3 md:p-4">
               <div className="text-xs text-gray-500">Bildirilen Arızalar</div>
-              <div className="text-2xl font-bold">{dashboardStats.aylikArizalar}</div>
+              <div className="text-xl md:text-2xl font-bold">{dashboardStats.aylikArizalar}</div>
             </div>
-            <div className="rounded-lg border p-4">
+            <div className="rounded-lg border p-3 md:p-4">
               <div className="text-xs text-gray-500">Yapılan Bakımlar</div>
-              <div className="text-2xl font-bold">{dashboardStats.aylikBakimlar}</div>
+              <div className="text-xl md:text-2xl font-bold">{dashboardStats.aylikBakimlar}</div>
             </div>
-            <div className="rounded-lg border p-4">
+            <div className="rounded-lg border p-3 md:p-4">
               <div className="text-xs text-gray-500">Vardiya Bildirimleri</div>
-              <div className="text-2xl font-bold">{dashboardStats.aylikVardiya}</div>
+              <div className="text-xl md:text-2xl font-bold">{dashboardStats.aylikVardiya}</div>
             </div>
-            <div className="rounded-lg border p-4">
+            <div className="rounded-lg border p-3 md:p-4">
               <div className="text-xs text-gray-500">Kritik Stok Uyarıları</div>
-              <div className="text-2xl font-bold">{dashboardStats.aktifStokUyarilari}</div>
+              <div className="text-xl md:text-2xl font-bold">{dashboardStats.aktifStokUyarilari}</div>
             </div>
           </div>
         </CardContent>
@@ -452,7 +468,11 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 text-xs">
               <span className="text-gray-600">Harita:</span>
-              <select value={mapType} onChange={(e)=>setMapType(e.target.value as any)} className="border rounded px-2 py-1 text-xs">
+              <select 
+                value={mapType} 
+                onChange={(e)=>setMapType(e.target.value as any)} 
+                className="border rounded px-2 py-1 text-xs"
+              >
                 <option value="terrain">Arazi</option>
                 <option value="satellite">Uydu</option>
                 <option value="roadmap">Yol</option>
@@ -460,30 +480,64 @@ const Dashboard: React.FC = () => {
               </select>
             </div>
             <div className="flex items-center gap-1">
-              <button className="text-xs border rounded px-2 py-1" onClick={()=>setMapHeight(h=>Math.max(240, h-60))}>-</button>
-              <button className="text-xs border rounded px-2 py-1" onClick={()=>setMapHeight(h=>Math.min(640, h+60))}>+</button>
+              <button 
+                className="text-xs border rounded px-2 py-1" 
+                onClick={()=>setMapHeight(h=>Math.max(240, h-60))}
+              >
+                -
+              </button>
+              <button 
+                className="text-xs border rounded px-2 py-1" 
+                onClick={()=>setMapHeight(h=>Math.min(640, h+60))}
+              >
+                +
+              </button>
             </div>
           </div>
+          
           {sahalarList.length > 0 ? (
-            <MiniClusterMap 
-              mapType={mapType}
-              height={mapHeight}
-              points={sahalarList
-                .filter(s=>s.konum && s.konum.lat && s.konum.lng)
-                .map(s => ({
-                  lat: s.konum.lat,
-                  lng: s.konum.lng,
-                  title: s.ad,
-                  subtitle: s.konum?.adres,
-                  url: '/sahalar',
-                  status: (sahaStatusMap[s.id] || 'normal') as any,
-                  details: [
-                    { label: 'Santral', value: String((santrallerList?.filter((x:any)=>x.sahaId===s.id).length) || 0) },
-                    { label: 'Toplam Kapasite', value: `${formatNumber(s.toplamKapasite || 0, 0)} kW` }
-                  ]
-                }))
+            (() => {
+              const validSahalar = sahalarList.filter(s => s.konum && s.konum.lat && s.konum.lng);
+              if (validSahalar.length === 0) {
+                return (
+                  <div className="text-sm text-gray-600">Koordinat bilgisi olan saha bulunamadı.</div>
+                );
               }
-            />
+              
+              // Saha başına santral sayısını hesapla
+              const sahaPoints = validSahalar.map(saha => {
+                const sahaSantraller = santrallerList.filter(s => s.sahaId === saha.id);
+                const toplamKapasite = sahaSantraller.reduce((sum, s) => sum + (s.kapasite || 0), 0);
+                
+                // Saha durumunu belirle
+                let status: 'normal' | 'bakim' | 'ariza' = 'normal';
+                if (sahaStatusMap[saha.id]) {
+                  status = sahaStatusMap[saha.id];
+                }
+                
+                return {
+                  lat: saha.konum.lat,
+                  lng: saha.konum.lng,
+                  title: saha.ad,
+                  subtitle: `${sahaSantraller.length} Santral • ${toplamKapasite.toFixed(1)} kW`,
+                  status: status,
+                  details: [
+                    { label: 'İl/İlçe', value: `${saha.il}, ${saha.ilce}` },
+                    { label: 'Santral Sayısı', value: sahaSantraller.length.toString() },
+                    { label: 'Toplam Kapasite', value: `${toplamKapasite.toFixed(1)} kW` },
+                    { label: 'Durum', value: saha.durum === 'aktif' ? 'Aktif' : 'Pasif' }
+                  ]
+                };
+              });
+              
+              return (
+                <MiniClusterMap 
+                  points={sahaPoints} 
+                  mapType={mapType} 
+                  height={mapHeight} 
+                />
+              );
+            })()
           ) : (
             <div className="text-sm text-gray-600">Haritada gösterecek saha bulunamadı.</div>
           )}
@@ -491,6 +545,8 @@ const Dashboard: React.FC = () => {
       </Card>
     </div>
   );
+
+  return content;
 };
 
 export default Dashboard;
