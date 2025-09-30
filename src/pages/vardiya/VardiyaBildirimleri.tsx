@@ -278,7 +278,7 @@ const VardiyaBildirimleri: React.FC = () => {
   return (
     <div className="space-y-6 pb-20 md:pb-0">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Vardiya Bildirimleri</h1>
           <p className="text-gray-600">Vardiya raporlarını yönetin ve takip edin</p>
@@ -328,8 +328,8 @@ const VardiyaBildirimleri: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards - Mobilde 2 sütun */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      {/* Stats Cards - Mobil 2, genişte 4 sütun */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {[{
           label: 'Toplam Bildirim', value: stats.toplam, icon: <Shield className="h-8 w-8 text-slate-400" />, color: 'slate'
         }, {

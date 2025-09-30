@@ -271,7 +271,7 @@ const UretimVerileri: React.FC = () => {
   return (
     <div ref={reportRef} className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center" data-pdf-exclude="true">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2" data-pdf-exclude="true">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Üretim Verileri</h1>
           <p className="text-gray-600">Santral üretim performansını takip edin</p>
@@ -306,8 +306,8 @@ const UretimVerileri: React.FC = () => {
       {/* Filtreler - iOS'ta her zaman görünür */}
       <Card>
         <CardContent className="p-4 md:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
               <div className="text-sm font-medium text-gray-700 mb-2">Santral (Çoklu Seçim)</div>
               <div className="flex items-center gap-2 mb-2">
                 <Input
@@ -330,7 +330,7 @@ const UretimVerileri: React.FC = () => {
                   Temizle
                 </Button>
               </div>
-              <div className="border rounded-md p-2 max-h-40 overflow-y-auto">
+              <div className="border rounded-md p-2 max-h-48 overflow-y-auto">
                 <div className="flex flex-wrap gap-2">
                   {filteredSantralOptions.length === 0 ? (
                     <div className="text-sm text-gray-500">Sonuç yok</div>
