@@ -1255,27 +1255,7 @@ const Bakim: React.FC = () => {
             }] : [])
           ]}
           images={selectedMaintenance.fotograflar || []}
-          actions={[
-            ...(canPerformAction('maintenance', 'update') && selectedMaintenance.genelDurum !== 'tamamlandi' ? [{
-              label: 'Tamamlandı İşaretle',
-              onClick: async () => {
-                try {
-                  await bakimService.updateMaintenanceStatus(
-                    selectedMaintenance.id,
-                    selectedMaintenance.type,
-                    'tamamlandi'
-                  );
-                  toast.success('Bakım tamamlandı olarak işaretlendi');
-                  setShowDetailModal(false);
-                  fetchMaintenanceData();
-                } catch (error) {
-                  toast.error('Güncelleme başarısız');
-                }
-              },
-              variant: 'primary' as const,
-              icon: CheckCircle
-            }] : [])
-          ]}
+          actions={[]}
         />
       )}
 
