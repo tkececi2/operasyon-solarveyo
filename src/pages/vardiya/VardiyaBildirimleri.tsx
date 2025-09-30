@@ -352,9 +352,10 @@ const VardiyaBildirimleri: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className={`${showMobileFilters ? 'flex' : 'hidden md:flex'} flex-col lg:flex-row gap-4`}>
+          {/* Mobilde aç/kapa, büyük ekranda her zaman görünür */}
+          <div className={`${showMobileFilters ? 'flex' : 'hidden md:flex'} flex-col gap-3 lg:grid lg:grid-cols-12 lg:items-center`}>
             {/* Search */}
-            <div className="flex-1">
+            <div className="lg:col-span-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <input
@@ -368,7 +369,7 @@ const VardiyaBildirimleri: React.FC = () => {
             </div>
 
             {/* Saha Filter */}
-            <div className="w-full lg:w-48">
+            <div className="w-full lg:col-span-2">
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={sahaFilter}
@@ -382,7 +383,7 @@ const VardiyaBildirimleri: React.FC = () => {
             </div>
 
             {/* Status Filter */}
-            <div className="w-full lg:w-48">
+            <div className="w-full lg:col-span-2">
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={statusFilter}
@@ -396,7 +397,7 @@ const VardiyaBildirimleri: React.FC = () => {
             </div>
 
             {/* Shift Type Filter */}
-            <div className="w-full lg:w-48">
+            <div className="w-full lg:col-span-2">
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 value={shiftTypeFilter}
@@ -411,7 +412,7 @@ const VardiyaBildirimleri: React.FC = () => {
             </div>
 
             {/* Sadece benim sahalarım */}
-            <div className="w-full lg:w-auto flex items-center">
+            <div className="w-full lg:col-span-2 flex items-center">
               <label className="inline-flex items-center gap-2 text-sm cursor-pointer select-none bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
                 <input type="checkbox" checked={onlyMyAreas} onChange={(e)=>setOnlyMyAreas(e.target.checked)} className="h-4 w-4 text-blue-600" />
                 Sadece benim sahalarım
@@ -419,7 +420,7 @@ const VardiyaBildirimleri: React.FC = () => {
             </div>
 
             {/* Tarih Aralığı */}
-            <div className="w-full lg:w-auto flex items-center gap-2">
+            <div className="w-full lg:col-span-2 flex items-center gap-2">
               <input
                 type="date"
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -435,7 +436,7 @@ const VardiyaBildirimleri: React.FC = () => {
               />
             </div>
             {/* Hızlı Aralıklar */}
-            <div className="w-full lg:w-auto flex items-center gap-2">
+            <div className="w-full lg:col-span-2 flex items-center gap-2">
               {([
                 { key: 'today', label: 'Bugün' },
                 { key: 'yesterday', label: 'Dün' },

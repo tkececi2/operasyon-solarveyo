@@ -305,11 +305,11 @@ const UretimVerileri: React.FC = () => {
 
       {/* Filtreler - iOS'ta her zaman görünür */}
       <Card>
-        <CardContent className="p-4 md:p-6">
+        <CardContent className={`p-4 md:p-6 ${showMobileFilters ? '' : 'hidden sm:block'}`}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
               <div className="text-sm font-medium text-gray-700 mb-2">Santral (Çoklu Seçim)</div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
                 <Input
                   placeholder="Ara..."
                   value={santralQuery}
@@ -331,7 +331,7 @@ const UretimVerileri: React.FC = () => {
                 </Button>
               </div>
               <div className="border rounded-md p-2 max-h-48 overflow-y-auto">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap sm:flex-nowrap sm:overflow-x-auto sm:whitespace-nowrap gap-2">
                   {filteredSantralOptions.length === 0 ? (
                     <div className="text-sm text-gray-500">Sonuç yok</div>
                   ) : (
@@ -348,7 +348,7 @@ const UretimVerileri: React.FC = () => {
                                 : [...prev, opt.value];
                             });
                           }}
-                          className={`px-3 py-1 rounded-full text-sm border transition-colors ${selected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                          className={`px-3 py-1 rounded-full text-sm border transition-colors inline-block ${selected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                         >
                           {opt.label}
                         </button>
