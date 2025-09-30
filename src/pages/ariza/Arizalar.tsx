@@ -591,6 +591,40 @@ const Arizalar: React.FC = () => {
     }
   }, [filterYear, filterMonth]);
 
+  // Durum veya öncelik filtresi değiştiğinde daha fazla veri yükle
+  useEffect(() => {
+    if (!userProfile?.companyId) return;
+    
+    const hasStatusOrPriorityFilter = activeFilters.some(f => f.key === 'durum' || f.key === 'oncelik');
+    
+    if (hasStatusOrPriorityFilter) {
+      // Filtreleme için daha fazla veri yükle
+      (async () => {
+        try {
+          setIsLoading(true);
+          const data = await arizaService.getFaults({
+            companyId: userProfile.companyId,
+            userRole: userProfile.rol,
+            userSahalar: userProfile.sahalar as any,
+            userSantraller: userProfile.santraller as any,
+            userId: userProfile.id,
+            pageSize: 100 // Filtreleme için daha fazla kayıt getir
+          });
+          setArizalar(data.faults);
+          setLastDocument(data.lastDoc);
+          setHasMore(data.hasMore);
+        } catch (err) {
+          console.error('Filtrelenmiş arızalar getirilemedi:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+    } else if (activeFilters.length === 0) {
+      // Filtreler temizlendiğinde normal sayfalamaya dön
+      fetchArizalar(true);
+    }
+  }, [activeFilters, userProfile?.companyId]);
+
 
   // Saha seçenekleri yükle (müşteri izolasyonu ile)
   useEffect(() => {
@@ -934,6 +968,7 @@ const Arizalar: React.FC = () => {
             <div className="hidden md:flex items-center gap-2">
               <select
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                value={activeFilters.find(f => f.key === 'durum')?.value || ''}
                 onChange={(e) => {
                   if (e.target.value) {
                     addFilter({ key: 'durum', value: e.target.value, operator: 'equals' });
@@ -951,6 +986,7 @@ const Arizalar: React.FC = () => {
 
               <select
                 className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                value={activeFilters.find(f => f.key === 'oncelik')?.value || ''}
                 onChange={(e) => {
                   if (e.target.value) {
                     addFilter({ key: 'oncelik', value: e.target.value, operator: 'equals' });
@@ -1011,6 +1047,7 @@ const Arizalar: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={activeFilters.find(f => f.key === 'durum')?.value || ''}
                     onChange={(e) => {
                       if (e.target.value) addFilter({ key: 'durum', value: e.target.value, operator: 'equals' });
                       else removeFilter('durum');
@@ -1024,6 +1061,7 @@ const Arizalar: React.FC = () => {
                   </select>
                   <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value={activeFilters.find(f => f.key === 'oncelik')?.value || ''}
                     onChange={(e) => {
                       if (e.target.value) addFilter({ key: 'oncelik', value: e.target.value, operator: 'equals' });
                       else removeFilter('oncelik');
