@@ -98,7 +98,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   // Real-time bildirim dinleyicisi
   useEffect(() => {
-    if (!userProfile?.companyId || !userProfile?.id) return;
+    // Kullanıcı giriş yapmamışsa bildirim dinleme
+    if (!userProfile?.companyId || !userProfile?.id) {
+      // Kullanıcı çıkış yaptıysa state'leri temizle
+      setNotifications([]);
+      setUnreadCount(0);
+      seenIdsRef.current.clear();
+      initializedRef.current = false;
+      return;
+    }
 
     const unsubscribe = notificationService.subscribeToScopedNotifications(
       userProfile.companyId,
