@@ -119,19 +119,19 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           read: (n.readBy || []).includes(userProfile.id) || (!n.readBy && (n as any).read === true)
         }));
 
-        // Yeni gelenler için toast (ilk snapshot hariç)
-        if (initializedRef.current) {
-          const newlyAdded = filtered.filter(n => !seenIdsRef.current.has(n.id));
-          newlyAdded.forEach(n => {
-            const text = n.message ? `${n.title}: ${n.message}` : n.title;
-            if (n.type === 'error') toast.error(text);
-            else if (n.type === 'success') toast.success(text);
-            else if (n.type === 'warning') toast(text, { icon: '⚠️' });
-            else toast(text, { icon: 'ℹ️' });
-          });
-        } else {
+        // Toast bildirimleri devre dışı (popup'ları kaldırmak için)
+        if (!initializedRef.current) {
           initializedRef.current = true;
         }
+        // Yeni gelenler için toast gösterme - popup'ları kaldırdık
+        // const newlyAdded = filtered.filter(n => !seenIdsRef.current.has(n.id));
+        // newlyAdded.forEach(n => {
+        //   const text = n.message ? `${n.title}: ${n.message}` : n.title;
+        //   if (n.type === 'error') toast.error(text);
+        //   else if (n.type === 'success') toast.success(text);
+        //   else if (n.type === 'warning') toast(text, { icon: '⚠️' });
+        //   else toast(text, { icon: 'ℹ️' });
+        // });
 
         // Görülen ID'leri güncelle
         seenIdsRef.current = new Set(filtered.map(n => n.id));

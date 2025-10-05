@@ -15,6 +15,7 @@ import {
 import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { ArizaForm } from '../../components/forms/ArizaForm';
 import { useAuth } from '../../hooks/useAuth';
+import { useCompany } from '../../hooks';
 import { useAdvancedFilter, FilterConfig } from '../../hooks/useAdvancedFilter';
 import { arizaService } from '../../services';
 import type { Fault } from '../../types';
@@ -26,11 +27,13 @@ import { getSantrallerBySaha, getAllSantraller } from '../../services/santralSer
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { exportToExcel } from '../../utils/exportUtils';
+import { exportArizalarToPDF } from '../../utils/pdfReportUtils';
 import FeedbackWidget from '../../components/ariza/FeedbackWidget';
 import { getFeedbackSummaryForTargets, getUserFeedbackMap, toggleLike, createFeedback, upsertFeedbackForTarget, getUserLikesForFeedbacks, getFeedbackForTarget, deleteFeedback } from '../../services/feedbackService';
 
 const Arizalar: React.FC = () => {
   const { userProfile, canPerformAction } = useAuth();
+  const { company } = useCompany();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedAriza, setSelectedAriza] = useState<Fault | null>(null);
@@ -657,77 +660,63 @@ const Arizalar: React.FC = () => {
   const monthOptions = [{ value: 'all', label: 'Tüm Aylar' }, ...monthNames.map((m, i) => ({ value: String(i), label: m }))];
 
   const handleExportPdf = async () => {
-    if (!listRef.current) return;
-
-    const loadingToast = toast.loading('PDF oluşturuluyor...');
-
-    // PDF öncesi: kartlardaki kısaltmaları kaldır (truncate / line-clamp)
-    const clampedEls = listRef.current.querySelectorAll('.truncate, .line-clamp-1, .line-clamp-2, .line-clamp-3') as NodeListOf<HTMLElement>;
-    const removedClassMap: Array<{ el: HTMLElement; classes: string[]; prevStyle: string }> = [];
-    clampedEls.forEach((el) => {
-      const removed: string[] = [];
-      ['truncate', 'line-clamp-1', 'line-clamp-2', 'line-clamp-3'].forEach((cls) => {
-        if (el.classList.contains(cls)) {
-          el.classList.remove(cls);
-          removed.push(cls);
-        }
-      });
-      removedClassMap.push({ el, classes: removed, prevStyle: el.getAttribute('style') || '' });
-      // Uzun metinlerin tamamen görünmesi için
-      el.style.overflow = 'visible';
-      el.style.whiteSpace = 'normal';
-      (el.style as any).WebkitLineClamp = 'unset';
+    const loadingToast = toast.loading('PDF raporu indiriliyor...', {
+      duration: Infinity // Toast manuel kapatılana kadar kalsın
     });
 
     try {
-      // Reflow için küçük bir bekleme
-      await new Promise((r) => setTimeout(r, 100));
-
-      const canvas = await html2canvas(listRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: listRef.current.scrollWidth,
-        windowHeight: listRef.current.scrollHeight,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth; // tam sayfa genişlik
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      // Başlık
-      const topMargin = 25;
-      pdf.setFontSize(16);
-      pdf.text('ARIZALAR', pdfWidth / 2, 15, { align: 'center' });
-
-      // İlk sayfaya üst marj bırakıp ekle
-      pdf.addImage(imgData, 'PNG', 0, topMargin, imgWidth, imgHeight);
-
-      // Kalan yükseklik hesabı (ilk sayfada başlık nedeniyle daha az alan var)
-      let heightLeft = imgHeight - (pdfHeight - topMargin);
-      while (heightLeft > 0) {
-        const position = heightLeft - imgHeight; // sonraki sayfalarda başlık yok
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+      // Raporlayan bilgilerini map'e dönüştür
+      const newRaporlayanMap: Record<string, { ad: string; fotoURL?: string }> = {};
+      
+      for (const ariza of items) {
+        if (ariza.raporlayanId && !newRaporlayanMap[ariza.raporlayanId]) {
+          try {
+            const userDoc = await getDoc(doc(db, 'kullanicilar', ariza.raporlayanId));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              newRaporlayanMap[ariza.raporlayanId] = {
+                ad: userData.ad || 'Bilinmeyen',
+                fotoURL: userData.fotoURL
+              };
+            }
+          } catch (error) {
+            console.error('Raporlayan bilgisi alınamadı:', error);
+            newRaporlayanMap[ariza.raporlayanId] = { ad: 'Bilinmeyen' };
+          }
+        }
       }
 
-      pdf.save('ariza-raporu.pdf');
-      toast.success('PDF indirildi');
-    } catch (e) {
-      console.error(e);
-      toast.error('PDF oluşturulamadı');
-    } finally {
-      // Sınıfları ve stilleri geri al
-      removedClassMap.forEach(({ el, classes, prevStyle }) => {
-        classes.forEach((c) => el.classList.add(c));
-        if (prevStyle) el.setAttribute('style', prevStyle);
-        else el.removeAttribute('style');
+      // Aktif filtreleri al
+      const durumFilter = activeFilters.find(f => f.key === 'durum')?.value;
+      const oncelikFilter = activeFilters.find(f => f.key === 'oncelik')?.value;
+      
+      // Saha ID'sini saha adına çevir
+      const sahaAdi = selectedSaha ? sahaOptions.find(o => o.value === selectedSaha)?.label : undefined;
+
+      // Profesyonel PDF oluştur
+      await exportArizalarToPDF({
+        arizalar: items,
+        company: company,
+        santralMap: santralMap,
+        raporlayanMap: newRaporlayanMap,
+        filters: {
+          year: filterYear,
+          month: filterMonth,
+          status: durumFilter,
+          priority: oncelikFilter,
+          saha: sahaAdi
+        }
       });
+
+      // PDF indirme işleminin tamamlanması için bekle
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      
+      // Toast'ı kapat
       toast.dismiss(loadingToast);
+    } catch (error) {
+      console.error('PDF oluşturma hatası:', error);
+      toast.dismiss(loadingToast);
+      toast.error('PDF olusturulamadi');
     }
   };
 

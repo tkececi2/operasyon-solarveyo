@@ -17,9 +17,12 @@ import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { exportBakimToPDF } from '../../utils/pdfReportUtils';
+import { useCompany } from '../../hooks';
 
 const Bakim: React.FC = () => {
   const { userProfile, canPerformAction } = useAuth();
+  const { company } = useCompany();
   const location = useLocation();
   
   // URL'e göre aktif tab'ı belirle
@@ -298,118 +301,66 @@ const Bakim: React.FC = () => {
     }
   };
 
-  // Export PDF - Arızalar sayfası ile uyumlu (clamp kaldırma + başlık)
+  // Export PDF - Profesyonel sistem
   const exportPDF = async () => {
-    if (!contentRef.current) {
-      toast.error('PDF oluşturulamadı - içerik bulunamadı');
-      return;
-    }
-    
-    const loadingToast = toast.loading('PDF oluşturuluyor...');
+    const loadingToast = toast.loading('PDF raporu indiriliyor...', {
+      duration: Infinity
+    });
     
     try {
-      // Önce içeriğin yüklenmesini bekle
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      // PDF'e dahil edilmeyecek elemanları geçici gizle
-      const toHide = document.querySelectorAll('[data-pdf-exclude="true"]') as NodeListOf<HTMLElement>;
-      const prevDisplays: string[] = [];
-      toHide.forEach((el) => { prevDisplays.push(el.style.display); el.style.display = 'none'; });
-
-      // Geçici başlık bloğu ekle (Türkçe karakterler için html2canvas üzerinden render)
-      const title =
-        activeTab === 'elektrik'
-          ? 'Elektrik Bakım Raporu'
-          : activeTab === 'mekanik'
-          ? 'Mekanik Bakım Raporu'
-          : 'Yapılan İşler Raporu';
-      const header = document.createElement('div');
-      header.setAttribute('data-pdf-temp', 'true');
-      header.style.textAlign = 'center';
-      header.style.margin = '12px 0 16px 0';
-      header.innerHTML = `<div style="font-size:20px;font-weight:700;color:#111827;">${title}</div><div style="font-size:12px;color:#374151;">Tarih: ${new Date().toLocaleDateString('tr-TR')}</div>`;
-      contentRef.current.insertBefore(header, contentRef.current.firstChild);
-
-      // PDF öncesi: metin kısaltmalarını geçici kaldır
-      const root = contentRef.current;
-      const clampedEls = root.querySelectorAll('.truncate, .line-clamp-1, .line-clamp-2, .line-clamp-3') as NodeListOf<HTMLElement>;
-      const removedClassMap: Array<{ el: HTMLElement; classes: string[]; prevStyle: string }> = [];
-      clampedEls.forEach((el) => {
-        const removed: string[] = [];
-        ['truncate', 'line-clamp-1', 'line-clamp-2', 'line-clamp-3'].forEach((cls) => {
-          if (el.classList.contains(cls)) {
-            el.classList.remove(cls);
-            removed.push(cls);
+      // Aktif tab'a göre veriyi al
+      const currentData = activeTab === 'elektrik' 
+        ? filteredElektrik 
+        : activeTab === 'mekanik' 
+        ? filteredMekanik 
+        : filteredYapilanIsler;
+      
+      // Yapan kişi bilgilerini map'e dönüştür
+      const yapanKisiMap: Record<string, { ad: string; fotoURL?: string }> = {};
+      
+      for (const bakim of currentData) {
+        const userId = bakim.yapanKisiId || bakim.yapanKisi || bakim.olusturanKisi;
+        if (userId && !yapanKisiMap[userId]) {
+          try {
+            const userDoc = await getDoc(doc(db, 'kullanicilar', userId));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              yapanKisiMap[userId] = {
+                ad: userData.ad || 'Bilinmeyen',
+                fotoURL: userData.fotoURL
+              };
+            }
+          } catch (error) {
+            console.error('Yapan kişi bilgisi alınamadı:', error);
+            yapanKisiMap[userId] = { ad: 'Bilinmeyen' };
           }
-        });
-        removedClassMap.push({ el, classes: removed, prevStyle: el.getAttribute('style') || '' });
-        el.style.overflow = 'visible';
-        el.style.whiteSpace = 'normal';
-        (el.style as any).WebkitLineClamp = 'unset';
-      });
-      
-      const canvas = await html2canvas(contentRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        windowWidth: contentRef.current.scrollWidth,
-        windowHeight: contentRef.current.scrollHeight
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10; // kenar boşluğu
-      const imgWidth = pdfWidth - margin * 2;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const topMargin = 10;
-
-      pdf.addImage(imgData, 'PNG', margin, topMargin, imgWidth, imgHeight);
-
-      // Çok sayfalı destek
-      let heightLeft = imgHeight - (pdfHeight - topMargin);
-      while (heightLeft > 0) {
-        const position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+        }
       }
-
-      const fileName = `bakim-raporu-${activeTab}-${new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(fileName);
       
+      // Profesyonel PDF oluştur
+      await exportBakimToPDF({
+        bakimlar: currentData,
+        bakimTipi: activeTab,
+        company: company,
+        santralMap: santralMap,
+        sahaMap: sahaMap,
+        yapanKisiMap: yapanKisiMap,
+        filters: {
+          year: filterYear,
+          month: filterMonth,
+          saha: selectedSaha
+        }
+      });
+
+      // PDF indirme işleminin tamamlanması için bekle
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      
+      // Toast'ı kapat
       toast.dismiss(loadingToast);
-      toast.success('PDF başarıyla indirildi');
     } catch (error) {
-      console.error('PDF export hatası:', error);
+      console.error('PDF oluşturma hatası:', error);
       toast.dismiss(loadingToast);
-      toast.error('PDF oluşturulamadı');
-    } finally {
-      // Başlık bloğunu kaldır
-      const temp = contentRef.current?.querySelector('[data-pdf-temp="true"]');
-      if (temp && temp.parentElement) temp.parentElement.removeChild(temp);
-
-      // Gizlenen butonları geri getir
-      const toHide = document.querySelectorAll('[data-pdf-exclude="true"]') as NodeListOf<HTMLElement>;
-      const prevDisplays: string[] = [];
-      // Not: prevDisplays üstte tanımlıydı; burada yoksa default görünür yap
-      toHide.forEach((el) => { el.style.display = ''; });
-
-      // Stil ve sınıfları geri al
-      if (contentRef.current) {
-        const root = contentRef.current;
-        const clampedEls = root.querySelectorAll('[style]') as NodeListOf<HTMLElement>;
-        clampedEls.forEach((el) => {
-          // PDF öncesi eklediğimiz stil ipuçlarını temizleyelim
-          if (el.style.whiteSpace === 'normal' || el.style.overflow === 'visible') {
-            el.style.whiteSpace = '';
-            el.style.overflow = '';
-            (el.style as any).WebkitLineClamp = '';
-          }
-        });
-      }
+      toast.error('PDF olusturulamadi');
     }
   };
 

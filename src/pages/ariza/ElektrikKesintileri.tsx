@@ -21,9 +21,12 @@ import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
+import { exportElektrikKesintileriToPDF } from '../../utils/pdfReportUtils';
+import { useCompany } from '../../hooks';
 
 const ElektrikKesintileri: React.FC = () => {
   const { userProfile, canPerformAction } = useAuth();
+  const { company } = useCompany();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedKesinti, setSelectedKesinti] = useState<PowerOutage | null>(null);
   const [kesintiler, setKesintiler] = useState<PowerOutage[]>([]);
@@ -38,83 +41,58 @@ const ElektrikKesintileri: React.FC = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [raporlayanMap, setRaporlayanMap] = useState<Record<string, { ad: string; fotoURL?: string }>>({});
 
-  // Export PDF
+  // Export PDF - Profesyonel
   const exportPDF = async () => {
-    if (!contentRef.current) return;
-    const loading = toast.loading('PDF oluşturuluyor...');
-    // PDF'e dahil edilmeyecek elemanları gizle
-    const toHide = document.querySelectorAll('[data-pdf-exclude="true"]') as NodeListOf<HTMLElement>;
-    const prevDisplays: string[] = [];
-    toHide.forEach((el) => { prevDisplays.push(el.style.display); el.style.display = 'none'; });
-    // Geçici başlık bloğu ekle (Türkçe karakterler için html2canvas üzerinden render)
-    const header = document.createElement('div');
-    header.setAttribute('data-pdf-temp', 'true');
-    header.style.textAlign = 'center';
-    header.style.margin = '12px 0 16px 0';
-    header.innerHTML = `<div style=\"font-size:20px;font-weight:700;color:#111827;\">Elektrik Kesintileri Raporu</div><div style=\"font-size:12px;color:#374151;\">Tarih: ${new Date().toLocaleDateString('tr-TR')}</div>`;
-    contentRef.current.insertBefore(header, contentRef.current.firstChild);
-    // geçici olarak metin kısaltmalarını kaldır
-    const root = contentRef.current;
-    const clampedEls = root.querySelectorAll('.truncate, .line-clamp-1, .line-clamp-2, .line-clamp-3') as NodeListOf<HTMLElement>;
-    const removedClassMap: Array<{ el: HTMLElement; classes: string[]; prevStyle: string }> = [];
-    clampedEls.forEach((el) => {
-      const removed: string[] = [];
-      ['truncate', 'line-clamp-1', 'line-clamp-2', 'line-clamp-3'].forEach((cls) => {
-        if (el.classList.contains(cls)) {
-          el.classList.remove(cls);
-          removed.push(cls);
-        }
-      });
-      removedClassMap.push({ el, classes: removed, prevStyle: el.getAttribute('style') || '' });
-      el.style.overflow = 'visible';
-      el.style.whiteSpace = 'normal';
-      (el.style as any).WebkitLineClamp = 'unset';
+    const loadingToast = toast.loading('PDF raporu indiriliyor...', {
+      duration: Infinity
     });
 
     try {
-      await new Promise((r) => setTimeout(r, 100));
-      const canvas = await html2canvas(contentRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: contentRef.current.scrollWidth,
-        windowHeight: contentRef.current.scrollHeight,
-      });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10; // kenar boşluğu
-      const imgWidth = pdfWidth - margin * 2;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      const topMargin = 10;
-
-      pdf.addImage(imgData, 'PNG', margin, topMargin, imgWidth, imgHeight);
-
-      let heightLeft = imgHeight - (pdfHeight - topMargin);
-      while (heightLeft > 0) {
-        const position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+      // Raporlayan bilgilerini map'e dönüştür
+      const newRaporlayanMap: Record<string, { ad: string; fotoURL?: string }> = {};
+      
+      for (const kesinti of filteredKesintiler) {
+        const userId = kesinti.olusturanKisi; // PowerOutage tipinde alan adı: olusturanKisi
+        if (userId && !newRaporlayanMap[userId]) {
+          try {
+            const userDoc = await getDoc(doc(db, 'kullanicilar', userId));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              newRaporlayanMap[userId] = {
+                ad: userData.ad || 'Bilinmeyen',
+                fotoURL: userData.fotoURL
+              };
+            }
+          } catch (error) {
+            console.error('Raporlayan bilgisi alınamadı:', error);
+            newRaporlayanMap[userId] = { ad: 'Bilinmeyen' };
+          }
+        }
       }
-      pdf.save(`elektrik-kesintileri-${new Date().toISOString().split('T')[0]}.pdf`);
-      toast.success('PDF indirildi');
-    } catch (e) {
-      console.error('PDF export hatası', e);
-      toast.error('PDF oluşturulamadı');
-    } finally {
-      // Geçici başlığı kaldır
-      const temp = contentRef.current?.querySelector('[data-pdf-temp="true"]');
-      if (temp && temp.parentElement) temp.parentElement.removeChild(temp);
-      // gizlenenleri geri al
-      toHide.forEach((el, i) => { el.style.display = prevDisplays[i]; });
-      removedClassMap.forEach(({ el, classes, prevStyle }) => {
-        classes.forEach((c) => el.classList.add(c));
-        if (prevStyle) el.setAttribute('style', prevStyle);
-        else el.removeAttribute('style');
+
+      // Profesyonel PDF oluştur
+      await exportElektrikKesintileriToPDF({
+        kesintiler: filteredKesintiler,
+        company: company,
+        sahalar: sahalar,
+        raporlayanMap: newRaporlayanMap,
+        filters: {
+          year: filterYear,
+          month: filterMonth,
+          durum: filterDurum,
+          saha: filterSaha
+        }
       });
-      toast.dismiss(loading);
+
+      // PDF indirme işleminin tamamlanması için bekle
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      
+      // Toast'ı kapat
+      toast.dismiss(loadingToast);
+    } catch (error) {
+      console.error('PDF oluşturma hatası:', error);
+      toast.dismiss(loadingToast);
+      toast.error('PDF olusturulamadi');
     }
   };
 
@@ -130,8 +108,8 @@ const ElektrikKesintileri: React.FC = () => {
           Sure: k.sure ? `${k.sure} dk` : '-',
           Neden: getNedenLabel(k.neden),
           EtkilenenKapasite_kW: k.etkilenenKapasite,
-          KayipUretim_kWh: k.kayilanUretim || 0,
-          KayipGelir_TL: k.kayilanGelir || 0,
+          KayipUretim_kWh: k.kayilanUretim ? new Intl.NumberFormat('tr-TR').format(k.kayilanUretim) : '0',
+          KayipGelir_TL: k.kayilanGelir ? new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2 }).format(k.kayilanGelir) : '0,00',
           Aciklama: k.aciklama || '',
         };
       });
@@ -439,7 +417,9 @@ const ElektrikKesintileri: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Kayıp Üretim</p>
-                    <p className="text-2xl font-bold">{istatistikler.toplamKayipUretim.toFixed(0)} kWh</p>
+                    <p className="text-2xl font-bold">
+                      {new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(istatistikler.toplamKayipUretim)} kWh
+                    </p>
                   </div>
                   <TrendingDown className="w-8 h-8 text-red-500" />
                 </div>
@@ -451,7 +431,9 @@ const ElektrikKesintileri: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Kayıp Gelir</p>
-                    <p className="text-2xl font-bold text-red-600">₺{istatistikler.toplamKayipGelir.toFixed(0)}</p>
+                    <p className="text-2xl font-bold text-red-600">
+                      ₺{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(istatistikler.toplamKayipGelir)}
+                    </p>
                   </div>
                   <TrendingDown className="w-8 h-8 text-red-600" />
                 </div>
@@ -635,13 +617,17 @@ const ElektrikKesintileri: React.FC = () => {
                     {kesinti.kayilanUretim && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Kayıp Üretim:</span>
-                        <span className="font-medium text-red-600">{kesinti.kayilanUretim.toFixed(0)} kWh</span>
+                        <span className="font-medium text-red-600">
+                          {new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(kesinti.kayilanUretim)} kWh
+                        </span>
                       </div>
                     )}
                     {kesinti.kayilanGelir && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Kayıp Gelir:</span>
-                        <span className="font-medium text-red-600">₺{kesinti.kayilanGelir.toFixed(0)}</span>
+                        <span className="font-medium text-red-600">
+                          ₺{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(kesinti.kayilanGelir)}
+                        </span>
                       </div>
                     )}
                   </div>

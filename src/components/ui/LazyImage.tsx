@@ -28,7 +28,10 @@ const LazyImage: React.FC<LazyImageProps> = ({
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    // IntersectionObserver ile lazy loading
+    // Direkt yükle - lazy loading sorunları için
+    loadImage();
+    
+    // IntersectionObserver ile lazy loading (fallback)
     if (loading === 'lazy' && 'IntersectionObserver' in window) {
       const observer = new IntersectionObserver(
         (entries) => {
@@ -40,7 +43,8 @@ const LazyImage: React.FC<LazyImageProps> = ({
           });
         },
         {
-          rootMargin: '50px' // 50px önceden yüklemeye başla
+          rootMargin: '100px', // 100px önceden yüklemeye başla
+          threshold: 0.01
         }
       );
 
@@ -53,9 +57,6 @@ const LazyImage: React.FC<LazyImageProps> = ({
           observer.unobserve(imgRef.current);
         }
       };
-    } else {
-      // Eager loading veya IntersectionObserver yoksa hemen yükle
-      loadImage();
     }
   }, [src]);
 

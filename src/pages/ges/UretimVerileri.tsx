@@ -5,10 +5,12 @@ import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCompany } from '../../hooks';
 import { getProductionData } from '../../services/uretimService';
 import { getAllSantraller, getAylikUretim, setAylikUretim } from '../../services/santralService';
 import { CO2_FACTOR_KG_PER_KWH } from '../../utils/constants';
 import { ProductionChart } from '../../components/charts/ProductionChart';
+import { exportUretimVerileriToPDF } from '../../utils/pdfReportUtils';
 
 interface UretimVerisiUI {
   id: string;
@@ -26,6 +28,7 @@ interface UretimVerisiUI {
 
 const UretimVerileri: React.FC = () => {
   const { userProfile, canPerformAction } = useAuth();
+  const { company } = useCompany();
   const [selectedSantrals, setSelectedSantrals] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [santralMap, setSantralMap] = useState<Record<string, any>>({});
@@ -43,41 +46,66 @@ const UretimVerileri: React.FC = () => {
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [santralQuery, setSantralQuery] = useState<string>('');
 
-  // Rapor indirme (CSV)
+  // Rapor indirme - Profesyonel PDF
   const handleExportReport = async () => {
-    if (!reportRef.current) return;
+    const loadingToast = toast.loading('PDF raporu indiriliyor...', {
+      duration: Infinity
+    });
+
     try {
-      // PDF'e dahil edilmeyecek elemanları gizle
-      const toHide = document.querySelectorAll('[data-pdf-exclude="true"]');
-      const prevDisplays: string[] = [];
-      toHide.forEach((el:any) => { prevDisplays.push(el.style.display); el.style.display = 'none'; });
-
-      const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+      // Aylık üretim verisi ve tahmin verisi
+      let aylikData: Record<string, number> | undefined = undefined;
+      let aylikTahmin: Record<string, number> | undefined = undefined;
+      
+      if (selectedSantrals.length === 1 && monthlyView) {
+        aylikData = monthlyView;
+        
+        // Seçili santralın tahmin verilerini al
+        const santral = santralMap[selectedSantrals[0]];
+        if (santral?.aylikTahminler) {
+          aylikTahmin = santral.aylikTahminler;
+        }
       }
-      const namePart = selectedSantrals.length === 1 ? (santralMap[selectedSantrals[0]]?.ad || 'santral') : 'toplam';
-      pdf.save(`uretim-raporu-${namePart}-${viewYear}.pdf`);
 
-      // Gizlenenleri geri aç
-      toHide.forEach((el:any, i:number) => { el.style.display = prevDisplays[i]; });
-    } catch (e:any) {
-      console.error('PDF export error', e);
-      toast.error('PDF oluşturulurken hata oluştu');
+      // En yüksek değerleri hesapla
+      const enYuksekGun = veriler.length > 0 
+        ? veriler.reduce((max, v) => v.gunlukUretim > max.gunlukUretim ? v : max)
+        : null;
+      
+      const enYuksekPerf = veriler.length > 0
+        ? veriler.reduce((max, v) => v.performansOrani > max.performansOrani ? v : max)
+        : null;
+      
+      // Toplam gelir hesapla
+      const toplamGelir = veriler.reduce((sum, v) => sum + (v.gelir || 0), 0);
+
+      // Profesyonel PDF oluştur
+      await exportUretimVerileriToPDF({
+        veriler: veriler,
+        santralMap: santralMap,
+        selectedSantrals: selectedSantrals,
+        viewYear: viewYear,
+        company: company,
+        toplamUretim: toplamUretim,
+        toplamCO2: toplamCO2Tasarruf,
+        ortalamaPerformans: ortalamaPerformans,
+        aylikData: aylikData,
+        aylikTahmin: aylikTahmin,
+        chartElementId: 'production-chart',
+        toplamGelir: toplamGelir,
+        enYuksekGun: enYuksekGun,
+        enYuksekPerf: enYuksekPerf
+      });
+
+      // PDF indirme işleminin tamamlanması için bekle
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      
+      // Toast'ı kapat
+      toast.dismiss(loadingToast);
+    } catch (error) {
+      console.error('PDF oluşturma hatası:', error);
+      toast.dismiss(loadingToast);
+      toast.error('PDF olusturulamadi');
     }
   };
 
@@ -303,18 +331,39 @@ const UretimVerileri: React.FC = () => {
         </div>
       </div>
 
-      {/* Filtreler - iOS'ta her zaman görünür */}
+      {/* Filtreler - Düzenli ve Kompakt */}
       <Card>
         <CardContent className={`p-4 md:p-6 ${showMobileFilters ? '' : 'hidden sm:block'}`}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
-              <div className="text-sm font-medium text-gray-700 mb-2">Santral (Çoklu Seçim)</div>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
-                <Input
-                  placeholder="Ara..."
-                  value={santralQuery}
-                  onChange={(e:any) => setSantralQuery(e.target.value)}
-                />
+          {/* Yıl Seçimi - Üstte Tek Satır */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filtreler
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Yıl:</span>
+              <select
+                value={viewYear}
+                onChange={(e) => setViewYear(Number(e.target.value))}
+                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {[...Array(6)].map((_, i) => {
+                  const year = new Date().getFullYear() - i;
+                  return <option key={year} value={year}>{year}</option>;
+                })}
+              </select>
+            </div>
+          </div>
+          
+          {/* Santral Seçimi - Alt Bölüm */}
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-2">Santral Seçimi</div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-2">
+              <Input
+                placeholder="Ara..."
+                value={santralQuery}
+                onChange={(e:any) => setSantralQuery(e.target.value)}
+              />
                 <Button
                   type="button"
                   variant="secondary"
@@ -356,23 +405,8 @@ const UretimVerileri: React.FC = () => {
                     })
                   )}
                 </div>
-              </div>
-              <div className="mt-1 text-xs text-gray-500">Seçili: {selectedSantrals.length}</div>
             </div>
-            <div className="flex items-end lg:justify-end">
-              <div className="w-full lg:w-auto">
-                <label className="sr-only">Yıl</label>
-                <select
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm w-28"
-                  value={String(viewYear)}
-                  onChange={(e) => setViewYear(Number(e.target.value))}
-                >
-                  {yearOptions.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <div className="mt-1 text-xs text-gray-500">Seçili: {selectedSantrals.length}</div>
           </div>
         </CardContent>
       </Card>
@@ -418,60 +452,61 @@ const UretimVerileri: React.FC = () => {
         <div className="min-h-[120px] flex items-center justify-center"><LoadingSpinner /></div>
       )}
 
-      {/* Summary Stats - Mobilde özel düzen */}
-      <div className="space-y-4">
-        {/* İlk satır - Toplam Üretim (tek kart, tam genişlik) */}
+      {/* Summary Stats - 3 Sütun Kompakt Düzen */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Toplam Üretim */}
         <Card>
-          <CardContent className="p-4 md:p-6">
+          <CardContent className="p-6">
             <div className="flex flex-col items-center text-center">
-              <Sun className="h-12 w-12 text-solar-500 mb-3" />
-              <p className="text-2xl md:text-3xl font-bold text-gray-900">
-                {toplamUretim.toLocaleString()}
+              <Sun className="h-12 w-12 text-yellow-500 mb-3" />
+              <p className="text-3xl font-bold text-gray-900">
+                {toplamUretim.toLocaleString('tr-TR')}
               </p>
-              <p className="text-sm md:text-base text-gray-600 mt-1">kWh Toplam Üretim</p>
+              <p className="text-sm text-gray-600 mt-2">kWh Toplam Üretim</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* İkinci satır - CO2 ve Performans (2 sütun) */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col items-center text-center">
-                <Leaf className="h-10 w-10 text-green-600 mb-2" />
-                <p className="text-xl md:text-2xl font-bold text-gray-900">
-                  {toplamCO2Tasarruf.toLocaleString()}
-                </p>
-                <p className="text-xs md:text-sm text-gray-600">kg CO₂ Tasarruf</p>
-              </div>
-            </CardContent>
-          </Card>
+        {/* CO₂ Tasarruf */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center text-center">
+              <Leaf className="h-12 w-12 text-green-600 mb-3" />
+              <p className="text-3xl font-bold text-green-600">
+                {toplamCO2Tasarruf.toLocaleString('tr-TR')}
+              </p>
+              <p className="text-sm text-gray-600 mt-2">kg CO₂ Tasarruf</p>
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col items-center text-center">
-                <TrendingUp className="h-10 w-10 text-blue-500 mb-2" />
-                <p className="text-xl md:text-2xl font-bold text-gray-900">
-                  %{ortalamaPerformans}
-                </p>
-                <p className="text-xs md:text-sm text-gray-600">Ortalama Performans</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Ortalama Performans */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center text-center">
+              <TrendingUp className="h-12 w-12 text-blue-500 mb-3" />
+              <p className="text-3xl font-bold text-blue-600">
+                %{ortalamaPerformans}
+              </p>
+              <p className="text-sm text-gray-600 mt-2">Ortalama Performans</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Performans Grafikleri (Aylık) */}
       {selectedSantrals.length > 0 && (
-        <ProductionChart
-          title={`Üretim Analizi - ${viewYear}`}
-          data={monthOrder.map((k, idx) => ({
+        <div id="production-chart">
+          <ProductionChart
+            title={`Üretim Analizi - ${viewYear}`}
+            data={monthOrder.map((k, idx) => ({
             date: new Date(viewYear, idx, 15).toISOString(),
             production: Number((monthlyView as any)?.[k] || 0),
             target: selectedSantrals.reduce((sum, id) => sum + Number(santralMap[id]?.aylikTahminler?.[k] || 0), 0),
           }))}
           height={320}
-        />
+          />
+        </div>
       )}
 
       {/* Aylık Üretim Tablosu */}
