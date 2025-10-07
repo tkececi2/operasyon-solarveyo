@@ -89,21 +89,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // iOS için: Uygulama açılışında kaydedilmiş credentials ile otomatik login
       if (platform.isNative()) {
         try {
+          // Eski UID sistemini temizle
+          await Preferences.remove({ key: 'firebase_user_uid' });
+          
           const { value: savedEmail } = await Preferences.get({ key: 'user_email' });
           const { value: savedPassword } = await Preferences.get({ key: 'user_password' });
           
+          console.log('📱 iOS: Checking saved credentials...', { 
+            hasEmail: !!savedEmail, 
+            hasPassword: !!savedPassword,
+            hasCurrentUser: !!auth.currentUser 
+          });
+          
           if (savedEmail && savedPassword && mounted && !auth.currentUser) {
             console.log('📱 iOS: Kaydedilmiş kullanıcı bulundu, otomatik giriş yapılıyor...');
+            console.log('📱 iOS: Email:', savedEmail);
+            
             try {
               // Otomatik giriş yap
               await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
               console.log('📱 iOS: Otomatik giriş başarılı!');
-            } catch (error) {
-              console.error('📱 iOS: Otomatik giriş başarısız:', error);
+            } catch (error: any) {
+              console.error('📱 iOS: Otomatik giriş başarısız:', error.code, error.message);
               // Hatalı credentials'ı temizle
               await Preferences.remove({ key: 'user_email' });
               await Preferences.remove({ key: 'user_password' });
             }
+          } else {
+            console.log('📱 iOS: No saved credentials or user already logged in');
           }
         } catch (error) {
           console.error('iOS auth init hatası:', error);
@@ -288,7 +301,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await Preferences.set({ key: 'user_email', value: email });
           await Preferences.set({ key: 'user_password', value: password });
-          console.log('📱 iOS: Kullanıcı bilgileri kaydedildi');
+          console.log('📱 iOS: Kullanıcı bilgileri kaydedildi:', { email });
+          
+          // Kaydedilen bilgileri kontrol et
+          const { value: checkEmail } = await Preferences.get({ key: 'user_email' });
+          const { value: checkPassword } = await Preferences.get({ key: 'user_password' });
+          console.log('📱 iOS: Verification - saved data:', { 
+            emailSaved: !!checkEmail,
+            passwordSaved: !!checkPassword 
+          });
         } catch (error) {
           console.error('iOS bilgi kaydetme hatası:', error);
         }
