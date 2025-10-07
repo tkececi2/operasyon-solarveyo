@@ -18,6 +18,7 @@ import { analyticsService } from '../services/analyticsService';
 import { SAAS_CONFIG } from '../config/saas.config';
 import { MobileNotificationService } from '../services/mobile/notificationService';
 import { platform } from '../utils/platform';
+import { Preferences } from '@capacitor/preferences';
 
 interface AuthContextType {
   currentUser: FirebaseUser | null;
@@ -80,28 +81,85 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Auth state değişikliklerini dinle
+  // Auth state değişikliklerini dinle + iOS persistence
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setCurrentUser(user);
-        const profile = await fetchUserProfile(user.uid);
+    let mounted = true;
+    
+    const initAuth = async () => {
+      // iOS için: Uygulama açılışında kaydedilmiş kullanıcıyı kontrol et
+      if (platform.isNative()) {
+        try {
+          const { value: savedUid } = await Preferences.get({ key: 'firebase_user_uid' });
+          if (savedUid && mounted) {
+            console.log('📱 iOS: Kaydedilmiş kullanıcı bulundu:', savedUid);
+            // Firebase'in auth state'ini bekle
+            const user = auth.currentUser;
+            if (!user) {
+              console.log('📱 iOS: Firebase user yok, bekliyor...');
+            }
+          }
+        } catch (error) {
+          console.error('iOS auth init hatası:', error);
+        }
+      }
+      
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        if (!mounted) return;
         
-        // Kullanıcı pasif ise otomatik çıkış yap
-        if (profile && profile.aktif === false) {
-          await signOut(auth);
+        if (user) {
+          setCurrentUser(user);
+          
+          // iOS için: UID'yi kaydet
+          if (platform.isNative()) {
+            try {
+              await Preferences.set({ key: 'firebase_user_uid', value: user.uid });
+              console.log('📱 iOS: Kullanıcı UID kaydedildi:', user.uid);
+            } catch (error) {
+              console.error('iOS UID kaydetme hatası:', error);
+            }
+          }
+          
+          const profile = await fetchUserProfile(user.uid);
+          
+          // Kullanıcı pasif ise otomatik çıkış yap
+          if (profile && profile.aktif === false) {
+            await signOut(auth);
+            setCurrentUser(null);
+            setUserProfile(null);
+            
+            // iOS için: Kaydedilmiş UID'yi sil
+            if (platform.isNative()) {
+              await Preferences.remove({ key: 'firebase_user_uid' });
+            }
+            
+            toast.error('⛔ Hesabınız devre dışı bırakılmıştır.');
+          }
+        } else {
           setCurrentUser(null);
           setUserProfile(null);
-          toast.error('⛔ Hesabınız devre dışı bırakılmıştır.');
+          
+          // iOS için: Logout olduğunda UID'yi sil
+          if (platform.isNative()) {
+            try {
+              await Preferences.remove({ key: 'firebase_user_uid' });
+              console.log('📱 iOS: Kullanıcı UID silindi');
+            } catch (error) {
+              console.error('iOS UID silme hatası:', error);
+            }
+          }
         }
-      } else {
-        setCurrentUser(null);
-        setUserProfile(null);
-      }
-      setLoading(false);
-    });
+        setLoading(false);
+      });
 
-    return unsubscribe;
+      return unsubscribe;
+    };
+    
+    const unsubscribePromise = initAuth();
+    
+    return () => {
+      mounted = false;
+      unsubscribePromise.then(unsub => unsub?.());
+    };
   }, []);
 
   // Giriş yap
@@ -371,6 +429,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       await signOut(auth);
+      
+      // iOS için: Kaydedilmiş UID'yi sil
+      if (platform.isNative()) {
+        try {
+          await Preferences.remove({ key: 'firebase_user_uid' });
+          console.log('📱 iOS: Logout - UID silindi');
+        } catch (error) {
+          console.error('iOS logout UID silme hatası:', error);
+        }
+      }
+      
       setCurrentUser(null);
       setUserProfile(null);
       toast.success('Başarıyla çıkış yaptınız.');
