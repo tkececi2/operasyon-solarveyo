@@ -2,7 +2,7 @@
 
 ## 🎯 Genel Bakış
 
-Arıza raporları için profesyonel, sayfalanmış ve detaylı PDF export sistemi.
+Arızalar, bakım, elektrik kesintileri, üretim verileri ve stok kontrol için profesyonel, sayfalanmış ve detaylı PDF export sistemi.
 
 ## ✨ Özellikler
 
@@ -47,15 +47,22 @@ Arıza raporları için profesyonel, sayfalanmış ve detaylı PDF export sistem
 ```
 src/
 ├── utils/
-│   └── pdfReportUtils.ts      # Ana PDF utility
+│   └── pdfReportUtils.ts      # Ana PDF utility (tüm modüller için)
 └── pages/
-    └── ariza/
-        └── Arizalar.tsx        # Entegrasyon
+    ├── ariza/
+    │   ├── Arizalar.tsx                # Arıza entegrasyonu
+    │   └── ElektrikKesintileri.tsx     # Elektrik kesinti entegrasyonu
+    ├── bakim/
+    │   └── Bakim.tsx                   # Bakım entegrasyonu
+    ├── ges/
+    │   └── UretimVerileri.tsx          # Üretim verileri entegrasyonu
+    └── stok/
+        └── StokKontrol.tsx             # Stok kontrol entegrasyonu
 ```
 
 ## 🔧 Kullanım
 
-### Arıza Sayfasından Export
+### 1. Arıza Sayfasından Export
 
 ```typescript
 // Arizalar.tsx içinde
@@ -73,6 +80,53 @@ const handleExportPdf = async () => {
       saha: selectedSaha
     }
   });
+};
+```
+
+### 2. Stok Kontrol Sayfasından Export
+
+```typescript
+// StokKontrol.tsx içinde
+const handlePdfExport = async () => {
+  const loadingToast = toast.loading('PDF raporu indiriliyor...', {
+    duration: Infinity
+  });
+
+  try {
+    // Saha ve santral map'lerini oluştur
+    const sahaMap: Record<string, { id: string; ad: string }> = {};
+    sahalar.forEach(saha => {
+      sahaMap[saha.id] = { id: saha.id, ad: saha.ad };
+    });
+
+    const santralMapForPDF: Record<string, { id: string; ad: string }> = {};
+    santraller.forEach(santral => {
+      santralMapForPDF[santral.id] = { id: santral.id, ad: santral.ad };
+    });
+
+    // Profesyonel PDF oluştur
+    await exportStokToPDF({
+      stoklar: filteredStoklar,
+      company: company,
+      sahaMap: sahaMap,
+      santralMap: santralMapForPDF,
+      filters: {
+        category: categoryFilter !== 'all' ? categoryFilter : undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        saha: sahaFilter !== 'all' && sahaFilter !== '' ? sahaFilter : undefined
+      }
+    });
+
+    // PDF indirme işleminin tamamlanması için bekle
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    toast.dismiss(loadingToast);
+    toast.success('PDF raporu indirildi');
+  } catch (error) {
+    console.error('PDF oluşturma hatası:', error);
+    toast.dismiss(loadingToast);
+    toast.error('PDF oluşturulamadı');
+  }
 };
 ```
 
@@ -215,6 +269,13 @@ const FOOTER_HEIGHT = 10;      // Footer yüksekliği (mm)
 
 ## 🔄 Güncelleme Notları
 
+### v2.0.0 (2025-10-07)
+- ✅ Stok kontrol raporu eklendi
+- ✅ Tüm modüller için unified sistem
+- ✅ Elektrik kesintileri desteği
+- ✅ Bakım raporları (Elektrik, Mekanik, Yapılan İşler)
+- ✅ Üretim verileri raporları
+
 ### v1.0.0 (2025-10-05)
 - ✅ İlk sürüm
 - ✅ Özet istatistikler sayfası
@@ -254,7 +315,7 @@ Sorun veya öneriniz varsa proje README'sine bakın veya issue açın.
 ---
 
 **Geliştirici**: Solarveyo Ekibi  
-**Versiyon**: 1.0.0  
-**Tarih**: 5 Ekim 2025
+**Versiyon**: 2.0.0  
+**Tarih**: 7 Ekim 2025
 
 

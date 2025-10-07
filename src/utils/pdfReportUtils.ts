@@ -1716,10 +1716,420 @@ export async function exportUretimVerileriToPDF(options: {
   }
 }
 
+/**
+ * Stok Kontrol için PDF Export
+ */
+export async function exportStokToPDF(options: {
+  stoklar: any[];
+  company?: any | null;
+  sahaMap?: Record<string, { id: string; ad: string }>;
+  santralMap?: Record<string, { id: string; ad: string }>;
+  filters?: {
+    category?: string;
+    status?: string;
+    saha?: string;
+  };
+}): Promise<void> {
+  try {
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+    
+    const estimatedPages = 1 + options.stoklar.length;
+    let currentPage = 1;
+    
+    // Özet sayfası
+    drawHeader(pdf, currentPage, options.company, 'STOK KONTROL RAPORU');
+    
+    let y = HEADER_HEIGHT + MARGIN + 8;
+    
+    // Başlık
+    pdf.setTextColor(COLORS.text);
+    pdf.setFontSize(13);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Ozet Istatistikler', MARGIN, y);
+    y += 10;
+    
+    // İstatistikler
+    const total = options.stoklar.length;
+    const normal = options.stoklar.filter((s: any) => s.durum === 'normal').length;
+    const dusuk = options.stoklar.filter((s: any) => s.durum === 'dusuk').length;
+    const kritik = options.stoklar.filter((s: any) => s.durum === 'kritik').length;
+    
+    // Toplam değer hesapla
+    const toplamDeger = options.stoklar.reduce((sum: number, s: any) => 
+      sum + (s.mevcutStok * s.birimFiyat), 0
+    );
+    
+    const boxWidth = (CONTENT_WIDTH - 15) / 4;
+    const boxHeight = 25;
+    
+    // Durum kutuları
+    drawStatBox(pdf, MARGIN, y, boxWidth, boxHeight, 'Toplam', total.toString(), COLORS.primary);
+    drawStatBox(pdf, MARGIN + boxWidth + 5, y, boxWidth, boxHeight, 'Normal', normal.toString(), STATUS_COLORS['cozuldu']);
+    drawStatBox(pdf, MARGIN + (boxWidth + 5) * 2, y, boxWidth, boxHeight, 'Dusuk', dusuk.toString(), STATUS_COLORS['devam-ediyor']);
+    drawStatBox(pdf, MARGIN + (boxWidth + 5) * 3, y, boxWidth, boxHeight, 'Kritik', kritik.toString(), PRIORITY_COLORS['kritik']);
+    
+    y += boxHeight + 12;
+    
+    // Toplam değer kutusu
+    pdf.setDrawColor(COLORS.primary);
+    pdf.setLineWidth(2);
+    pdf.setFillColor(COLORS.white);
+    pdf.roundedRect(MARGIN, y, CONTENT_WIDTH, 25, 3, 3, 'FD');
+    
+    // Sol kenar renk çubuğu
+    pdf.setFillColor(COLORS.primary);
+    pdf.rect(MARGIN, y, 4, 25, 'F');
+    
+    pdf.setTextColor(COLORS.textLight);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Toplam Stok Degeri', MARGIN + 10, y + 10);
+    
+    pdf.setTextColor(COLORS.primary);
+    pdf.setFontSize(22);
+    pdf.setFont('helvetica', 'bold');
+    const degerText = formatTurkishCurrency(toplamDeger) + ' TL';
+    pdf.text(degerText, MARGIN + 10, y + 20);
+    
+    y += 30;
+    
+    // Filtre bilgisi (varsa)
+    if (options.filters) {
+      y += 3;
+      
+      const filters = [];
+      if (options.filters.category && options.filters.category !== 'all') {
+        filters.push(`Kategori: ${fixTurkishChars(options.filters.category)}`);
+      }
+      if (options.filters.status && options.filters.status !== 'all') {
+        const durumMap: Record<string, string> = {
+          'normal': 'Normal',
+          'dusuk': 'Dusuk Stok',
+          'kritik': 'Kritik Stok'
+        };
+        filters.push(`Durum: ${durumMap[options.filters.status] || options.filters.status}`);
+      }
+      if (options.filters.saha && options.filters.saha !== 'all') {
+        const sahaAd = options.sahaMap?.[options.filters.saha]?.ad;
+        if (sahaAd) {
+          filters.push(`Saha: ${fixTurkishChars(sahaAd)}`);
+        }
+      }
+      
+      if (filters.length > 0) {
+        pdf.setDrawColor(COLORS.border);
+        pdf.setLineWidth(0.5);
+        pdf.setFillColor(COLORS.light);
+        pdf.roundedRect(MARGIN, y, CONTENT_WIDTH, 8, 2, 2, 'FD');
+        
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(COLORS.textLight);
+        pdf.text('Filtreler: ' + filters.join(' | '), MARGIN + 5, y + 5.5);
+        y += 10;
+      }
+    }
+    
+    drawFooter(pdf, currentPage, estimatedPages);
+    
+    // Stok detay sayfaları
+    let stokIndex = 0;
+    
+    for (const stok of options.stoklar) {
+      // Her stok yeni sayfada
+      pdf.addPage();
+      currentPage++;
+      y = HEADER_HEIGHT + MARGIN + 5;
+      drawHeader(pdf, currentPage, options.company, 'STOK KONTROL RAPORU');
+      
+      // Stok başlığı
+      const malzemeAdi = fixTurkishChars(stok.malzemeAdi || 'Bilinmeyen');
+      
+      pdf.setDrawColor(COLORS.border);
+      pdf.setLineWidth(1);
+      pdf.setFillColor(COLORS.white);
+      pdf.roundedRect(MARGIN, y, CONTENT_WIDTH, 10, 2, 2, 'FD');
+      
+      pdf.setFillColor(COLORS.primary);
+      pdf.rect(MARGIN, y, 3, 10, 'F');
+      
+      pdf.setTextColor(COLORS.text);
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(truncateText(malzemeAdi, 60), MARGIN + 8, y + 7);
+      
+      pdf.setFontSize(8);
+      pdf.setTextColor(COLORS.textLight);
+      pdf.text(`#${stokIndex + 1}`, PAGE_WIDTH - MARGIN - 5, y + 7, { align: 'right' });
+      
+      y += 13;
+      
+      // Durum badge
+      const durumMap: Record<string, string> = {
+        'normal': 'Normal',
+        'dusuk': 'Dusuk Stok',
+        'kritik': 'Kritik Stok'
+      };
+      const durumColorMap: Record<string, string> = {
+        'normal': STATUS_COLORS['cozuldu'],
+        'dusuk': STATUS_COLORS['devam-ediyor'],
+        'kritik': PRIORITY_COLORS['kritik']
+      };
+      drawBadge(pdf, MARGIN, y, durumMap[stok.durum] || 'Normal', durumColorMap[stok.durum] || STATUS_COLORS['cozuldu']);
+      
+      // Kategori badge
+      if (stok.kategori) {
+        drawBadge(pdf, MARGIN + 50, y, fixTurkishChars(stok.kategori), PRIORITY_COLORS['normal']);
+      }
+      
+      y += 12;
+      
+      // Detay bilgileri
+      const lineHeight = 6;
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      
+      // Saha
+      const sahaAd = stok.sahaId 
+        ? fixTurkishChars(options.sahaMap?.[stok.sahaId]?.ad || 'Bilinmeyen')
+        : 'Genel Depo';
+      drawField(pdf, MARGIN, y, 'Saha:', sahaAd);
+      y += lineHeight;
+      
+      // Santral (varsa)
+      if (stok.santralId) {
+        const santralAd = fixTurkishChars(options.santralMap?.[stok.santralId]?.ad || '-');
+        drawField(pdf, MARGIN, y, 'Santral:', santralAd);
+        y += lineHeight;
+      }
+      
+      // Konum (varsa)
+      if (stok.konum) {
+        drawField(pdf, MARGIN, y, 'Konum:', fixTurkishChars(stok.konum));
+        y += lineHeight;
+      }
+      
+      // Birim
+      drawField(pdf, MARGIN, y, 'Birim:', stok.birim || '-');
+      y += lineHeight;
+      
+      y += 3;
+      
+      // Stok bilgileri - öne çıkan kutu
+      pdf.setDrawColor(COLORS.border);
+      pdf.setLineWidth(0.5);
+      pdf.setFillColor(COLORS.light);
+      pdf.roundedRect(MARGIN, y, CONTENT_WIDTH, 20, 2, 2, 'FD');
+      
+      y += 7;
+      
+      // Mevcut Stok
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(COLORS.text);
+      pdf.setFontSize(10);
+      pdf.text('Mevcut Stok:', MARGIN + 5, y);
+      
+      pdf.setFontSize(14);
+      pdf.setTextColor(COLORS.primary);
+      const mevcutText = formatTurkishNumber(stok.mevcutStok, 0) + ' ' + stok.birim;
+      pdf.text(mevcutText, MARGIN + 35, y);
+      
+      // Minimum Seviye
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(COLORS.textLight);
+      pdf.setFontSize(9);
+      const minText = 'Min: ' + formatTurkishNumber(stok.minimumStokSeviyesi, 0) + ' ' + stok.birim;
+      pdf.text(minText, MARGIN + 80, y);
+      
+      y += 8;
+      
+      // Birim Fiyat ve Toplam Değer
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(COLORS.textLight);
+      pdf.setFontSize(9);
+      const birimFiyatText = 'Birim Fiyat: ' + formatTurkishCurrency(stok.birimFiyat) + ' TL';
+      pdf.text(birimFiyatText, MARGIN + 5, y);
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(COLORS.text);
+      const toplamDeger = stok.mevcutStok * stok.birimFiyat;
+      const toplamText = 'Toplam: ' + formatTurkishCurrency(toplamDeger) + ' TL';
+      pdf.text(toplamText, MARGIN + 80, y);
+      
+      y += 8;
+      
+      // Tedarikçi (varsa)
+      if (stok.tedarikci) {
+        drawField(pdf, MARGIN, y, 'Tedarikci:', fixTurkishChars(stok.tedarikci));
+        y += lineHeight;
+      }
+      
+      // Son güncelleme (varsa)
+      if (stok.sonGuncelleme) {
+        const tarih = format(stok.sonGuncelleme.toDate(), 'dd.MM.yyyy HH:mm');
+        drawField(pdf, MARGIN, y, 'Son Guncelleme:', tarih);
+        y += lineHeight;
+      }
+      
+      y += 3;
+      
+      // Notlar (varsa)
+      if (stok.notlar) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(COLORS.text);
+        pdf.setFontSize(10);
+        pdf.text('Notlar:', MARGIN, y);
+        y += 5;
+        
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.setTextColor(COLORS.textLight);
+        const notlarText = fixTurkishChars(stok.notlar);
+        const notlarLines = wrapText(pdf, notlarText, CONTENT_WIDTH - 10);
+        
+        for (const line of notlarLines) {
+          if (y > PAGE_HEIGHT - FOOTER_HEIGHT - MARGIN - 10) {
+            drawFooter(pdf, currentPage, estimatedPages);
+            pdf.addPage();
+            currentPage++;
+            y = HEADER_HEIGHT + MARGIN + 5;
+            drawHeader(pdf, currentPage, options.company, 'STOK KONTROL RAPORU');
+          }
+          pdf.text(line, MARGIN + 5, y);
+          y += 5;
+        }
+        
+        y += 5;
+      }
+      
+      // Fotoğraflar (varsa) - Thumbnail grid
+      const fotograflar = stok.resimler || [];
+      if (fotograflar.length > 0) {
+        y += 5;
+        
+        if (y > PAGE_HEIGHT - FOOTER_HEIGHT - MARGIN - 60) {
+          drawFooter(pdf, currentPage, estimatedPages);
+          pdf.addPage();
+          currentPage++;
+          y = HEADER_HEIGHT + MARGIN + 5;
+          drawHeader(pdf, currentPage, options.company, 'STOK KONTROL RAPORU');
+        }
+        
+        // Fotoğraf başlığı
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(COLORS.text);
+        pdf.setFontSize(10);
+        pdf.text('Urun Fotograflari:', MARGIN, y);
+        y += 7;
+        
+        // Fotoğrafları 3'lü grid'de göster
+        const photoSize = 30; // mm
+        const photoGap = 5;
+        const photosPerRow = 3;
+        let photoX = MARGIN;
+        let photoRow = 0;
+        
+        for (let i = 0; i < Math.min(fotograflar.length, 6); i++) {
+          // Yeni satır gerekirse
+          if (i > 0 && i % photosPerRow === 0) {
+            y += photoSize + photoGap;
+            photoX = MARGIN;
+            photoRow++;
+            
+            // Sayfa taşması kontrolü
+            if (y + photoSize > PAGE_HEIGHT - FOOTER_HEIGHT - MARGIN) {
+              drawFooter(pdf, currentPage, estimatedPages);
+              pdf.addPage();
+              currentPage++;
+              y = HEADER_HEIGHT + MARGIN + 5;
+              drawHeader(pdf, currentPage, options.company, 'STOK KONTROL RAPORU');
+              photoRow = 0;
+            }
+          }
+          
+          try {
+            const photoUrl = fotograflar[i];
+            
+            // Fotoğraf kutusu çiz
+            pdf.setDrawColor(COLORS.border);
+            pdf.setLineWidth(0.5);
+            pdf.setFillColor(COLORS.white);
+            pdf.roundedRect(photoX, y, photoSize, photoSize, 2, 2, 'FD');
+            
+            // Gerçek fotoğrafı yüklemeyi dene (timeout ile)
+            try {
+              const imageData = await Promise.race([
+                loadImage(photoUrl),
+                new Promise<string>((_, reject) => 
+                  setTimeout(() => reject(new Error('Timeout')), 3000)
+                )
+              ]);
+              
+              // Fotoğrafı PDF'e ekle
+              pdf.addImage(imageData, 'JPEG', photoX + 1, y + 1, photoSize - 2, photoSize - 2);
+              
+            } catch (imgError) {
+              // Fotoğraf yüklenemezse placeholder göster
+              pdf.setFillColor(COLORS.light);
+              pdf.rect(photoX + 2, y + 2, photoSize - 4, photoSize - 4, 'F');
+              
+              pdf.setFontSize(7);
+              pdf.setTextColor(COLORS.textLight);
+              pdf.text(`Foto ${i + 1}`, photoX + photoSize / 2, y + photoSize / 2, { align: 'center' });
+            }
+            
+          } catch (error) {
+            console.warn('Fotoğraf yüklenemedi:', error);
+            
+            // Hata durumunda placeholder
+            pdf.setFillColor(COLORS.light);
+            pdf.roundedRect(photoX, y, photoSize, photoSize, 2, 2, 'F');
+            
+            pdf.setFontSize(8);
+            pdf.setTextColor(COLORS.textLight);
+            pdf.text('?', photoX + photoSize / 2, y + photoSize / 2, { align: 'center' });
+          }
+          
+          photoX += photoSize + photoGap;
+        }
+        
+        y += photoSize + 5;
+        
+        // Eğer 6'dan fazla fotoğraf varsa
+        if (fotograflar.length > 6) {
+          pdf.setFontSize(8);
+          pdf.setTextColor(COLORS.textLight);
+          pdf.text(`+${fotograflar.length - 6} fotograf daha`, MARGIN, y);
+          y += 5;
+        }
+      }
+      
+      drawFooter(pdf, currentPage, estimatedPages);
+      stokIndex++;
+    }
+    
+    // Dosya adı
+    const timestamp = format(new Date(), 'yyyyMMdd_HHmmss');
+    const fileName = `stok_raporu_${timestamp}.pdf`;
+    
+    pdf.save(fileName);
+    
+    return Promise.resolve();
+  } catch (error) {
+    console.error('PDF oluşturma hatası:', error);
+    throw error;
+  }
+}
+
 export default {
   exportArizalarToPDF,
   exportElektrikKesintileriToPDF,
   exportBakimToPDF,
   exportUretimVerileriToPDF,
+  exportStokToPDF,
 };
 

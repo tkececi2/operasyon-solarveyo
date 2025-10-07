@@ -9,9 +9,8 @@ import { useCompany } from '../../hooks/useCompany';
 import { useAuth } from '../../hooks/useAuth';
 import { formatDate, formatCurrency } from '../../utils/formatters';
 import { exportToExcel } from '../../utils/exportUtils';
+import { exportStokToPDF } from '../../utils/pdfReportUtils';
 import toast from 'react-hot-toast';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 
 interface Saha {
   id: string;
@@ -49,7 +48,6 @@ const StokKontrol: React.FC = () => {
   const { company } = useCompany();
   const { userProfile, canPerformAction } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
 
   // Form states
@@ -384,81 +382,47 @@ const StokKontrol: React.FC = () => {
     toast.success('Excel dosyası indirildi');
   };
 
-  // PDF export (Arızalar/Bakım ile aynı ayarlar)
+  // PDF export - Profesyonel (Arızalar/Bakım ile aynı sistem)
   const handlePdfExport = async () => {
-    if (!contentRef.current) return;
-    const loading = toast.loading('PDF oluşturuluyor...');
-
-    // Export öncesi butonları gizle
-    const toHide = document.querySelectorAll('[data-pdf-exclude="true"]') as NodeListOf<HTMLElement>;
-    const prevDisplays: string[] = [];
-    toHide.forEach((el) => { prevDisplays.push(el.style.display); el.style.display = 'none'; });
-
-    // Başlık bloğu ekle (Türkçe uyumlu)
-    const header = document.createElement('div');
-    header.setAttribute('data-pdf-temp', 'true');
-    header.style.textAlign = 'center';
-    header.style.margin = '12px 0 16px 0';
-    header.innerHTML = `<div style=\"font-size:20px;font-weight:700;color:#111827;\">Stok Raporu</div><div style=\"font-size:12px;color:#374151;\">Tarih: ${new Date().toLocaleDateString('tr-TR')}</div>`;
-    contentRef.current.insertBefore(header, contentRef.current.firstChild);
-
-    // Metin kısaltmalarını kaldır
-    const root = contentRef.current;
-    const clampedEls = root.querySelectorAll('.truncate, .line-clamp-1, .line-clamp-2, .line-clamp-3') as NodeListOf<HTMLElement>;
-    const removedClassMap: Array<{ el: HTMLElement; classes: string[]; prevStyle: string }> = [];
-    clampedEls.forEach((el) => {
-      const removed: string[] = [];
-      ['truncate', 'line-clamp-1', 'line-clamp-2', 'line-clamp-3'].forEach((cls) => {
-        if (el.classList.contains(cls)) { el.classList.remove(cls); removed.push(cls); }
-      });
-      removedClassMap.push({ el, classes: removed, prevStyle: el.getAttribute('style') || '' });
-      el.style.overflow = 'visible';
-      el.style.whiteSpace = 'normal';
-      (el.style as any).WebkitLineClamp = 'unset';
+    const loadingToast = toast.loading('PDF raporu indiriliyor...', {
+      duration: Infinity
     });
 
     try {
-      await new Promise((r) => setTimeout(r, 100));
-      const canvas = await html2canvas(contentRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: contentRef.current.scrollWidth,
-        windowHeight: contentRef.current.scrollHeight,
+      // Saha ve santral map'lerini oluştur
+      const sahaMap: Record<string, { id: string; ad: string }> = {};
+      sahalar.forEach(saha => {
+        sahaMap[saha.id] = { id: saha.id, ad: saha.ad };
       });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const imgWidth = pdfWidth - margin * 2;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', margin, 10, imgWidth, imgHeight);
-      let heightLeft = imgHeight - (pdfHeight - 10);
-      while (heightLeft > 0) {
-        const position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
-      pdf.save(`stok-raporu-${new Date().toISOString().split('T')[0]}.pdf`);
-      toast.success('PDF indirildi');
-    } catch (e) {
-      console.error('PDF export hatası', e);
-      toast.error('PDF oluşturulamadı');
-    } finally {
-      // Başlık kaldır
-      const temp = contentRef.current?.querySelector('[data-pdf-temp="true"]');
-      if (temp && temp.parentElement) temp.parentElement.removeChild(temp);
-      // Butonları geri getir
-      toHide.forEach((el, i) => { el.style.display = prevDisplays[i]; });
-      // Stil geri al
-      removedClassMap.forEach(({ el, prevStyle, classes }) => {
-        classes.forEach((c) => el.classList.add(c));
-        if (prevStyle) el.setAttribute('style', prevStyle); else el.removeAttribute('style');
+      const santralMapForPDF: Record<string, { id: string; ad: string }> = {};
+      santraller.forEach(santral => {
+        santralMapForPDF[santral.id] = { id: santral.id, ad: santral.ad };
       });
-      toast.dismiss(loading);
+
+      // Profesyonel PDF oluştur
+      await exportStokToPDF({
+        stoklar: filteredStoklar,
+        company: company,
+        sahaMap: sahaMap,
+        santralMap: santralMapForPDF,
+        filters: {
+          category: categoryFilter !== 'all' ? categoryFilter : undefined,
+          status: statusFilter !== 'all' ? statusFilter : undefined,
+          saha: sahaFilter !== 'all' && sahaFilter !== '' ? sahaFilter : undefined
+        }
+      });
+
+      // PDF indirme işleminin tamamlanması için bekle
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      
+      // Toast'ı kapat ve başarı mesajı göster
+      toast.dismiss(loadingToast);
+      toast.success('PDF raporu indirildi');
+    } catch (error) {
+      console.error('PDF oluşturma hatası:', error);
+      toast.dismiss(loadingToast);
+      toast.error('PDF oluşturulamadı');
     }
   };
 
@@ -548,7 +512,7 @@ const StokKontrol: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0" ref={contentRef}>
+    <div className="space-y-6 pb-20 md:pb-0">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
