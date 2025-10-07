@@ -86,8 +86,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let mounted = true;
     
     const initAuth = async () => {
-      // iOS için: Uygulama açılışında kaydedilmiş credentials ile otomatik login
-      if (platform.isNative()) {
+      // Önce Firebase'in kendi auth state'ini kontrol et
+      console.log('🔍 Auth state check:', { 
+        currentUser: !!auth.currentUser,
+        platform: platform.isNative() ? 'iOS' : 'Web'
+      });
+      
+      // iOS için: Firebase persistence çalışmıyorsa manual login
+      if (platform.isNative() && !auth.currentUser) {
         try {
           // Eski UID sistemini temizle
           await Preferences.remove({ key: 'firebase_user_uid' });
@@ -97,34 +103,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           console.log('📱 iOS: Checking saved credentials...', { 
             hasEmail: !!savedEmail, 
-            hasPassword: !!savedPassword,
-            hasCurrentUser: !!auth.currentUser 
+            hasPassword: !!savedPassword
           });
           
-          if (savedEmail && savedPassword && mounted && !auth.currentUser) {
-            console.log('📱 iOS: Kaydedilmiş kullanıcı bulundu, otomatik giriş yapılıyor...');
+          if (savedEmail && savedPassword && mounted) {
+            console.log('📱 iOS: Attempting auto-login with saved credentials...');
             console.log('📱 iOS: Email:', savedEmail);
+            
+            // Firebase'in hazır olması için bekle
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             try {
               // Otomatik giriş yap
-              await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
-              console.log('📱 iOS: Otomatik giriş başarılı!');
+              const userCredential = await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
+              console.log('📱 iOS: Auto-login successful!', userCredential.user.uid);
+              // State güncelleme onAuthStateChanged tarafından yapılacak
             } catch (error: any) {
-              console.error('📱 iOS: Otomatik giriş başarısız:', error.code, error.message);
+              console.error('📱 iOS: Auto-login failed:', error.code, error.message);
               // Hatalı credentials'ı temizle
               await Preferences.remove({ key: 'user_email' });
               await Preferences.remove({ key: 'user_password' });
             }
           } else {
-            console.log('📱 iOS: No saved credentials or user already logged in');
+            console.log('📱 iOS: No saved credentials found');
           }
         } catch (error) {
-          console.error('iOS auth init hatası:', error);
+          console.error('iOS auth init error:', error);
         }
       }
       
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (!mounted) return;
+        
+        console.log('🔄 Auth state changed:', { userId: user?.uid, email: user?.email });
         
         if (user) {
           setCurrentUser(user);
@@ -159,7 +170,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
         }
-        setLoading(false);
+        
+        // iOS'ta auto-login denendiyse biraz daha bekle
+        if (platform.isNative() && !user) {
+          setTimeout(() => {
+            if (mounted) setLoading(false);
+          }, 1500);
+        } else {
+          setLoading(false);
+        }
       });
 
       return unsubscribe;
