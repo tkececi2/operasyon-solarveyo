@@ -35,8 +35,15 @@ export const Layout: React.FC = () => {
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 
-        {/* Page content */}
-        <main className={`flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 ${platform.isNative() ? 'pb-24' : ''}`} style={platform.isNative() ? { paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' } : undefined}>
+        {/* Page content - iOS için optimize edilmiş scroll */}
+        <main 
+          className={`flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 ${platform.isNative() ? 'pb-24' : ''}`} 
+          style={platform.isNative() ? { 
+            paddingBottom: 'calc(80px + env(safe-area-inset-bottom))',
+            WebkitOverflowScrolling: 'touch', // iOS smooth scroll
+            overscrollBehavior: 'contain' // Alt menüyü korur
+          } : undefined}
+        >
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <Outlet />
           </div>

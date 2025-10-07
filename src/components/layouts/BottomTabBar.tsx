@@ -129,10 +129,28 @@ export const BottomTabBar: React.FC = () => {
   return (
     <>
       {/* Blur Background Overlay */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/80 to-transparent dark:from-gray-900/80 pointer-events-none z-40" />
+      <div 
+        className="fixed bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/80 to-transparent dark:from-gray-900/80 pointer-events-none z-40" 
+        style={{ 
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+          willChange: 'transform'
+        }}
+      />
       
-      {/* Tab Bar Container */}
-      <div className="fixed bottom-0 left-0 right-0 z-50">
+      {/* Tab Bar Container - iOS için güçlendirilmiş position:fixed */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 z-50"
+        style={{
+          transform: 'translateZ(0)',
+          WebkitTransform: 'translateZ(0)',
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+          willChange: 'transform',
+          position: '-webkit-sticky' as any,
+          WebkitPosition: 'sticky' as any
+        }}
+      >
         <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50">
           {/* Safe area padding for iPhone */}
           <div 

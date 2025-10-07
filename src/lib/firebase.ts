@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, browserLocalPersistence, setPersistence, indexedDBLocalPersistence, initializeAuth } from 'firebase/auth';
+import { getAuth, browserLocalPersistence, setPersistence, indexedDBLocalPersistence, initializeAuth, inMemoryPersistence } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence, enableNetwork, disableNetwork, initializeFirestore } from 'firebase/firestore';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
@@ -27,8 +27,9 @@ let db;
 
 if (isNativePlatform) {
   // iOS/Android için özel auth initialization
+  // indexedDBLocalPersistence yerine browserLocalPersistence kullan (iOS uyumlu)
   auth = initializeAuth(app, {
-    persistence: indexedDBLocalPersistence
+    persistence: browserLocalPersistence // iOS'ta daha stabil
   });
   
   // Firestore için de özel ayarlar - CORS'u bypass et
@@ -37,6 +38,8 @@ if (isNativePlatform) {
     useFetchStreams: false,
     cacheSizeBytes: 50 * 1024 * 1024 // 50MB cache
   });
+  
+  console.log('🔧 Firebase iOS modunda başlatıldı - browserLocalPersistence aktif');
 } else {
   // Web için normal initialization
   auth = getAuth(app);
