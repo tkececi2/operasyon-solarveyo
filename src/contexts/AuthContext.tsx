@@ -86,16 +86,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let mounted = true;
     
     const initAuth = async () => {
-      // iOS için: Uygulama açılışında kaydedilmiş kullanıcıyı kontrol et
+      // iOS için: Uygulama açılışında kaydedilmiş credentials ile otomatik login
       if (platform.isNative()) {
         try {
-          const { value: savedUid } = await Preferences.get({ key: 'firebase_user_uid' });
-          if (savedUid && mounted) {
-            console.log('📱 iOS: Kaydedilmiş kullanıcı bulundu:', savedUid);
-            // Firebase'in auth state'ini bekle
-            const user = auth.currentUser;
-            if (!user) {
-              console.log('📱 iOS: Firebase user yok, bekliyor...');
+          const { value: savedEmail } = await Preferences.get({ key: 'user_email' });
+          const { value: savedPassword } = await Preferences.get({ key: 'user_password' });
+          
+          if (savedEmail && savedPassword && mounted && !auth.currentUser) {
+            console.log('📱 iOS: Kaydedilmiş kullanıcı bulundu, otomatik giriş yapılıyor...');
+            try {
+              // Otomatik giriş yap
+              await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
+              console.log('📱 iOS: Otomatik giriş başarılı!');
+            } catch (error) {
+              console.error('📱 iOS: Otomatik giriş başarısız:', error);
+              // Hatalı credentials'ı temizle
+              await Preferences.remove({ key: 'user_email' });
+              await Preferences.remove({ key: 'user_password' });
             }
           }
         } catch (error) {
@@ -108,17 +115,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (user) {
           setCurrentUser(user);
-          
-          // iOS için: UID'yi kaydet
-          if (platform.isNative()) {
-            try {
-              await Preferences.set({ key: 'firebase_user_uid', value: user.uid });
-              console.log('📱 iOS: Kullanıcı UID kaydedildi:', user.uid);
-            } catch (error) {
-              console.error('iOS UID kaydetme hatası:', error);
-            }
-          }
-          
           const profile = await fetchUserProfile(user.uid);
           
           // Kullanıcı pasif ise otomatik çıkış yap
@@ -127,9 +123,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setCurrentUser(null);
             setUserProfile(null);
             
-            // iOS için: Kaydedilmiş UID'yi sil
+            // iOS için: Kaydedilmiş bilgileri sil
             if (platform.isNative()) {
-              await Preferences.remove({ key: 'firebase_user_uid' });
+              await Preferences.remove({ key: 'user_email' });
+              await Preferences.remove({ key: 'user_password' });
             }
             
             toast.error('⛔ Hesabınız devre dışı bırakılmıştır.');
@@ -138,13 +135,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setCurrentUser(null);
           setUserProfile(null);
           
-          // iOS için: Logout olduğunda UID'yi sil
+          // iOS için: Logout olduğunda bilgileri sil
           if (platform.isNative()) {
             try {
-              await Preferences.remove({ key: 'firebase_user_uid' });
-              console.log('📱 iOS: Kullanıcı UID silindi');
+              await Preferences.remove({ key: 'user_email' });
+              await Preferences.remove({ key: 'user_password' });
+              console.log('📱 iOS: Kullanıcı bilgileri silindi');
             } catch (error) {
-              console.error('iOS UID silme hatası:', error);
+              console.error('iOS bilgi silme hatası:', error);
             }
           }
         }
@@ -285,16 +283,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // iOS için: Login olduğunda UID'yi kaydet
+      // iOS için: Login olduğunda credentials'ı kaydet
       if (platform.isNative()) {
         try {
-          await Preferences.set({
-            key: 'firebase_user_uid',
-            value: user.uid
-          });
-          console.log('📱 iOS: Kullanıcı UID kaydedildi:', user.uid);
+          await Preferences.set({ key: 'user_email', value: email });
+          await Preferences.set({ key: 'user_password', value: password });
+          console.log('📱 iOS: Kullanıcı bilgileri kaydedildi');
         } catch (error) {
-          console.error('iOS UID kaydetme hatası:', error);
+          console.error('iOS bilgi kaydetme hatası:', error);
         }
       }
 
@@ -441,17 +437,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         analyticsService.logout();
       }
       
-      await signOut(auth);
-      
-      // iOS için: Kaydedilmiş UID'yi sil
+      // iOS için: Logout olduğunda credentials'ı sil
       if (platform.isNative()) {
         try {
-          await Preferences.remove({ key: 'firebase_user_uid' });
-          console.log('📱 iOS: Logout - UID silindi');
+          await Preferences.remove({ key: 'user_email' });
+          await Preferences.remove({ key: 'user_password' });
+          console.log('📱 iOS: Logout - Kullanıcı bilgileri silindi');
         } catch (error) {
-          console.error('iOS logout UID silme hatası:', error);
+          console.error('iOS logout bilgi silme hatası:', error);
         }
       }
+      
+      await signOut(auth);
       
       setCurrentUser(null);
       setUserProfile(null);
