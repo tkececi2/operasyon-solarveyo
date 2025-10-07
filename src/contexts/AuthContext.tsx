@@ -285,6 +285,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
+      // iOS için: Login olduğunda UID'yi kaydet
+      if (platform.isNative()) {
+        try {
+          await Preferences.set({
+            key: 'firebase_user_uid',
+            value: user.uid
+          });
+          console.log('📱 iOS: Kullanıcı UID kaydedildi:', user.uid);
+        } catch (error) {
+          console.error('iOS UID kaydetme hatası:', error);
+        }
+      }
+
       toast.success('Başarıyla giriş yaptınız!');
 
     } catch (error: any) {
