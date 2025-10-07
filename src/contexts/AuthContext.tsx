@@ -85,50 +85,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
     
-    const initAuth = async () => {
-      // Önce Firebase'in kendi auth state'ini kontrol et
-      console.log('🔍 Auth state check:', { 
-        currentUser: !!auth.currentUser,
-        platform: platform.isNative() ? 'iOS' : 'Web'
-      });
+    // iOS için otomatik giriş fonksiyonu
+    const attemptAutoLogin = async () => {
+      if (!platform.isNative()) return;
       
-      // iOS için: Firebase persistence çalışmıyorsa manual login
-      if (platform.isNative() && !auth.currentUser) {
-        try {
-          // Eski UID sistemini temizle
-          await Preferences.remove({ key: 'firebase_user_uid' });
-          
-          const { value: savedEmail } = await Preferences.get({ key: 'user_email' });
-          const { value: savedPassword } = await Preferences.get({ key: 'user_password' });
-          
-          console.log('📱 iOS: Checking saved credentials...', { 
-            hasEmail: !!savedEmail, 
-            hasPassword: !!savedPassword
-          });
-          
-          if (savedEmail && savedPassword && mounted) {
-            console.log('📱 iOS: Attempting auto-login with saved credentials...');
-            console.log('📱 iOS: Email:', savedEmail);
-            
-            // Firebase'in hazır olması için bekle
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            try {
-              // Otomatik giriş yap
-              const userCredential = await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
-              console.log('📱 iOS: Auto-login successful!', userCredential.user.uid);
-              // State güncelleme onAuthStateChanged tarafından yapılacak
-            } catch (error: any) {
-              console.error('📱 iOS: Auto-login failed:', error.code, error.message);
-              // Hatalı credentials'ı temizle
-              await Preferences.remove({ key: 'user_email' });
-              await Preferences.remove({ key: 'user_password' });
-            }
-          } else {
-            console.log('📱 iOS: No saved credentials found');
-          }
-        } catch (error) {
-          console.error('iOS auth init error:', error);
+      try {
+        const { value: savedEmail } = await Preferences.get({ key: 'user_email' });
+        const { value: savedPassword } = await Preferences.get({ key: 'user_password' });
+        
+        if (savedEmail && savedPassword && mounted) {
+          // Otomatik giriş yap
+          await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
+          return true;
+        }
+      } catch (error) {
+        await Preferences.remove({ key: 'user_email' });
+        await Preferences.remove({ key: 'user_password' });
+      }
+      return false;
+    };
+    
+    const initAuth = async () => {
+      // iOS için hemen otomatik giriş dene
+      if (platform.isNative()) {
+        const autoLoginSuccess = await attemptAutoLogin();
+        if (!autoLoginSuccess && mounted) {
+          // Auto-login başarısız, loading'i kapat
+          setTimeout(() => {
+            if (mounted) setLoading(false);
+          }, 500);
         }
       }
       
@@ -171,24 +156,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
         
-        // iOS'ta auto-login denendiyse biraz daha bekle
-        if (platform.isNative() && !user) {
-          setTimeout(() => {
-            if (mounted) setLoading(false);
-          }, 1500);
-        } else {
+        // Loading state yönetimi
+        if (!platform.isNative()) {
+          setLoading(false);
+        } else if (user) {
+          // iOS'ta kullanıcı varsa hemen loading'i kapat
           setLoading(false);
         }
+        // iOS'ta user yoksa loading attemptAutoLogin tarafından kapatılacak
       });
 
       return unsubscribe;
     };
     
-    const unsubscribePromise = initAuth();
+    // Hemen başlat
+    initAuth();
     
     return () => {
       mounted = false;
-      unsubscribePromise.then(unsub => unsub?.());
     };
   }, []);
 
