@@ -37,11 +37,13 @@ export const Layout: React.FC = () => {
 
         {/* Page content - iOS için optimize edilmiş scroll */}
         <main 
-          className={`flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 ${platform.isNative() ? 'pb-24' : ''}`} 
+          className={`flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900`} 
           style={platform.isNative() ? { 
-            paddingBottom: 'calc(80px + env(safe-area-inset-bottom))',
-            WebkitOverflowScrolling: 'touch', // iOS smooth scroll
-            overscrollBehavior: 'contain' // Alt menüyü korur
+            paddingBottom: 'calc(100px + env(safe-area-inset-bottom))',
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            position: 'relative',
+            zIndex: 1
           } : undefined}
         >
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
