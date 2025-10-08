@@ -512,7 +512,7 @@ const StokKontrol: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 px-2 sm:px-4">
+    <div className="container mx-auto max-w-7xl space-y-4 px-2 sm:px-4 py-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
@@ -660,8 +660,9 @@ const StokKontrol: React.FC = () => {
               <p className="text-gray-600">Yeni malzeme ekleyerek başlayın</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+            <div className="overflow-x-auto -mx-4 sm:-mx-6">
+              <div className="inline-block min-w-full align-middle px-4 sm:px-6">
+                <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -854,6 +855,7 @@ const StokKontrol: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </CardContent>
