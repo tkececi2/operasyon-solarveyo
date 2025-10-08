@@ -23,6 +23,7 @@ import { auth } from './lib/firebase';
 // Lazy loaded components
 const Home = React.lazy(() => import('./pages/marketing/Home'));
 const CheckStorageCalculation = React.lazy(() => import('./pages/debug/CheckStorageCalculation'));
+const StorageManager = React.lazy(() => import('./pages/admin/StorageManager'));
 const MarketingLayout = React.lazy(() => import('./components/marketing/MarketingLayout'));
 const FeaturesPage = React.lazy(() => import('./pages/marketing/Features'));
 const PricingPage = React.lazy(() => import('./pages/marketing/Pricing'));
@@ -328,6 +329,11 @@ function App() {
                 <Route path="admin/plan-guide" element={
                   <ProtectedRoute allowedRoles={['superadmin']}>
                     <PlanManagementGuide />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/storage" element={
+                  <ProtectedRoute allowedRoles={['superadmin', 'yonetici']}>
+                    <StorageManager />
                   </ProtectedRoute>
                 } />
                 <Route path="superadmin" element={

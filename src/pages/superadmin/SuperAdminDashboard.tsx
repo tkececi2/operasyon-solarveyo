@@ -47,12 +47,15 @@ import {
   Activity,
   Eye,
   Zap,
-  Wrench
+  Wrench,
+  HardDrive
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const SuperAdminDashboard: React.FC = () => {
   const { userProfile } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [companies, setCompanies] = useState<CompanyStats[]>([]);
   const [platformStats, setPlatformStats] = useState<PlatformStats | null>(null);
@@ -303,6 +306,14 @@ const SuperAdminDashboard: React.FC = () => {
           <p className="text-gray-600 mt-1">SolarVeyo Platform Yönetimi</p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            onClick={() => navigate('/admin/storage')}
+            variant="primary"
+            className="flex items-center gap-2"
+          >
+            <HardDrive className="h-4 w-4" />
+            Depolama Yönetimi
+          </Button>
           <Button 
             onClick={async () => {
               const confirmed = window.confirm('Eski ödeme durumu alanlarını temizlemek istediğinize emin misiniz?');
