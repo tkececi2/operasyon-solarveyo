@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
@@ -16,6 +16,9 @@ import { StatusBar } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Capacitor } from '@capacitor/core';
 import { platform } from './utils/platform';
+import { IOSAuthService } from './services/iosAuthService';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './lib/firebase';
 
 // Lazy loaded components
 const Home = React.lazy(() => import('./pages/marketing/Home'));
@@ -84,22 +87,54 @@ const MoreMenu = React.lazy(() => import('./pages/MoreMenu'));
 // Legal pages removed - not needed
 
 function App() {
+  const [iosAuthChecked, setIosAuthChecked] = useState(false);
+  
   // Uygulama başladığında planları başlat ve iOS ayarlarını yap
   useEffect(() => {
     initializePlans();
     
-    // iOS Native ayarları
+    // iOS Native ayarları ve otomatik giriş
     if (Capacitor.isNativePlatform()) {
-      // Splash Screen'i gizle
-      setTimeout(() => {
-        SplashScreen.hide();
-      }, 500);
-      
       // Status Bar ayarları
       if (Capacitor.getPlatform() === 'ios') {
         StatusBar.setStyle({ style: 'dark' });
         StatusBar.setOverlaysWebView({ overlay: false });
       }
+      
+      // iOS için otomatik giriş dene
+      const checkIOSAuth = async () => {
+        console.log('📱 iOS: App başlatıldı, otomatik giriş kontrol ediliyor...');
+        
+        try {
+          // Önce kaydedilmiş bilgi var mı kontrol et
+          const hasCredentials = await IOSAuthService.hasCredentials();
+          
+          if (hasCredentials) {
+            console.log('📱 iOS: Kaydedilmiş bilgiler bulundu, giriş deneniyor...');
+            const success = await IOSAuthService.tryAutoLogin();
+            
+            if (success) {
+              console.log('✅ iOS: Otomatik giriş başarılı!');
+            } else {
+              console.log('❌ iOS: Otomatik giriş başarısız');
+            }
+          } else {
+            console.log('📱 iOS: Kaydedilmiş bilgi yok');
+          }
+        } catch (error) {
+          console.error('iOS auth kontrol hatası:', error);
+        } finally {
+          setIosAuthChecked(true);
+          // Splash screen'i kapat
+          setTimeout(() => {
+            SplashScreen.hide();
+          }, 500);
+        }
+      };
+      
+      checkIOSAuth();
+    } else {
+      setIosAuthChecked(true);
     }
   }, []);
   
@@ -137,6 +172,11 @@ function App() {
               <LoadingSpinner />
             </div>
           }>
+            {Capacitor.isNativePlatform() && !iosAuthChecked ? (
+              <div className="min-h-screen flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
@@ -147,7 +187,7 @@ function App() {
               <Route path="/payment/papara" element={<PaparaPayment />} />
               
               {/* Ana sayfa: Mobilde login, Web'de landing page */}
-              <Route path="/" element={platform.isNative() ? <Navigate to="/login" replace /> : <Home />} />
+              <Route path="/" element={platform.isNative() ? <Navigate to="/dashboard" replace /> : <Home />} />
               
               {/* Marketing sayfaları sadece web'de */}
               {!platform.isNative() && (
@@ -335,6 +375,7 @@ function App() {
               {/* 404 */}
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
+            )}
           </Suspense>
           </NotificationProvider>
         </CompanyProvider>

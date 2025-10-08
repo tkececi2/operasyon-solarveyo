@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { platform } from '../utils/platform';
+import { IOSAuthService } from '../services/iosAuthService';
 import { 
   ChevronRight,
   Users,
@@ -48,6 +50,12 @@ export const MoreMenu: React.FC = () => {
     }
     
     if (path === 'logout') {
+      // iOS için bilgileri temizle
+      if (platform.isNative()) {
+        await IOSAuthService.clearCredentials();
+        console.log('📱 iOS: Logout - bilgiler temizlendi');
+      }
+      
       await logout();
       navigate('/login');
     } else {

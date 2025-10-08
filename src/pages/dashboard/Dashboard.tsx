@@ -344,41 +344,41 @@ const Dashboard: React.FC = () => {
             <CardTitle className="text-base md:text-lg">Program Özeti</CardTitle>
           </CardHeader>
           <CardContent className="">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="text-blue-700">
-                  <Building2 className="h-6 w-6" />
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="text-blue-700 mb-1 sm:mb-2">
+                  <Building2 className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{dashboardStats.toplamSahalar}</div>
-                  <div className="text-sm text-gray-600">Toplam Saha</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="text-green-700">
-                  <Sun className="h-6 w-6" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{dashboardStats.toplamSantraller}</div>
-                  <div className="text-sm text-gray-600">Toplam Santral</div>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{dashboardStats.toplamSahalar}</div>
+                  <div className="text-[10px] sm:text-sm text-gray-600">Toplam Saha</div>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="text-purple-700">
-                  <Users className="h-6 w-6" />
+              <div className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="text-green-700 mb-1 sm:mb-2">
+                  <Sun className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{dashboardStats.toplamEkipUyeleri}</div>
-                  <div className="text-sm text-gray-600">Ekip Üyeleri</div>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{dashboardStats.toplamSantraller}</div>
+                  <div className="text-[10px] sm:text-sm text-gray-600">Toplam Santral</div>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="text-orange-700">
-                  <Wrench className="h-6 w-6" />
+              <div className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="text-purple-700 mb-1 sm:mb-2">
+                  <Users className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">{dashboardStats.buAyBakimSayisi || 0}</div>
-                  <div className="text-sm text-gray-600">Bu Ay Bakımlar</div>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{dashboardStats.toplamEkipUyeleri}</div>
+                  <div className="text-[10px] sm:text-sm text-gray-600">Ekip Üyeleri</div>
+                </div>
+              </div>
+              <div className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="text-orange-700 mb-1 sm:mb-2">
+                  <Wrench className="h-5 w-5 sm:h-6 sm:w-6" />
+                </div>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{dashboardStats.buAyBakimSayisi || 0}</div>
+                  <div className="text-[10px] sm:text-sm text-gray-600">Bu Ay Bakımlar</div>
                 </div>
               </div>
             </div>

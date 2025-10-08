@@ -20,6 +20,7 @@ import {
 import { deleteCompanyCompletely } from '../../services/companyDeletionService';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { cleanupOdemeDurumuFields } from '../../utils/cleanupOdemeDurumu';
 import { SAAS_CONFIG } from '../../config/saas.config';
 import { getMergedPlans, subscribeToMergedPlans } from '../../services/planConfigService';
 import { 
@@ -241,23 +242,34 @@ const SuperAdminDashboard: React.FC = () => {
     }
   };
 
-  // Durum badge'i
+  // Durum badge'i - Daha detaylı gösterim
   const getStatusBadge = (status: string, daysRemaining: number) => {
+    // Eğer gün negatifse veya 0 ise expired olarak göster
+    if (daysRemaining <= 0) {
+      return (
+        <Badge variant="danger">
+          ⚠️ Süresi Dolmuş
+        </Badge>
+      );
+    }
+    
     switch (status) {
       case 'trial':
         return (
           <Badge variant={daysRemaining > 3 ? 'info' : 'warning'}>
-            Deneme ({daysRemaining}g)
+            🎁 Deneme ({daysRemaining} gün)
           </Badge>
         );
       case 'active':
         return (
           <Badge variant={daysRemaining > 7 ? 'success' : 'warning'}>
-            Aktif ({daysRemaining}g)
+            ✅ Aktif ({daysRemaining} gün)
           </Badge>
         );
       case 'expired':
-        return <Badge variant="danger">Süresi Dolmuş</Badge>;
+        return <Badge variant="danger">❌ Süresi Dolmuş</Badge>;
+      case 'lifetime':
+        return <Badge variant="success">♾️ Ömür Boyu</Badge>;
       default:
         return <Badge variant="secondary">Bilinmiyor</Badge>;
     }
@@ -290,14 +302,35 @@ const SuperAdminDashboard: React.FC = () => {
           </h1>
           <p className="text-gray-600 mt-1">SolarVeyo Platform Yönetimi</p>
         </div>
-        <Button 
-          onClick={loadData}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <Activity className="h-4 w-4" />
-          Yenile
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={async () => {
+              const confirmed = window.confirm('Eski ödeme durumu alanlarını temizlemek istediğinize emin misiniz?');
+              if (confirmed) {
+                try {
+                  const count = await cleanupOdemeDurumuFields();
+                  toast.success(`${count} kullanıcı temizlendi!`);
+                  loadData();
+                } catch (error) {
+                  toast.error('Temizlik sırasında hata oluştu');
+                }
+              }
+            }}
+            variant="outline"
+            className="flex items-center gap-2 bg-orange-50 hover:bg-orange-100 text-orange-700"
+          >
+            <Wrench className="h-4 w-4" />
+            Eski Alanları Temizle
+          </Button>
+          <Button 
+            onClick={loadData}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Activity className="h-4 w-4" />
+            Yenile
+          </Button>
+        </div>
       </div>
 
       {/* Platform İstatistikleri */}
@@ -491,22 +524,51 @@ const SuperAdminDashboard: React.FC = () => {
           <div className="space-y-4">
             <div>
               <h3 className="font-semibold">{selectedCompany.name}</h3>
-              <p className="text-sm text-gray-600">Mevcut plan: {selectedCompany.planDisplayName}</p>
+              <div className="flex items-center gap-3 mt-1">
+                <p className="text-sm text-gray-600">Mevcut plan: {selectedCompany.planDisplayName}</p>
+                {getStatusBadge(selectedCompany.subscriptionStatus, selectedCompany.daysRemaining)}
+              </div>
             </div>
+            
+            {/* Uyarı mesajı - deneme süresi dolmuş kullanıcılar için */}
+            {selectedCompany.daysRemaining <= 0 && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-sm text-red-700">
+                  ⚠️ Bu şirketin abonelik süresi dolmuş. Yeni plan atayarak aktif hale getirebilirsiniz.
+                </p>
+              </div>
+            )}
             
             <div>
               <label className="block text-sm font-medium mb-2">Yeni Plan</label>
               <Select
                 value={newPlanId}
                 onChange={(e) => setNewPlanId(e.target.value)}
-                options={Object.values(plans)
-                  .filter((p: any) => p.id !== 'trial')
-                  .map((plan: any) => ({
-                    value: plan.id,
-                    label: `${plan.displayName} - ${formatCurrency(plan.price)}/ay`
-                  }))}
+                options={[
+                  { value: '', label: 'Plan Seçin...' },
+                  ...Object.values(plans)
+                    .filter((p: any) => p.id !== 'trial')
+                    .map((plan: any) => ({
+                      value: plan.id,
+                      label: `${plan.displayName} - ${formatCurrency(plan.price)}/ay`
+                    }))
+                ]}
               />
             </div>
+            
+            {/* Plan seçildiğinde bilgi göster */}
+            {newPlanId && newPlanId !== selectedCompany.subscriptionPlan && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-700">
+                  ✅ Plan değiştirildiğinde:
+                  <ul className="mt-1 ml-4 list-disc">
+                    <li>Abonelik durumu "Aktif" olacak</li>
+                    <li>1 aylık süre tanımlanacak</li>
+                    <li>Deneme süresi bilgileri temizlenecek</li>
+                  </ul>
+                </p>
+              </div>
+            )}
             
             <div className="flex justify-end gap-2 pt-4">
               <Button 

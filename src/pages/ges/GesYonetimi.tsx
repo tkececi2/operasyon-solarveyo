@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Sun, MapPin, Zap, Calendar, TrendingUp, Users, Settings, Eye, Image, List, Grid as GridIcon, Layers, AlertCircle, Activity } from 'lucide-react';
+import { Plus, Sun, MapPin, Zap, Calendar, TrendingUp, Users, Settings, Eye, Image, List, Grid as GridIcon, Layers, AlertCircle } from 'lucide-react';
 import { Button, Card, CardContent, CardHeader, CardTitle, Modal, LoadingSpinner } from '../../components/ui';
 import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { useAuth } from '../../contexts/AuthContext';
@@ -153,10 +153,6 @@ const GesYonetimi: React.FC = () => {
   // İstatistikler
   const toplamKapasite = santraller.reduce((total, santral) => total + santral.kapasite, 0);
   const aktifSantraller = santraller.filter(s => s.durum === 'aktif').length;
-  const toplamUretim = santraller.reduce((total, santral) => total + santral.sonUretim, 0);
-  const ortalamaPerformans = santraller.length > 0 
-    ? Math.round(santraller.reduce((total, santral) => total + santral.performans, 0) / santraller.length)
-    : 0;
 
   // Authentication check
   if (!userProfile) {
@@ -254,8 +250,8 @@ const GesYonetimi: React.FC = () => {
         message={`${santraller.length} / ${santralLimit} santral. Yeni santral eklemek için planınızı yükseltin.`}
       />
 
-      {/* Summary Stats - 2 sütunlu düzen */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+      {/* Summary Stats - Sadece 2 kart */}
+      <div className="grid grid-cols-2 gap-4 md:gap-6">
         <Card>
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col items-center text-center">
@@ -272,28 +268,6 @@ const GesYonetimi: React.FC = () => {
               <Zap className="h-10 w-10 text-green-500 mb-2" />
               <p className="text-xl md:text-2xl font-bold text-gray-900">{aktifSantraller}</p>
               <p className="text-xs md:text-sm text-gray-600 mt-1">Aktif Santral</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 md:p-6">
-            <div className="flex flex-col items-center text-center">
-              <TrendingUp className="h-10 w-10 text-blue-500 mb-2" />
-              <p className="text-xl md:text-2xl font-bold text-gray-900">
-                {toplamUretim.toLocaleString()} kWh
-              </p>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">Bugünkü Üretim</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 md:p-6">
-            <div className="flex flex-col items-center text-center">
-              <Activity className="h-10 w-10 text-primary-500 mb-2" />
-              <p className="text-xl md:text-2xl font-bold text-gray-900">%{ortalamaPerformans}</p>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">Ortalama Performans</p>
             </div>
           </CardContent>
         </Card>

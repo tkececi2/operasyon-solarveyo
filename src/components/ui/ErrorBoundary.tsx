@@ -11,13 +11,17 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
+  retryCount: number;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
+  private softRecoverTimer: number | null = null;
+
   public state: State = {
     hasError: false,
     error: null,
-    errorInfo: null
+    errorInfo: null,
+    retryCount: 0
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -38,6 +42,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
     // Log to external service (Sentry, LogRocket, etc.)
     // logErrorToService(error, errorInfo);
+
+    // Geçici hatalarda otomatik toparlanma: ilk hatada kısa bir gecikme ile yeniden dene
+    if (this.state.retryCount < 1) {
+      this.softRecoverTimer = window.setTimeout(() => {
+        this.setState({ hasError: false, error: null, errorInfo: null, retryCount: this.state.retryCount + 1 });
+      }, 150);
+    }
   }
 
   private handleReload = () => {

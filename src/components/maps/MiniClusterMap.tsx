@@ -92,9 +92,9 @@ export const MiniClusterMap: React.FC<{ points: Point[]; mapType?: 'roadmap' | '
 
       // Duruma göre renk üret
       const getColorByStatus = (status?: 'normal' | 'bakim' | 'ariza') => {
-        if (status === 'ariza') return '#ef4444'; // kırmızı
-        if (status === 'bakim') return '#f59e0b'; // turuncu/sarı
-        return '#ef4444'; // varsayılanı kırmızı yap
+        if (status === 'ariza') return '#ef4444';
+        if (status === 'bakim') return '#f59e0b';
+        return '#2563eb';
       };
 
       // Vurgulu pin + panel ikonu + renkli halo (yüksek görünürlük)

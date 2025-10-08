@@ -19,6 +19,7 @@ import { SAAS_CONFIG } from '../config/saas.config';
 import { MobileNotificationService } from '../services/mobile/notificationService';
 import { platform } from '../utils/platform';
 import { Preferences } from '@capacitor/preferences';
+import { SplashScreen } from '@capacitor/splash-screen';
 
 interface AuthContextType {
   currentUser: FirebaseUser | null;
@@ -59,18 +60,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setUserProfile(userData);
         
-        // Deneme süresi kontrolü
-        if (userData.odemeDurumu === 'deneme' && userData.denemeSuresiBitis) {
-          const now = Timestamp.now();
-          if (userData.denemeSuresiBitis.seconds < now.seconds) {
-            // Deneme süresi bitmiş
-            await updateDoc(doc(db, 'kullanicilar', uid), {
-              odemeDurumu: 'surebitti',
-              guncellenmeTarihi: now
-            });
-            toast.error('Deneme süreniz sona ermiştir. Lütfen abonelik satın alın.');
-          }
-        }
+        // ESKİ DENEME SÜRESİ KONTROLÜ KALDIRILDI
+        // Artık CompanyContext'te modern abonelik sistemi kullanılıyor
+        // odemeDurumu alanı deprecated - kullanılmamalı
         
         return userData;
       }
@@ -87,34 +79,89 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     // iOS için otomatik giriş fonksiyonu
     const attemptAutoLogin = async () => {
-      if (!platform.isNative()) return;
+      if (!platform.isNative()) return false;
       
       try {
+        console.log('📱 iOS: Kaydedilmiş bilgiler kontrol ediliyor...');
+        
+        // Direkt email/password kontrolü yap (token kontrolü yerine)
         const { value: savedEmail } = await Preferences.get({ key: 'user_email' });
         const { value: savedPassword } = await Preferences.get({ key: 'user_password' });
         
+        console.log('📱 iOS: Kaydedilmiş email:', savedEmail ? 'Var' : 'Yok');
+        console.log('📱 iOS: Kaydedilmiş password:', savedPassword ? 'Var' : 'Yok');
+        
         if (savedEmail && savedPassword && mounted) {
-          // Otomatik giriş yap
-          await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
-          return true;
+          try {
+            console.log('📱 iOS: Otomatik giriş deneniyor...');
+            const userCredential = await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
+            
+            if (userCredential.user) {
+              console.log('✅ iOS: Otomatik giriş başarılı!');
+              // Profili getir
+              await fetchUserProfile(userCredential.user.uid);
+              return true;
+            }
+          } catch (error: any) {
+            console.error('❌ iOS otomatik giriş hatası:', error.code, error.message);
+            // Hata durumunda kayıtlı bilgileri temizle
+            // NOT: Sadece authentication hatası varsa temizle, başka hatalar için temizleme
+            if (error.code === 'auth/invalid-credential' || 
+                error.code === 'auth/user-disabled' || 
+                error.code === 'auth/user-not-found') {
+              await clearSavedCredentials();
+            }
+          }
+        } else {
+          console.log('📱 iOS: Kaydedilmiş bilgi bulunamadı');
         }
       } catch (error) {
-        await Preferences.remove({ key: 'user_email' });
-        await Preferences.remove({ key: 'user_password' });
+        console.error('Auto-login genel hatası:', error);
+        // Genel hata durumunda bilgileri temizleme, sadece logla
       }
       return false;
     };
     
+    // Kayıtlı bilgileri temizle
+    const clearSavedCredentials = async () => {
+      if (!platform.isNative()) return;
+      
+      console.log('🗑️ iOS: Kaydedilmiş bilgiler temizleniyor...');
+      await Preferences.remove({ key: 'user_email' });
+      await Preferences.remove({ key: 'user_password' });
+      await Preferences.remove({ key: 'auth_token' });
+      await Preferences.remove({ key: 'user_uid' });
+      console.log('✅ iOS: Bilgiler temizlendi');
+    };
+    
     const initAuth = async () => {
-      // iOS için hemen otomatik giriş dene
+      console.log('🚀 initAuth başladı, platform:', platform.getPlatformName(), 'isNative:', platform.isNative());
+      
+      // iOS için önce otomatik giriş dene
       if (platform.isNative()) {
-        const autoLoginSuccess = await attemptAutoLogin();
-        if (!autoLoginSuccess && mounted) {
-          // Auto-login başarısız, loading'i kapat
-          setTimeout(() => {
-            if (mounted) setLoading(false);
-          }, 500);
+        console.log('📱 iOS: App başlatıldı, otomatik giriş kontrolü yapılıyor...');
+        
+        // Biraz bekle - Preferences'ın yüklenmesi için
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        try {
+          const autoLoginSuccess = await attemptAutoLogin();
+          if (autoLoginSuccess) {
+            console.log('✅ iOS: Otomatik giriş başarılı');
+            // Başarılıysa auth state change bekle
+          } else if (mounted) {
+            console.log('❌ iOS: Otomatik giriş başarısız, login sayfasına yönlendirilecek');
+            // Auto-login başarısız, loading'i kapat
+            setTimeout(() => {
+              if (mounted) setLoading(false);
+            }, 500);
+          }
+        } catch (error) {
+          console.error('❌ initAuth içinde hata:', error);
+          if (mounted) setLoading(false);
         }
+      } else {
+        console.log('🌐 Web platformu tespit edildi');
       }
       
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -162,8 +209,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (user) {
           // iOS'ta kullanıcı varsa hemen loading'i kapat
           setLoading(false);
+          // Splash Screen'i kapat
+          SplashScreen.hide();
+          console.log('📱 iOS: Kullanıcı mevcut, Splash Screen kapatıldı');
+        } else {
+          // iOS'ta user yoksa loading attemptAutoLogin tarafından kapatılacak
+          // Ama Splash Screen'i yine de kapat
+          setTimeout(() => {
+            SplashScreen.hide();
+            console.log('📱 iOS: Kullanıcı yok, Splash Screen kapatıldı');
+          }, 500);
         }
-        // iOS'ta user yoksa loading attemptAutoLogin tarafından kapatılacak
       });
 
       return unsubscribe;
@@ -210,13 +266,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userProfile.sonGiris = Timestamp.now();
         setUserProfile(userProfile);
         
-        // Mobile platform ise push notification'ı başlat
+        // Mobile platform ise bilgileri kaydet ve push notification'ı başlat
         if (platform.isNative()) {
           try {
-            await MobileNotificationService.initialize(user.uid);
-            console.log('Push notification başarıyla başlatıldı');
+            console.log('📱 iOS: Kullanıcı bilgileri kaydediliyor...');
+            
+            // iOS için kullanıcı bilgilerini güvenli bir şekilde kaydet
+            await Preferences.set({ key: 'user_email', value: email });
+            console.log('✅ Email kaydedildi');
+            
+            await Preferences.set({ key: 'user_password', value: password });
+            console.log('✅ Password kaydedildi');
+            
+            await Preferences.set({ key: 'user_uid', value: user.uid });
+            console.log('✅ UID kaydedildi');
+            
+            // Firebase auth token'ı da kaydet (varsa)
+            try {
+              const token = await user.getIdToken();
+              if (token) {
+                await Preferences.set({ key: 'auth_token', value: token });
+                console.log('✅ Token kaydedildi');
+              }
+            } catch (tokenError) {
+              console.warn('Token alınamadı:', tokenError);
+            }
+            
+            // Kaydedilen bilgileri doğrula
+            const { value: verifyEmail } = await Preferences.get({ key: 'user_email' });
+            const { value: verifyPassword } = await Preferences.get({ key: 'user_password' });
+            console.log('📱 iOS: Bilgiler doğrulandı - Email:', verifyEmail ? '✅' : '❌', 'Password:', verifyPassword ? '✅' : '❌');
+            
+            // Push notification'ı başlat
+            try {
+              await MobileNotificationService.initialize(user.uid);
+              console.log('Push notification başarıyla başlatıldı');
+            } catch (notifError) {
+              console.error('Push notification hatası:', notifError);
+            }
           } catch (error) {
-            console.error('Push notification başlatma hatası:', error);
+            console.error('iOS bilgi kaydetme hatası:', error);
             // Hata olsa bile giriş işlemine devam et
           }
         }
@@ -225,8 +314,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!userProfile) {
         // Eğer kullanıcı profili yoksa, otomatik oluştur
         const now = Timestamp.now();
-        const trialDays = (SAAS_CONFIG.PLANS.trial as any)?.duration || 14;
-        const trialEnd = Timestamp.fromDate(new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000));
+        // Başlangıç paketi için 30 günlük süre
+        const starterDays = 30;
+        const starterEnd = Timestamp.fromDate(new Date(Date.now() + starterDays * 24 * 60 * 60 * 1000));
 
         // Şirketi oluştur (yoksa)
         const companyId = `company_${user.uid}`;
@@ -236,12 +326,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const companyData = {
             id: companyId,
             name: `${email.split('@')[0]} Şirketi`,
-            subscriptionStatus: 'trial' as const,
-            subscriptionPlan: 'trial' as const,
+            subscriptionStatus: 'active' as const, // Başlangıç paketi aktif
+            subscriptionPlan: 'starter' as const, // Başlangıç paketi
+            subscriptionPrice: 0, // Ücretsiz başlangıç
+            subscriptionStartDate: now,
+            subscriptionEndDate: starterEnd,
             isActive: true,
             createdAt: now,
             createdBy: user.uid,
-            trialEndDate: trialEnd,
+            subscriptionLimits: {
+              users: 3,
+              sahalar: 2,
+              santraller: 3,
+              storageGB: 1,
+              storageLimit: 1024 // MB cinsinden
+            },
             settings: {
               theme: 'light',
               language: 'tr',
@@ -257,9 +356,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: user.email!,
           ad: user.displayName || email.split('@')[0],
           rol: 'yonetici', // İlk kullanıcı yönetici olur
-          odemeDurumu: 'deneme',
-          denemeSuresiBaslangic: now,
-          denemeSuresiBitis: trialEnd,
+          // odemeDurumu kaldırıldı - deprecated alan
+          // Abonelik bilgileri company koleksiyonunda tutuluyor
           emailVerified: user.emailVerified,
           aktif: true, // Yeni kullanıcılar varsayılan olarak aktif
           olusturmaTarihi: now,
@@ -362,17 +460,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (userData.companyName && !companyId) {
         const companyRef = doc(db, 'companies', `company_${user.uid}`);
-        const trialDays = (SAAS_CONFIG.PLANS.trial as any)?.duration || 14;
-        const trialEnd = Timestamp.fromDate(new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000));
+        // Başlangıç paketi için 30 günlük süre
+        const starterDays = 30;
+        const starterEnd = Timestamp.fromDate(new Date(Date.now() + starterDays * 24 * 60 * 60 * 1000));
         const companyData = {
           id: `company_${user.uid}`,
           name: userData.companyName,
-          subscriptionStatus: 'trial' as const,
-          subscriptionPlan: 'trial' as const,
+          subscriptionStatus: 'active' as const, // Başlangıç paketi aktif
+          subscriptionPlan: 'starter' as const, // Başlangıç paketi
+          subscriptionPrice: 0, // Ücretsiz başlangıç
+          subscriptionStartDate: now,
+          subscriptionEndDate: starterEnd,
           isActive: true,
           createdAt: now,
           createdBy: user.uid,
-          trialEndDate: trialEnd,
+          subscriptionLimits: {
+            users: 3,
+            sahalar: 2,
+            santraller: 3,
+            storageGB: 1,
+            storageLimit: 1024 // MB cinsinden
+          },
           settings: {
             theme: 'light',
             language: 'tr',
@@ -384,21 +492,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       // Kullanıcı profilini oluştur
-      const trialDays = (SAAS_CONFIG.PLANS.trial as any)?.duration || 14;
-      const denemeSuresiBaslangic = now;
-      const denemeSuresiBitis = Timestamp.fromDate(
-        new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000)
-      );
-
       const newUserData: Partial<User> = {
         ...userData,
         id: user.uid,
         companyId,
         email: user.email!,
         emailVerified: false,
-        odemeDurumu: 'deneme',
-        denemeSuresiBaslangic,
-        denemeSuresiBitis,
+        // odemeDurumu kaldırıldı - deprecated alan
+        // Abonelik bilgileri company koleksiyonunda tutuluyor
         olusturmaTarihi: now,
         guncellenmeTarihi: now,
       };
@@ -462,12 +563,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         analyticsService.logout();
       }
       
-      // iOS için: Logout olduğunda credentials'ı sil
+      // iOS için: Logout olduğunda tüm credentials'ı sil
       if (platform.isNative()) {
         try {
           await Preferences.remove({ key: 'user_email' });
           await Preferences.remove({ key: 'user_password' });
-          console.log('📱 iOS: Logout - Kullanıcı bilgileri silindi');
+          await Preferences.remove({ key: 'auth_token' });
+          await Preferences.remove({ key: 'user_uid' });
+          console.log('📱 iOS: Logout - Tüm kullanıcı bilgileri temizlendi');
         } catch (error) {
           console.error('iOS logout bilgi silme hatası:', error);
         }

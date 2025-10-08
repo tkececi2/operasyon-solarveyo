@@ -16,19 +16,19 @@ export const SAAS_CONFIG = {
   // Abonelik Planları - Artık Firebase'den gelecek
   // Varsayılan planlar sadece yapı için, fiyatlar SuperAdmin tarafından belirlenir
   PLANS: {
-    // Trial planı sabit kalabilir
-    trial: {
-      id: 'trial',
-      name: 'Deneme',
-      displayName: '14 Gün Ücretsiz Deneme',
-      description: 'Tüm özellikleri 14 gün boyunca ücretsiz deneyin',
-      price: 0,
+    // Başlangıç Paketi - Yeni kayıtlar için varsayılan
+    starter: {
+      id: 'starter',
+      name: 'Başlangıç',
+      displayName: 'Başlangıç Paketi',
+      description: 'Küçük ölçekli işletmeler için ideal başlangıç',
+      price: 0, // Ücretsiz başlangıç
       currency: 'TRY',
-      billingPeriod: 'trial',
-      duration: 14, // gün
-      color: '#F59E0B',
-      icon: '🎯',
-      popular: false,
+      billingPeriod: 'monthly',
+      duration: 30, // gün
+      color: '#10B981',
+      icon: '🚀',
+      popular: true,
       limits: {
         users: 3,
         sahalar: 2,

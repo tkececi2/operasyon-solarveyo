@@ -25,18 +25,12 @@ export const BottomTabBar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userProfile } = useAuth();
-  const [activeTab, setActiveTab] = useState('/dashboard');
   const [arizaCount, setArizaCount] = useState(0);
   const [bakimCount, setBakimCount] = useState(0);
   
-  // Mobilde gösterilmeyecek
+  // Sadece mobilde göster
   if (!platform.isNative()) return null;
 
-  useEffect(() => {
-    setActiveTab(location.pathname);
-  }, [location.pathname]);
-
-  // Arıza ve bakım sayılarını dinle
   useEffect(() => {
     if (!userProfile?.companyId) return;
 
@@ -79,14 +73,14 @@ export const BottomTabBar: React.FC = () => {
       icon: AlertTriangle,
       label: 'Arızalar',
       roles: ['yonetici', 'muhendis', 'tekniker', 'musteri', 'bekci'],
-      badge: arizaCount > 0 ? arizaCount : undefined // Dinamik bildirim sayısı
+      badge: arizaCount > 0 ? arizaCount : undefined
     },
     {
       path: '/bakim',
       icon: Wrench,
       label: 'Bakım',
       roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri'],
-      badge: bakimCount > 0 ? bakimCount : undefined // Dinamik bildirim sayısı
+      badge: bakimCount > 0 ? bakimCount : undefined
     },
     {
       path: '/ges',
@@ -118,7 +112,6 @@ export const BottomTabBar: React.FC = () => {
       }
     }
     
-    setActiveTab(path);
     navigate(path);
   };
 
@@ -127,87 +120,53 @@ export const BottomTabBar: React.FC = () => {
   };
 
   return (
-    <>      
-      {/* Tab Bar Container - iOS için kesinlikle sabitlenmiş */}
-      <div 
-        className="fixed bottom-0 left-0 right-0"
-        style={{
-          position: 'fixed !important' as any,
-          bottom: '0 !important' as any,
-          left: '0 !important' as any,
-          right: '0 !important' as any,
-          zIndex: 99999,
-          transform: 'translate3d(0, 0, 0)',
-          WebkitTransform: 'translate3d(0, 0, 0)',
-          WebkitBackfaceVisibility: 'hidden',
-          backfaceVisibility: 'hidden'
-        }}
-      >
-        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50">
-          {/* Safe area padding for iPhone */}
-          <div 
-            className="flex items-center justify-around px-2"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-          >
-            {visibleTabs.map((tab) => {
-              const Icon = tab.icon;
-              const active = isActive(tab.path);
-              
-              return (
-                <button
-                  key={tab.path}
-                  onClick={() => handleTabPress(tab.path)}
-                  className="relative flex-1 flex flex-col items-center justify-center py-2 px-1 group"
-                >
-                  {/* Active Indicator */}
-                  {active && (
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-12 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" />
-                  )}
-                  
-                  {/* Icon Container */}
-                  <div className="relative">
-                    {/* Icon Background (visible when active) */}
-                    {active && (
-                      <div className="absolute inset-0 bg-blue-100 dark:bg-blue-900/30 rounded-xl scale-150 opacity-30" />
-                    )}
-                    
-                    {/* Icon */}
-                    <div className={`relative transition-all duration-200 ${
-                      active ? 'scale-110' : 'scale-100 group-active:scale-95'
-                    }`}>
-                      <Icon 
-                        className={`w-6 h-6 transition-colors ${
-                          active 
-                            ? 'text-blue-600 dark:text-blue-400' 
-                            : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
-                        }`}
-                        strokeWidth={active ? 2.5 : 2}
-                      />
-                    </div>
-                    
-                    {/* Badge */}
-                    {tab.badge && tab.badge > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
-                        {tab.badge > 99 ? '99+' : tab.badge}
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Label */}
-                  <span className={`mt-1 text-[11px] transition-all duration-200 ${
+    <div 
+      className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700"
+      style={{
+        zIndex: 9999,
+        paddingBottom: 'env(safe-area-inset-bottom)'
+      }}
+    >
+      <div className="flex items-center justify-around h-12">
+        {visibleTabs.map((tab) => {
+          const Icon = tab.icon;
+          const active = isActive(tab.path);
+          
+          return (
+            <button
+              key={tab.path}
+              onClick={() => handleTabPress(tab.path)}
+              className="relative flex-1 flex flex-col items-center justify-center py-1"
+            >
+              <div className="relative">
+                <Icon 
+                  className={`w-6 h-6 ${
                     active 
-                      ? 'text-blue-600 dark:text-blue-400 font-semibold' 
-                      : 'text-gray-600 dark:text-gray-400 font-medium'
-                  }`}>
-                    {tab.label}
+                      ? 'text-blue-600 dark:text-blue-400' 
+                      : 'text-gray-500 dark:text-gray-400'
+                  }`}
+                  strokeWidth={active ? 2.5 : 2}
+                />
+                
+                {tab.badge && tab.badge > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                    {tab.badge > 99 ? '99+' : tab.badge}
                   </span>
-                  
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                )}
+              </div>
+              
+              <span className={`text-[10px] mt-0.5 ${
+                active 
+                  ? 'text-blue-600 dark:text-blue-400 font-semibold' 
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}>
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
-    </>
+    </div>
   );
 };
+

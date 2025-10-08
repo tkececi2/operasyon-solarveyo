@@ -31,7 +31,7 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const { userProfile } = useAuth();
 
   // Şirket bilgilerini getir
-  const fetchCompany = async (companyId: string) => {
+  const fetchCompany = async (companyId: string, currentUserProfile?: any) => {
     try {
       const companyDoc = await getDoc(doc(db, 'companies', companyId));
       if (companyDoc.exists()) {
@@ -50,39 +50,37 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         
         setCompany(companyData);
         
-        // Abonelik durumu kontrolü (14 gün trial standardı)
-        if (companyData.subscriptionStatus === 'trial' && companyData.createdAt) {
-          const now = Timestamp.now();
-          const createdAt = companyData.createdAt;
-          const trialDays = (SAAS_CONFIG.PLANS.trial as any)?.duration || 14;
-
-          // Öncelik: trialEndDate alanı
-          const trialEnd = (companyData as any).trialEndDate || null;
-          let remainingDays = 0;
-          if (trialEnd && typeof (trialEnd as any).seconds === 'number') {
-            const diffSec = (trialEnd as any).seconds - now.seconds;
-            remainingDays = Math.ceil(diffSec / (24 * 60 * 60));
-          } else {
-            // Fallback: createdAt + 14 gün
-            const daysSinceCreation = Math.floor(
-              (now.seconds - createdAt.seconds) / (24 * 60 * 60)
-            );
-            remainingDays = Math.max(0, trialDays - daysSinceCreation);
+        // Abonelik durumu kontrolü - Sadece aktif planlar için süre uyarısı
+        if (currentUserProfile) {
+          // Aktif abonelik kontrolü
+          if (companyData.subscriptionStatus === 'active' && companyData.subscriptionPlan) {
+            // Aktif abonelik - sadece yakında bitecekse uyar
+            const endDate = (companyData as any).subscriptionEndDate;
+            if (endDate && typeof endDate.seconds === 'number') {
+              const now = Timestamp.now();
+              const diffSec = endDate.seconds - now.seconds;
+              const remainingDays = Math.ceil(diffSec / (24 * 60 * 60));
+              
+              // Sadece 7 günden az kaldıysa uyar
+              if (remainingDays <= 7 && remainingDays > 0) {
+                toast(`Aboneliğinizin bitimine ${remainingDays} gün kaldı. Yenilemeyi unutmayın!`, { 
+                  icon: '⏰',
+                  style: { background: '#FEF3C7', color: '#92400E' }
+                });
+              } else if (remainingDays <= 0) {
+                // Süresi dolmuş - status güncelle
+                await updateDoc(doc(db, 'companies', companyId), {
+                  subscriptionStatus: 'expired'
+                });
+                companyData.subscriptionStatus = 'expired';
+                setCompany(companyData);
+                toast.error('Aboneliğinizin süresi dolmuş. Lütfen yenileyin.');
+              }
+            }
           }
-
-          if (remainingDays <= 0) {
-            // Deneme süresi bitmiş
-            await updateDoc(doc(db, 'companies', companyId), {
-              subscriptionStatus: 'expired'
-            });
-            companyData.subscriptionStatus = 'expired';
-            setCompany(companyData);
-            toast.error('Deneme süreniz sona ermiştir. Lütfen abonelik satın alın.');
-          } else if (remainingDays <= 7) {
-            toast(`Deneme süreniz ${remainingDays} gün sonra sona erecek.`, { 
-              icon: '⚠️',
-              style: { background: '#FEF3C7', color: '#92400E' }
-            });
+          // Expired durumu - sadece bilgi ver
+          else if (companyData.subscriptionStatus === 'expired') {
+            toast.error('Aboneliğinizin süresi dolmuş. Lütfen yenileyin.');
           }
         }
         
@@ -100,7 +98,7 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const loadCompany = async () => {
       if (userProfile?.companyId) {
         try {
-          await fetchCompany(userProfile.companyId);
+          await fetchCompany(userProfile.companyId, userProfile);
         } catch (error) {
           console.error('Şirket bilgileri getirilemedi:', error);
           toast.error('Şirket bilgileri yüklenemedi.');
@@ -143,7 +141,7 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     
     try {
       console.log('🔄 Şirket bilgileri yenileniyor...');
-      const updatedCompany = await fetchCompany(userProfile.companyId);
+      const updatedCompany = await fetchCompany(userProfile.companyId, userProfile);
       console.log('✅ Şirket bilgileri yenilendi');
       return updatedCompany;
     } catch (error) {

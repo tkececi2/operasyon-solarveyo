@@ -7,6 +7,7 @@ import { Sun, Mail, Lock, Eye, EyeOff, Home } from 'lucide-react';
 import Logo from '../../components/ui/Logo';
 import { useAuth } from '../../contexts/AuthContext';
 import { platform } from '../../utils/platform';
+import { IOSAuthService } from '../../services/iosAuthService';
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui';
 import toast from 'react-hot-toast';
 import TwoFactorVerification from '../../components/auth/TwoFactorVerification';
@@ -31,6 +32,22 @@ const Login: React.FC = () => {
   const [tempUserId, setTempUserId] = useState<string>('');
   const [temp2FAPhone, setTemp2FAPhone] = useState<string>('');
   const [tempCredentials, setTempCredentials] = useState<LoginFormData | null>(null);
+
+  // Eğer kullanıcı zaten girişliyse dashboard'a gönder
+  React.useEffect(() => {
+    try {
+      const unsub = import('firebase/auth').then(m => {
+        return m.onAuthStateChanged(m.getAuth(), (u) => {
+          if (u) {
+            navigate('/dashboard', { replace: true });
+          }
+        });
+      });
+      return () => {
+        // unsubscribe promise döner, beklemeye gerek yok
+      };
+    } catch (_) { /* ignore */ }
+  }, [navigate]);
 
   const {
     register,
@@ -63,14 +80,27 @@ const Login: React.FC = () => {
         setTempCredentials(data);
         setShow2FA(true);
       } else {
-        // 2FA yoksa normal giriş
-        await login(data.email, data.password);
-        navigate('/dashboard');
+      // 2FA yoksa normal giriş
+      await login(data.email, data.password);
+      
+      // iOS için bilgileri kaydet
+      if (platform.isNative()) {
+        await IOSAuthService.saveCredentials(data.email, data.password);
+        console.log('📱 iOS: Login bilgileri kaydedildi');
+      }
+      
+      navigate('/dashboard');
       }
     } catch (error: any) {
       // Email ile bulunamazsa, auth ile dene
       try {
         await login(data.email, data.password);
+        
+        // iOS için bilgileri kaydet
+        if (platform.isNative()) {
+          await IOSAuthService.saveCredentials(data.email, data.password);
+          console.log('📱 iOS: Login bilgileri kaydedildi (catch bloğu)');
+        }
         
         // Giriş başarılı, şimdi 2FA kontrolü yap
         const { currentUser } = await import('firebase/auth').then(m => ({ currentUser: m.getAuth().currentUser }));

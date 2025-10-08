@@ -329,14 +329,19 @@ class ModernSuperAdminService {
       endDate.setMonth(endDate.getMonth() + 1); // 1 aylık süre
 
       await updateDoc(doc(db, 'companies', companyId), {
+        // Trial dışındaki tüm planlar için status 'active' olmalı
         subscriptionStatus: newPlanId === 'trial' ? 'trial' : 'active',
         subscriptionPlan: newPlanId,
         subscriptionPrice: plan.price,
         subscriptionStartDate: Timestamp.fromDate(now),
         subscriptionEndDate: Timestamp.fromDate(endDate),
         nextBillingDate: Timestamp.fromDate(endDate),
-        // Aktife geçerken deneme tarihi gereksiz hale gelir
-        ...(newPlanId !== 'trial' ? { trialEndDate: null as any } : {}),
+        // Aktife geçerken deneme tarihi temizlenir ve updatedAt eklenir
+        ...(newPlanId !== 'trial' ? { 
+          trialEndDate: null as any,
+          updatedAt: Timestamp.fromDate(now),
+          updatedBy: adminId
+        } : {}),
         subscriptionLimits: {
           users: plan.limits.users,
           storage: `${plan.limits.storageGB.toFixed(2)}GB`,

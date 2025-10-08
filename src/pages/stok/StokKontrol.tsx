@@ -512,12 +512,12 @@ const StokKontrol: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
+    <div className="space-y-4 px-2 sm:px-4">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Stok Kontrol</h1>
-          <p className="text-gray-600">Malzeme envanterini yönetin ve takip edin</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Stok Kontrol</h1>
+          <p className="text-sm sm:text-base text-gray-600">Malzeme envanterini yönetin ve takip edin</p>
         </div>
         <div className="flex items-center gap-2" data-pdf-exclude="true">
           {/* Masaüstü */}
@@ -567,46 +567,46 @@ const StokKontrol: React.FC = () => {
       </div>
 
       {/* İstatistikler - Mobilde 2 sütun */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{stats.toplam}</div>
-              <div className="text-xs md:text-sm text-gray-600">Toplam Malzeme</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{stats.toplam}</div>
+              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Toplam Malzeme</div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{stats.normal}</div>
-              <div className="text-xs md:text-sm text-gray-600">Normal Stok</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{stats.normal}</div>
+              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Normal Stok</div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{stats.dusuk}</div>
-              <div className="text-xs md:text-sm text-gray-600">Düşük Stok</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-600">{stats.dusuk}</div>
+              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Düşük Stok</div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">{stats.kritik}</div>
-              <div className="text-xs md:text-sm text-gray-600">Kritik Stok</div>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-600">{stats.kritik}</div>
+              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Kritik Stok</div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary-600">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-primary-600">
                 {formatCurrency(stats.toplamDeger)}
               </div>
-              <div className="text-xs md:text-sm text-gray-600">Toplam Değer</div>
+              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Toplam Değer</div>
             </div>
           </CardContent>
         </Card>

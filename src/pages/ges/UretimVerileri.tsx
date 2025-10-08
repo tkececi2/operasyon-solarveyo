@@ -452,43 +452,62 @@ const UretimVerileri: React.FC = () => {
         <div className="min-h-[120px] flex items-center justify-center"><LoadingSpinner /></div>
       )}
 
-      {/* Summary Stats - 3 Sütun Kompakt Düzen */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Summary Stats - Mobilde yan yana düzen */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
         {/* Toplam Üretim */}
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-4 md:p-6">
             <div className="flex flex-col items-center text-center">
-              <Sun className="h-12 w-12 text-yellow-500 mb-3" />
-              <p className="text-3xl font-bold text-gray-900">
-                {toplamUretim.toLocaleString('tr-TR')}
+              <Sun className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-yellow-500 mb-2 sm:mb-3" />
+              <p className="text-base sm:text-xl md:text-3xl font-bold text-gray-900">
+                {toplamUretim > 999999 
+                  ? `${(toplamUretim / 1000000).toFixed(1)}M`
+                  : toplamUretim > 999 
+                    ? `${(toplamUretim / 1000).toFixed(0)}K`
+                    : toplamUretim.toLocaleString('tr-TR')
+                }
               </p>
-              <p className="text-sm text-gray-600 mt-2">kWh Toplam Üretim</p>
+              <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 mt-1 sm:mt-2">
+                <span className="hidden sm:inline">kWh Toplam Üretim</span>
+                <span className="sm:hidden">kWh Üretim</span>
+              </p>
             </div>
           </CardContent>
         </Card>
 
         {/* CO₂ Tasarruf */}
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-4 md:p-6">
             <div className="flex flex-col items-center text-center">
-              <Leaf className="h-12 w-12 text-green-600 mb-3" />
-              <p className="text-3xl font-bold text-green-600">
-                {toplamCO2Tasarruf.toLocaleString('tr-TR')}
+              <Leaf className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-green-600 mb-2 sm:mb-3" />
+              <p className="text-base sm:text-xl md:text-3xl font-bold text-green-600">
+                {toplamCO2Tasarruf > 999999 
+                  ? `${(toplamCO2Tasarruf / 1000000).toFixed(1)}M`
+                  : toplamCO2Tasarruf > 999 
+                    ? `${(toplamCO2Tasarruf / 1000).toFixed(0)}K`
+                    : toplamCO2Tasarruf.toLocaleString('tr-TR')
+                }
               </p>
-              <p className="text-sm text-gray-600 mt-2">kg CO₂ Tasarruf</p>
+              <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 mt-1 sm:mt-2">
+                <span className="hidden sm:inline">kg CO₂ Tasarruf</span>
+                <span className="sm:hidden">kg CO₂</span>
+              </p>
             </div>
           </CardContent>
         </Card>
 
         {/* Ortalama Performans */}
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-4 md:p-6">
             <div className="flex flex-col items-center text-center">
-              <TrendingUp className="h-12 w-12 text-blue-500 mb-3" />
-              <p className="text-3xl font-bold text-blue-600">
+              <TrendingUp className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-blue-500 mb-2 sm:mb-3" />
+              <p className="text-base sm:text-xl md:text-3xl font-bold text-blue-600">
                 %{ortalamaPerformans}
               </p>
-              <p className="text-sm text-gray-600 mt-2">Ortalama Performans</p>
+              <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 mt-1 sm:mt-2">
+                <span className="hidden sm:inline">Ortalama Performans</span>
+                <span className="sm:hidden">Performans</span>
+              </p>
             </div>
           </CardContent>
         </Card>

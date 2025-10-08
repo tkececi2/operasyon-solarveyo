@@ -16,7 +16,7 @@ const config: CapacitorConfig = {
     },
     SplashScreen: {
       launchShowDuration: 2000,
-      launchAutoHide: true,
+      launchAutoHide: false,  // Manuel olarak kapatacağız
       backgroundColor: "#1E40AF",
       showSpinner: true,
       spinnerColor: "#FBBF24"
@@ -24,6 +24,9 @@ const config: CapacitorConfig = {
     Keyboard: {
       resize: "body",
       style: "dark"
+    },
+    Preferences: {
+      group: "SolarveyoApp"  // iOS için grup adı
     }
   },
   ios: {

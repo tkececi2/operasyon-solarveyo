@@ -335,9 +335,9 @@ const ElektrikKesintileri: React.FC = () => {
     <div className="space-y-6" ref={contentRef}>
       {/* Başlık ve İstatistikler */}
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Zap className="w-7 h-7 text-yellow-500" />
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <Zap className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-500" />
             Elektrik Kesintileri
           </h1>
           {/* Desktop metinli butonlar */}
@@ -373,69 +373,70 @@ const ElektrikKesintileri: React.FC = () => {
           </div>
         </div>
 
-        {/* İstatistik Kartları - 5 sütunlu düzen */}
+        {/* İstatistik Kartları - Mobil için optimize edilmiş */}
         {istatistikler && (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Toplam Kesinti</p>
-                    <p className="text-2xl font-bold">{istatistikler.toplamKesinti}</p>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                  <div className="text-center sm:text-left">
+                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Toplam Kesinti</p>
+                    <p className="text-lg sm:text-2xl font-bold">{istatistikler.toplamKesinti}</p>
                   </div>
-                  <Zap className="w-8 h-8 text-yellow-500" />
+                  <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500 mb-1 sm:mb-0" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Devam Eden</p>
-                    <p className="text-2xl font-bold text-orange-600">{istatistikler.devamEdenKesinti}</p>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                  <div className="text-center sm:text-left">
+                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Devam Eden</p>
+                    <p className="text-lg sm:text-2xl font-bold text-orange-600">{istatistikler.devamEdenKesinti}</p>
                   </div>
-                  <AlertTriangle className="w-8 h-8 text-orange-500" />
+                  <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-orange-500 mb-1 sm:mb-0" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Toplam Süre</p>
-                    <p className="text-2xl font-bold">{formatSure(istatistikler.toplamSure)}</p>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                  <div className="text-center sm:text-left">
+                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Toplam Süre</p>
+                    <p className="text-sm sm:text-lg lg:text-2xl font-bold">{formatSure(istatistikler.toplamSure)}</p>
                   </div>
-                  <Clock className="w-8 h-8 text-blue-500" />
+                  <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500 mb-1 sm:mb-0" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Kayıp Üretim</p>
-                    <p className="text-2xl font-bold">
-                      {new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(istatistikler.toplamKayipUretim)} kWh
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                  <div className="text-center sm:text-left">
+                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Kayıp Üretim</p>
+                    <p className="text-xs sm:text-base lg:text-xl font-bold">
+                      {new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(istatistikler.toplamKayipUretim)}
+                      <span className="text-[10px] sm:text-xs"> kWh</span>
                     </p>
                   </div>
-                  <TrendingDown className="w-8 h-8 text-red-500" />
+                  <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 mb-1 sm:mb-0" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Kayıp Gelir</p>
-                    <p className="text-2xl font-bold text-red-600">
-                      ₺{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(istatistikler.toplamKayipGelir)}
+            <Card className="col-span-2 sm:col-span-1">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                  <div className="text-center sm:text-left">
+                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Kayıp Gelir</p>
+                    <p className="text-sm sm:text-lg lg:text-xl font-bold text-red-600">
+                      ₺{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(istatistikler.toplamKayipGelir)}
                     </p>
                   </div>
-                  <TrendingDown className="w-8 h-8 text-red-600" />
+                  <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 mb-1 sm:mb-0" />
                 </div>
               </CardContent>
             </Card>

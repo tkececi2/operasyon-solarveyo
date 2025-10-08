@@ -63,17 +63,9 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({
     }
   }
 
-  // Ödeme durumu kontrolü
-  if (userProfile.odemeDurumu === 'surebitti') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Abonelik Süresi Dolmuş</h1>
-          <p className="text-gray-600">Lütfen aboneliğinizi yenileyiniz.</p>
-        </div>
-      </div>
-    );
-  }
+  // ESKİ ÖDEME DURUMU KONTROLÜ KALDIRILDI
+  // Abonelik kontrolü artık CompanyContext ve useSubscription hook'u üzerinden yapılıyor
+  // odemeDurumu alanı deprecated - kullanılmamalı
 
   return <>{children}</>;
 };

@@ -98,15 +98,13 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
         {/* Left side */}
         <div className="flex items-center space-x-4">
-          {/* Mobile menu button - sadece web'de göster */}
-          {!isNative && (
-            <button
-              onClick={onMenuClick}
-              className="lg:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-          )}
+          {/* Mobile menu button - iOS dahil göster */}
+          <button
+            onClick={onMenuClick}
+            className="lg:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
 
           {/* Desktop sidebar toggle */}
           <button
