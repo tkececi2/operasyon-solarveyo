@@ -512,7 +512,7 @@ const StokKontrol: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl space-y-4 px-2 sm:px-4 py-4">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <div>
@@ -660,30 +660,30 @@ const StokKontrol: React.FC = () => {
               <p className="text-gray-600">Yeni malzeme ekleyerek başlayın</p>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-4 sm:-mx-6">
-              <div className="inline-block min-w-full align-middle px-4 sm:px-6">
+            <div className="overflow-x-auto">
+              <div className="inline-block min-w-full align-middle">
                 <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Resim
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Malzeme
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Konum
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Stok Durumu
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Değer
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Durum
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       İşlemler
                     </th>
                   </tr>
@@ -691,7 +691,7 @@ const StokKontrol: React.FC = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredStoklar.map((stok) => (
                     <tr key={stok.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-4">
+                      <td className="px-2 sm:px-3 py-2 sm:py-3">
                         <div className="flex justify-center">
                           {stok.resimler && stok.resimler.length > 0 ? (
                             <div 
@@ -719,9 +719,9 @@ const StokKontrol: React.FC = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-2 sm:px-3 py-2 sm:py-3">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-xs sm:text-sm font-medium text-gray-900">
                             {stok.malzemeAdi}
                           </div>
                           <div className="text-xs text-gray-500">
@@ -729,8 +729,8 @@ const StokKontrol: React.FC = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm">
+                      <td className="px-2 sm:px-3 py-2 sm:py-3">
+                        <div className="text-xs sm:text-sm">
                           <div className="flex items-center text-gray-900">
                             <Building2 className="h-3 w-3 mr-1" />
                             {getSahaName(stok.sahaId)}
@@ -749,9 +749,9 @@ const StokKontrol: React.FC = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-2 sm:px-3 py-2 sm:py-3 text-center">
                         <div>
-                          <div className="text-sm font-semibold text-gray-900">
+                          <div className="text-xs sm:text-sm font-semibold text-gray-900">
                             {stok.mevcutStok} {stok.birim}
                           </div>
                           <div className="text-xs text-gray-500">
@@ -759,9 +759,9 @@ const StokKontrol: React.FC = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-right">
+                      <td className="px-2 sm:px-3 py-2 sm:py-3 text-right">
                         <div>
-                          <div className="text-sm font-semibold text-gray-900">
+                          <div className="text-xs sm:text-sm font-semibold text-gray-900">
                             {formatCurrency(stok.mevcutStok * stok.birimFiyat)}
                           </div>
                           <div className="text-xs text-gray-500">
@@ -769,53 +769,48 @@ const StokKontrol: React.FC = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-2 sm:px-3 py-2 sm:py-3">
                         <div className="flex justify-center items-center">
                           {getDurumIcon(stok.durum)}
-                          <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getDurumBadge(stok.durum)}`}>
+                          <span className={`ml-1 sm:ml-2 px-1 sm:px-2 py-1 text-xs font-medium rounded-full ${getDurumBadge(stok.durum)}`}>
                             {getDurumText(stok.durum)}
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="flex justify-center space-x-2">
+                      <td className="px-2 sm:px-3 py-2 sm:py-3">
+                        <div className="flex justify-center flex-wrap gap-1">
                           {stok.resimler && stok.resimler.length > 0 && (
-                            <Button 
-                              size="sm" 
-                              variant="ghost"
-                              leftIcon={<ImageIcon className="h-3 w-3" />}
+                            <button
+                              className="p-1 hover:bg-gray-100 rounded"
                               onClick={() => {
                                 setSelectedStok(stok);
                                 setShowImageModal(true);
                               }}
+                              title="Resim"
                             >
-                              Resim
-                            </Button>
+                              <ImageIcon className="h-4 w-4" />
+                            </button>
                           )}
-                          <Button 
-                            size="sm" 
-                            variant="ghost"
-                            leftIcon={<ArrowUpDown className="h-3 w-3" />}
+                          <button
+                            className="p-1 hover:bg-gray-100 rounded"
                             onClick={() => {
                               setSelectedStok(stok);
                               setShowHareketModal(true);
                             }}
+                            title="Hareket"
                           >
-                            Hareket
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="ghost"
-                            leftIcon={<History className="h-3 w-3" />}
+                            <ArrowUpDown className="h-4 w-4" />
+                          </button>
+                          <button
+                            className="p-1 hover:bg-gray-100 rounded hidden sm:block"
                             onClick={() => handleShowHareketGecmisi(stok)}
+                            title="Geçmiş"
                           >
-                            Geçmiş
-                          </Button>
+                            <History className="h-4 w-4" />
+                          </button>
                           {canPerformAction('stok_duzenle') && (
-                            <Button 
-                              size="sm" 
-                              variant="ghost"
-                              leftIcon={<Edit className="h-3 w-3" />}
+                            <button
+                              className="p-1 hover:bg-gray-100 rounded"
                               onClick={() => {
                                 setSelectedStok(stok);
                                 setFormData({
@@ -835,26 +830,26 @@ const StokKontrol: React.FC = () => {
                                 setUploadedImages(stok.resimler || []);
                                 setShowEditModal(true);
                               }}
+                              title="Düzenle"
                             >
-                              Düzenle
-                            </Button>
+                              <Edit className="h-4 w-4" />
+                            </button>
                           )}
                           {canPerformAction('stok_sil') && (
-                            <Button 
-                              size="sm" 
-                              variant="danger"
-                              leftIcon={<Trash2 className="h-3 w-3" />}
+                            <button
+                              className="p-1 hover:bg-red-100 rounded text-red-600"
                               onClick={() => handleDeleteStok(stok.id)}
+                              title="Sil"
                             >
-                              Sil
-                            </Button>
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                           )}
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
               </div>
             </div>
           )}
