@@ -385,7 +385,7 @@ const ManagerSubscription: React.FC = () => {
             <span className="ml-2">
               {isUserLimitReached ? `Kullanıcı (${currentUsage?.kullanicilar?.toplam}/${userLimit})` : ''}
               {isUserLimitReached && isStorageLimitReached ? ' • ' : ''}
-              {isStorageLimitReached ? `Depolama (${storageUsedGB.toFixed(2)}/${storageLimitGB.toFixed(0)} GB)` : ''}
+              {isStorageLimitReached ? `Depolama (${(storageUsedGB * 1024).toFixed(0)}/${(storageLimitGB * 1024).toFixed(0)} MB)` : ''}
             </span>
           </div>
           <Button onClick={() => nextPlan ? handleUpgrade(nextPlan) : window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}>
@@ -490,11 +490,11 @@ const ManagerSubscription: React.FC = () => {
               <div className="text-2xl font-bold text-gray-900 flex items-baseline gap-2">
                 <span>
                   {realStorageQuota ? 
-                    `${(realStorageQuota.used / 1024).toFixed(2)} GB` :
-                    `${((currentUsage?.depolama?.kullanilan || 0)).toFixed(2)} GB`
+                    `${realStorageQuota.used.toFixed(0)} MB` :
+                    `${((currentUsage?.depolama?.kullanilan || 0) * 1024).toFixed(0)} MB`
                   }
                   <span className="text-sm text-gray-500 ml-1">
-                    / {(((company?.subscriptionLimits?.storageLimit ?? effectiveStorageLimitMB ?? 5120) / 1024)).toFixed(0)} GB
+                    / {(company?.subscriptionLimits?.storageLimit ?? effectiveStorageLimitMB ?? 5120).toFixed(0)} MB
                   </span>
                 </span>
                 {/* Inline yüzde göstergesi */}
@@ -504,9 +504,9 @@ const ManagerSubscription: React.FC = () => {
                     if (realStorageQuota) {
                       percentage = realStorageQuota.percentage;
                     } else {
-                      const usedGB = currentUsage?.depolama?.kullanilan || 0;
-                      const limitGB = ((company?.subscriptionLimits?.storageLimit ?? effectiveStorageLimitMB ?? 5120) / 1024);
-                      percentage = limitGB > 0 ? (usedGB / limitGB) * 100 : 0;
+                      const usedMB = (currentUsage?.depolama?.kullanilan || 0) * 1024;
+                      const limitMB = company?.subscriptionLimits?.storageLimit ?? effectiveStorageLimitMB ?? 5120;
+                      percentage = limitMB > 0 ? (usedMB / limitMB) * 100 : 0;
                     }
                     return `( %${percentage.toFixed(1)} )`;
                   })()}
@@ -552,12 +552,12 @@ const ManagerSubscription: React.FC = () => {
                   <span>{realStorageQuota ? 'Gerçek Kullanım' : 'Ön Bellekten'}</span>
                   <span>{(() => {
                     if (realStorageQuota) {
-                      return `${realStorageQuota.remainingGB.toFixed(2)} GB kaldı`;
+                      return `${(realStorageQuota.remainingGB * 1024).toFixed(0)} MB kaldı`;
                     }
-                    const usedGB = currentUsage?.depolama?.kullanilan || 0;
-                    const limitGB = ((company?.subscriptionLimits?.storageLimit ?? effectiveStorageLimitMB ?? 5120) / 1024);
-                    const remaining = Math.max(0, limitGB - usedGB);
-                    return `${remaining.toFixed(2)} GB kaldı`;
+                    const usedMB = (currentUsage?.depolama?.kullanilan || 0) * 1024;
+                    const limitMB = company?.subscriptionLimits?.storageLimit ?? effectiveStorageLimitMB ?? 5120;
+                    const remaining = Math.max(0, limitMB - usedMB);
+                    return `${remaining.toFixed(0)} MB kaldı`;
                   })()}</span>
                 </div>
               </div>
