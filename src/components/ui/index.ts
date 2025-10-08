@@ -40,3 +40,4 @@ export type { NotificationPreferences } from './NotificationSettings';
 export { SubscriptionStatusWidget } from './SubscriptionStatusWidget';
 export { StorageWarningWidget } from './StorageWarningWidget';
 export { ProgressBar } from './ProgressBar';
+export { StorageIndicator } from './StorageIndicator';

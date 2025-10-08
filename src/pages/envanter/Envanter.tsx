@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Package, Search, Download, FileText, MapPin, Building2, Edit, Trash2, List as ListIcon, Grid3X3, Sun, Zap, Gauge, Boxes, Filter, Plus } from 'lucide-react';
-import { Button, Card, CardContent, Input, Select, LoadingSpinner, Modal } from '../../components/ui';
+import { Button, Card, CardContent, Input, Select, LoadingSpinner, Modal, Badge, StorageIndicator } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { envanterService } from '../../services/envanterService';
 import type { Envanter } from '../../types';
@@ -205,6 +205,8 @@ const EnvanterPage: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold flex items-center gap-2"><Package className="w-6 h-6"/>Envanter</h1>
         <div className="flex gap-2 items-center" data-pdf-exclude="true">
+          {/* Storage Indicator Component */}
+          <StorageIndicator className="hidden lg:flex" showButton={true} />
           <div className="hidden md:flex rounded-md overflow-hidden border">
             <button className={`px-3 py-2 text-sm ${viewMode==='list'?'bg-gray-100 font-medium':''}`} onClick={()=>setViewMode('list')}><ListIcon className="w-4 h-4"/></button>
             <button className={`px-3 py-2 text-sm ${viewMode==='cards'?'bg-gray-100 font-medium':''}`} onClick={()=>setViewMode('cards')}><Grid3X3 className="w-4 h-4"/></button>

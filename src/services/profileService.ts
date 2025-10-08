@@ -25,7 +25,7 @@ import {
 } from 'firebase/storage';
 import { db, storage, auth } from '@/lib/firebase';
 import { User } from '@/types';
-import { updateStorageMetricsOnUpload, updateStorageMetricsOnDelete } from './storageService';
+import { storageInterceptor } from './autoStorageUpdateService';
 
 interface ProfileUpdateData {
   ad?: string;
@@ -100,8 +100,8 @@ export async function uploadProfilePhoto(
     const snapshot = await uploadBytes(storageRef, file);
     const downloadURL = await getDownloadURL(snapshot.ref);
 
-    // Storage metrics güncelle (otomatik)
-    await updateStorageMetricsOnUpload(companyId, fileName, 'other');
+    // Otomatik storage güncelleme - 5 saniye sonra
+    storageInterceptor.onFileUpload(companyId, fileName, file.size);
 
     // Veritabanını güncelle (auth UID ile)
     await updateDoc(userRef, {
@@ -139,8 +139,8 @@ export async function removeProfilePhoto(userId: string): Promise<void> {
           const decodedPath = decodeURIComponent(filePath);
           const fileRef = ref(storage, decodedPath);
           
-          // Storage metrics güncelle (silmeden önce)
-          await updateStorageMetricsOnDelete(companyId, decodedPath, 'other');
+      // Otomatik storage güncelleme - 5 saniye sonra
+      storageInterceptor.onFileDelete(companyId, decodedPath);
           
           // Dosyayı sil
           await deleteObject(fileRef);

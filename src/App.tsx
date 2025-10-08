@@ -22,6 +22,7 @@ import { auth } from './lib/firebase';
 
 // Lazy loaded components
 const Home = React.lazy(() => import('./pages/marketing/Home'));
+const CheckStorageCalculation = React.lazy(() => import('./pages/debug/CheckStorageCalculation'));
 const MarketingLayout = React.lazy(() => import('./components/marketing/MarketingLayout'));
 const FeaturesPage = React.lazy(() => import('./pages/marketing/Features'));
 const PricingPage = React.lazy(() => import('./pages/marketing/Pricing'));
@@ -371,6 +372,7 @@ function App() {
               <Route path="/debug/clear-firebase-plans" element={<ClearFirebasePlans />} />
               <Route path="/debug/reset-plans" element={<ResetPlans />} />
               <Route path="/debug/recalculate-storage" element={<RecalculateStorage />} />
+              <Route path="/debug/check-storage" element={<CheckStorageCalculation />} />
               
               {/* 404 */}
               <Route path="*" element={<Navigate to="/login" replace />} />

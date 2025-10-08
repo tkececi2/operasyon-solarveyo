@@ -28,6 +28,7 @@ import { SAAS_CONFIG, getPlanById } from '../config/saas.config';
 import { getMergedPlans } from './planConfigService';
 import type { Company } from '../types';
 import { deleteCompanyCompletely, getCompanyDeletionSummary } from './companyDeletionService';
+import { fastCalculateStorage } from './fastStorageService';
 
 // ===== TYPES =====
 

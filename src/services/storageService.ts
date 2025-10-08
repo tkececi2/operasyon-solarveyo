@@ -5,6 +5,7 @@ import { Company } from '../types';
 import { SAAS_CONFIG, getPlanById } from '../config/saas.config';
 import { compressImage, isImageFile } from '../utils/imageCompression';
 import { logger } from '../utils/logger';
+import { storageInterceptor } from './autoStorageUpdateService';
 
 /**
  * Modern SaaS yaklaşımı: Storage hesaplama hooks
@@ -193,10 +194,9 @@ export const uploadFile = async (
     const snapshot = await uploadBytes(fileRef, file, { contentType: file.type || 'application/octet-stream' });
     const downloadURL = await getDownloadURL(snapshot.ref);
 
-    // companyId verilmişse metrics güncelle
+    // Otomatik storage güncelleme - 5 saniye sonra
     if (companyId) {
-      const category = getCategoryFromPath(filePath);
-      await updateStorageMetricsOnUpload(companyId, filePath, category);
+      storageInterceptor.onFileUpload(companyId, filePath, file.size);
     }
 
     return downloadURL;
@@ -236,8 +236,8 @@ export const uploadBakimPhotos = async (
       const snapshot = await uploadBytes(fileRef, photo, { contentType: photo.type || 'image/jpeg' });
       const downloadURL = await getDownloadURL(snapshot.ref);
 
-      // Storage metrics güncelle
-      await updateStorageMetricsOnUpload(companyId, filePath, 'bakimPhotos');
+      // Otomatik storage güncelleme - 5 saniye sonra
+      storageInterceptor.onFileUpload(companyId, filePath, photo.size);
 
       return downloadURL;
     } catch (error) {
@@ -277,8 +277,8 @@ export const uploadArizaPhotos = async (
       const snapshot = await uploadBytes(fileRef, uploadData, { contentType: 'image/jpeg' });
       const downloadURL = await getDownloadURL(snapshot.ref);
 
-      // Storage metrics güncelle
-      await updateStorageMetricsOnUpload(companyId, filePath, 'arizaPhotos');
+      // Otomatik storage güncelleme - 5 saniye sonra
+      storageInterceptor.onFileUpload(companyId, filePath, uploadData.size);
 
       return downloadURL;
     } catch (error) {
@@ -306,8 +306,8 @@ export const uploadVardiyaPhotos = async (
       const snapshot = await uploadBytes(fileRef, photo, { contentType: photo.type || 'image/jpeg' });
       const downloadURL = await getDownloadURL(snapshot.ref);
 
-      // Storage metrics güncelle
-      await updateStorageMetricsOnUpload(companyId, filePath, 'vardiyaPhotos');
+      // Otomatik storage güncelleme - 5 saniye sonra
+      storageInterceptor.onFileUpload(companyId, filePath, photo.size);
 
       return downloadURL;
     } catch (error) {
@@ -335,8 +335,8 @@ export const uploadSantralPhoto = async (
     const snapshot = await uploadBytes(fileRef, photo, { contentType: photo.type || 'image/jpeg' });
     const downloadURL = await getDownloadURL(snapshot.ref);
 
-    // Storage metrics güncelle
-    await updateStorageMetricsOnUpload(companyId, filePath, 'logos');
+    // Otomatik storage güncelleme - 5 saniye sonra
+    storageInterceptor.onFileUpload(companyId, filePath, photo.size);
 
     return downloadURL;
   } catch (error) {
@@ -359,14 +359,11 @@ export const deleteMultipleFiles = async (
       const decodedPath = decodeURIComponent(filePath);
       const fileRef = ref(storage, decodedPath);
       
-      // Kategoriyi belirle
-      const category = getCategoryFromPath(decodedPath);
-      
-      // Storage metrics güncelle (silmeden önce)
-      await updateStorageMetricsOnDelete(companyId, decodedPath, category);
-      
       // Dosyayı sil
       await deleteObject(fileRef);
+      
+      // Otomatik storage güncelleme - 5 saniye sonra
+      storageInterceptor.onFileDelete(companyId, decodedPath);
     } catch (error) {
       console.error(`Dosya silinemedi: ${url}`, error);
     }
@@ -389,8 +386,8 @@ export const uploadCompanyLogo = async (
     const snapshot = await uploadBytes(fileRef, photo, { contentType: photo.type || 'image/jpeg' });
     const downloadURL = await getDownloadURL(snapshot.ref);
 
-    // Storage metrics güncelle
-    await updateStorageMetricsOnUpload(companyId, filePath, 'logos');
+    // Otomatik storage güncelleme - 5 saniye sonra
+    storageInterceptor.onFileUpload(companyId, filePath, photo.size);
 
     return downloadURL;
   } catch (error) {
@@ -414,8 +411,8 @@ export const uploadStokPhotos = async (
       const snapshot = await uploadBytes(fileRef, photo, { contentType: photo.type || 'image/jpeg' });
       const downloadURL = await getDownloadURL(snapshot.ref);
 
-      // Storage metrics güncelle
-      await updateStorageMetricsOnUpload(companyId, filePath, 'other');
+      // Otomatik storage güncelleme - 5 saniye sonra
+      storageInterceptor.onFileUpload(companyId, filePath, photo.size);
 
       return downloadURL;
     } catch (error) {
