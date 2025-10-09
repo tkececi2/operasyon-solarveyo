@@ -88,21 +88,20 @@ export const sendPushOnNotificationCreate = functions
             console.log(`   - Hedef sahaId: ${sahaId || 'YOK'}`);
             console.log(`   - Hedef santralId: ${santralId || 'YOK'}`);
             
-            // Eğer sahaId veya santralId yoksa, tüm kullanıcılara gönder (rol bazlı)
-            if (!sahaId && !santralId) {
-              console.log(`   ✅ Saha/santral filtresi YOK - Bildirim gönderilecek`);
+            // ÖNEMLİ: SAHA BAZLI BİLDİRİM SİSTEMİ
+            // Eğer sahaId yoksa, TÜM kullanıcılara gönder
+            if (!sahaId) {
+              console.log(`   ✅ SahaId YOK - TÜM kullanıcılara gönderilecek`);
               return true;
             }
             
-            const sahaOk = sahaId ? userSahalar.includes(sahaId) : true;
-            const santralOk = santralId ? userSantraller.includes(santralId) : true;
-            const result = sahaOk && santralOk;
+            // SahaId varsa, SADECE o sahaya atanan kullanıcılara gönder
+            const sahaOk = userSahalar.includes(sahaId);
             
-            console.log(`   - Saha kontrolü: ${sahaOk ? '✅' : '❌'}`);
-            console.log(`   - Santral kontrolü: ${santralOk ? '✅' : '❌'}`);
-            console.log(`   - SONUÇ: ${result ? '✅ Bildirim gönderilecek' : '❌ Filtrelendi'}`);
+            console.log(`   - Saha kontrolü (${sahaId}): ${sahaOk ? '✅ Atanmış' : '❌ Atanmamış'}`);
+            console.log(`   - SONUÇ: ${sahaOk ? '✅ Bildirim gönderilecek' : '❌ Filtrelendi'}`);
             
-            return result;
+            return sahaOk;
           });
 
           if (recipients.length === 0) {
@@ -115,7 +114,7 @@ export const sendPushOnNotificationCreate = functions
 
           await Promise.all(recipients.map(async (uDoc) => {
             const u = uDoc.data() as any;
-            const targetToken: string | undefined = u?.pushTokens?.fcm || u?.fcmToken;
+            const targetToken: string | undefined = u?.pushTokens?.fcm || u?.fcmToken || u?.fcm; // legacy fallback
             if (!targetToken) {
               errors.push({ userId: uDoc.id, error: "no-token" });
               return;
@@ -215,7 +214,7 @@ export const sendPushOnNotificationCreate = functions
         return null;
       }
 
-      const token: string | undefined = user?.pushTokens?.fcm || user?.fcmToken;
+      const token: string | undefined = user?.pushTokens?.fcm || user?.fcmToken || (user as any)?.fcm; // legacy fallback
       console.log("🔑 FCM Token kontrolü:", { 
         hasPushTokens: !!user?.pushTokens, 
         hasFcm: !!user?.pushTokens?.fcm, 
@@ -360,7 +359,6 @@ export const createScopedNotification = functions
 
       const snapshot = await q.get();
       const sahaId: string | undefined = metadata?.sahaId;
-      const santralId: string | undefined = metadata?.santralId;
       
       console.log(`📊 Toplam kullanıcı sayısı (companyId=${companyId}): ${snapshot.size}`);
 
@@ -369,23 +367,26 @@ export const createScopedNotification = functions
         
         // Kullanıcının atandığı sahalar
         const userSahalar: string[] = Array.isArray(u.sahalar) ? u.sahalar : [];
-        const userSantraller: string[] = Array.isArray(u.santraller) ? u.santraller : [];
         
         // Debug log
         console.log(`👤 Kullanıcı kontrolü: ${u.email || u.ad} (${u.rol})`);
         console.log(`   - Atandığı sahalar: ${userSahalar.join(', ') || 'YOK'}`);
         console.log(`   - Bildirim sahaId: ${sahaId || 'YOK'}`);
         
-        // Saha kontrolü: Bildirimde sahaId varsa, kullanıcı o sahaya atanmış olmalı
-        const sahaOk = sahaId ? userSahalar.includes(sahaId) : true;
+        // ÖNEMLİ: SAHA BAZLI BİLDİRİM SİSTEMİ
+        // Eğer sahaId yoksa, TÜM kullanıcılara gönder
+        if (!sahaId) {
+          console.log(`   ✅ SahaId YOK - TÜM kullanıcılara gönderilecek`);
+          return true;
+        }
         
-        // Santral kontrolü: Bildirimde santralId varsa, kullanıcı o santrale atanmış olmalı
-        const santralOk = santralId ? userSantraller.includes(santralId) : true;
+        // SahaId varsa, SADECE o sahaya atanan kullanıcılara gönder
+        const sahaOk = userSahalar.includes(sahaId);
         
-        const result = sahaOk && santralOk;
-        console.log(`   - Sonuç: ${result ? '✅ Bildirim gönderilecek' : '❌ Filtrelendi'}`);
+        console.log(`   - Saha kontrolü (${sahaId}): ${sahaOk ? '✅ Atanmış' : '❌ Atanmamış'}`);
+        console.log(`   - SONUÇ: ${sahaOk ? '✅ Bildirim gönderilecek' : '❌ Filtrelendi'}`);
         
-        return result;
+        return sahaOk;
       });
 
       // Batch yazım (500 limit)
