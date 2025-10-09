@@ -272,8 +272,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
 
   return (
     <div className={`${collapsed ? 'w-16' : 'w-64'} bg-white dark:bg-gray-800 shadow-lg h-screen sticky top-0 flex flex-col transition-all duration-300`}>
-      {/* Header */}
-      <div className="p-4 border-b">
+      {/* Header - Header ile aynı yükseklik (h-16) */}
+      <div className="h-16 px-4 border-b border-gray-200 dark:border-gray-700 flex items-center">
         <div className="flex items-center space-x-3">
           {collapsed ? (
             <Logo showText={false} />
@@ -415,18 +415,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       </nav>
 
       {/* Footer - User Profile */}
-      <div className="border-t p-4">
+      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center">
           {userProfile?.fotoURL ? (
             <img
               src={userProfile.fotoURL}
               alt={userProfile.ad}
-              className="w-8 h-8 rounded-full object-cover border"
+              className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
             />
           ) : (
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-sm font-medium text-gray-700">
+            <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 {userProfile?.ad?.charAt(0).toUpperCase()}
               </span>
             </div>

@@ -21,6 +21,7 @@ import {
 import { db } from '../lib/firebase';
 import { ILeaveRequest, ILeaveBalance, IHoliday, IShiftSchedule } from '../types/leave.types';
 import { User } from '../types';
+import { notificationService } from './notificationService';
 
 /**
  * Manuel izin kaydı oluştur (Yöneticiler için)
@@ -169,8 +170,31 @@ export async function createLeaveRequest(
 
     const docRef = await addDoc(collection(db, 'leaveRequests'), cleanData);
 
-    // Bildirim gönder (yöneticilere) - şimdilik console.log
-    console.log(`Yeni izin talebi: ${data.userName} - ${docRef.id}`);
+    // Yöneticilere bildirim gönder
+    try {
+      // İzin talepleri TÜM yöneticilere gider (sahaId undefined)
+      // Çünkü bir kullanıcı birden fazla sahada çalışabilir ve izin talebi hepsini etkiler
+      await notificationService.createScopedNotificationClient({
+        companyId: userProfile.companyId,
+        title: '📋 Yeni İzin Talebi',
+        message: `${data.userName} ${data.leaveType === 'yillik' ? 'yıllık' : data.leaveType === 'hastalik' ? 'hastalık' : data.leaveType === 'ucretsiz' ? 'ücretsiz' : ''} izin talebinde bulundu (${data.totalDays} gün)`,
+        type: 'info',
+        actionUrl: '/izin-yonetimi',
+        metadata: {
+          leaveRequestId: docRef.id,
+          userId: data.userId,
+          // sahaId: undefined -> TÜM yöneticilere gider
+          leaveType: data.leaveType,
+          totalDays: data.totalDays,
+          screen: '/izin-yonetimi'
+        },
+        roles: ['yonetici'] // Sadece yöneticiler
+      });
+      console.log(`✅ İzin talebi bildirimi gönderildi: ${docRef.id}`);
+    } catch (error) {
+      console.error('❌ İzin talebi bildirimi hatası:', error);
+      // Bildirim hatası izin oluşturmayı engellemez
+    }
 
     return docRef.id;
   } catch (error) {
@@ -278,17 +302,46 @@ export async function updateLeaveRequestStatus(
       updateData.rejectionReason = rejectionReason;
     }
 
+    const requestDoc = await getDoc(doc(db, 'leaveRequests', requestId));
+    const requestData = requestDoc.data() as ILeaveRequest;
+    
     await updateDoc(doc(db, 'leaveRequests', requestId), updateData);
 
     // Onaylandıysa bakiyeyi güncelle
     if (status === 'onaylandi') {
-      const request = await getDoc(doc(db, 'leaveRequests', requestId));
-      const data = request.data() as ILeaveRequest;
-      await updateLeaveBalance(data.userId, new Date(data.startDate).getFullYear(), data.leaveType, data.totalDays, 'use');
+      await updateLeaveBalance(requestData.userId, new Date(requestData.startDate).getFullYear(), requestData.leaveType, requestData.totalDays, 'use');
     }
 
-    // Bildirim gönder - şimdilik console.log
-    console.log(`İzin talebi güncellendi: ${requestId} - ${status} - ${userProfile.name || userProfile.displayName || userProfile.email}`);
+    // Kullanıcıya bildirim gönder (doğrudan createNotification - tek kullanıcı için)
+    try {
+      const notificationTitle = status === 'onaylandi' 
+        ? '✅ İzin Talebiniz Onaylandı' 
+        : '❌ İzin Talebiniz Reddedildi';
+      
+      const notificationMessage = status === 'onaylandi'
+        ? `${requestData.leaveType === 'yillik' ? 'Yıllık' : requestData.leaveType === 'hastalik' ? 'Hastalık' : 'Ücretsiz'} izin talebiniz onaylandı (${requestData.totalDays} gün)`
+        : `İzin talebiniz reddedildi. ${rejectionReason ? `Sebep: ${rejectionReason}` : ''}`;
+
+      await notificationService.createNotification({
+        companyId: userProfile.companyId,
+        userId: requestData.userId, // Kullanıcıya özel
+        title: notificationTitle,
+        message: notificationMessage,
+        type: status === 'onaylandi' ? 'success' : 'error',
+        actionUrl: '/izin-yonetimi',
+        metadata: {
+          leaveRequestId: requestId,
+          status,
+          leaveType: requestData.leaveType,
+          totalDays: requestData.totalDays,
+          screen: '/izin-yonetimi'
+        }
+      });
+      console.log(`✅ İzin ${status} bildirimi gönderildi: ${requestId}`);
+    } catch (error) {
+      console.error('❌ İzin durum bildirimi hatası:', error);
+      // Bildirim hatası güncellemeyi engellemez
+    }
   } catch (error) {
     console.error('İzin durumu güncelleme hatası:', error);
     throw error;

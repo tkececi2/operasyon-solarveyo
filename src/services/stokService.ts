@@ -72,17 +72,62 @@ export const createStok = async (stokData: Omit<StokItem, 'id' | 'sonGuncelleme'
       const min = (newStok.minimumStok ?? newStok.minimumStokSeviyesi) || 0;
       const durum = getStokDurumu(newStok.mevcutStok || 0, min, newStok.maximumStok);
       if (durum === 'kritik' || durum === 'dusuk') {
-        const { notificationService } = await import('./notificationService');
-        await notificationService.createLowStockNotification(
-          newStok.companyId,
-          newStok.malzemeAdi,
-          newStok.mevcutStok || 0,
-          min,
-          newStok.sahaId,
-          newStok.santralId
-        );
+        // SahaId'yi kontrol et - yoksa santral'dan al
+        let bildirimSahaId = newStok.sahaId;
+        let sahaAdi = '';
+        
+        if ((!bildirimSahaId || bildirimSahaId === '') && newStok.santralId) {
+          const santralDoc = await getDoc(doc(db, 'santraller', newStok.santralId));
+          if (santralDoc.exists()) {
+            bildirimSahaId = santralDoc.data().sahaId;
+            console.log(`🔍 SahaId santral'dan alındı: ${bildirimSahaId}`);
+          }
+        }
+        
+        // Saha adını al
+        if (bildirimSahaId) {
+          const sahaDoc = await getDoc(doc(db, 'sahalar', bildirimSahaId));
+          if (sahaDoc.exists()) {
+            sahaAdi = sahaDoc.data().name || sahaDoc.data().adi || '';
+          }
+        }
+        
+        console.log(`📦 Stok Bildirimi Debug:`, {
+          sahaId: bildirimSahaId || 'YOK',
+          santralId: newStok.santralId || 'YOK',
+          sahaAdi: sahaAdi || 'YOK',
+          companyId: newStok.companyId
+        });
+        
+        // metadata'da sahaId veya santralId yoksa bildirim göndermeme
+        const metadata: any = { 
+          itemName: newStok.malzemeAdi, 
+          currentStock: newStok.mevcutStok || 0, 
+          minimumStock: min
+        };
+        
+        // Sadece varsa ekle
+        if (bildirimSahaId) {
+          metadata.sahaId = bildirimSahaId;
+        }
+        if (newStok.santralId) {
+          metadata.santralId = newStok.santralId;
+        }
+        
+        await notificationService.createScopedNotificationClient({
+          companyId: newStok.companyId,
+          title: '⚠️ Düşük Stok Uyarısı',
+          message: `${sahaAdi ? sahaAdi + ' - ' : ''}${newStok.malzemeAdi} stoku kritik seviyede (${newStok.mevcutStok || 0}/${min})`,
+          type: 'warning',
+          actionUrl: '/stok',
+          metadata: metadata,
+          roles: ['yonetici','muhendis','tekniker']
+        });
+        console.log(`✅ Stok uyarısı bildirimi gönderildi - sahaId: ${bildirimSahaId || 'YOK'}, santralId: ${newStok.santralId || 'YOK'}`);
       }
-    } catch {}
+    } catch (e) {
+      console.error('❌ Stok bildirimi hatası:', e);
+    }
     return docRef.id;
   } catch (error) {
     console.error('Stok oluşturma hatası:', error);
@@ -113,18 +158,31 @@ export const updateStok = async (stokId: string, updates: Partial<StokItem>): Pr
         const min = (stok.minimumStok ?? stok.minimumStokSeviyesi) || 0;
         const durum = getStokDurumu(stok.mevcutStok || 0, min, stok.maximumStok);
         if (durum === 'kritik' || durum === 'dusuk') {
-          const { notificationService } = await import('./notificationService');
-          await notificationService.createLowStockNotification(
-            stok.companyId,
-            stok.malzemeAdi,
-            stok.mevcutStok || 0,
-            min,
-            stok.sahaId,
-            stok.santralId
-          );
+          // SahaId'yi kontrol et - yoksa santral'dan al
+          let bildirimSahaId = stok.sahaId;
+          if ((!bildirimSahaId || bildirimSahaId === '') && stok.santralId) {
+            const santralDoc = await getDoc(doc(db, 'santraller', stok.santralId));
+            if (santralDoc.exists()) {
+              bildirimSahaId = santralDoc.data().sahaId;
+              console.log(`🔍 SahaId santral'dan alındı: ${bildirimSahaId}`);
+            }
+          }
+          
+          await notificationService.createScopedNotificationClient({
+            companyId: stok.companyId,
+            title: 'Düşük Stok Uyarısı',
+            message: `${stok.malzemeAdi} stoku kritik seviyede (${stok.mevcutStok || 0}/${min})`,
+            type: 'warning',
+            actionUrl: '/stok',
+            metadata: { itemName: stok.malzemeAdi, currentStock: stok.mevcutStok || 0, minimumStock: min, sahaId: bildirimSahaId, santralId: stok.santralId },
+            roles: ['yonetici','muhendis','tekniker']
+          });
+          console.log(`✅ Stok uyarısı bildirimi gönderildi - sahaId: ${bildirimSahaId}`);
         }
       }
-    } catch {}
+    } catch (e) {
+      console.error('❌ Stok güncelleme bildirimi hatası:', e);
+    }
   } catch (error) {
     console.error('Stok güncelleme hatası:', error);
     throw new Error('Stok güncellenemedi');
@@ -264,27 +322,44 @@ export const addStokHareket = async (stokId: string, hareketData: Omit<StokHarek
     });
     
     try {
-      await notificationService.createStockMovementNotification(
-        stok.companyId,
-        stokId,
-        hareketData.hareketTipi,
-        yeniMiktar,
-        stok.sahaId,
-        stok.santralId
-      );
+      // SahaId'yi kontrol et - yoksa santral'dan al
+      let bildirimSahaId = stok.sahaId;
+      if ((!bildirimSahaId || bildirimSahaId === '') && stok.santralId) {
+        const santralDoc = await getDoc(doc(db, 'santraller', stok.santralId));
+        if (santralDoc.exists()) {
+          bildirimSahaId = santralDoc.data().sahaId;
+          console.log(`🔍 SahaId santral'dan alındı: ${bildirimSahaId}`);
+        }
+      }
+      
+      await notificationService.createScopedNotificationClient({
+        companyId: stok.companyId,
+        title: 'Stok Hareketi',
+        message: `${hareketData.hareketTipi.toUpperCase()} – Yeni miktar: ${yeniMiktar}`,
+        type: 'info',
+        actionUrl: '/stok',
+        metadata: { stokId, hareketTipi: hareketData.hareketTipi, yeniMiktar, sahaId: bildirimSahaId, santralId: stok.santralId },
+        roles: ['yonetici','muhendis','tekniker']
+      });
+      console.log(`✅ Stok hareketi bildirimi gönderildi - sahaId: ${bildirimSahaId}`);
+      
       const min = (stok.minimumStok ?? (stok as any).minimumStokSeviyesi) || 0;
       const durum = getStokDurumu(yeniMiktar, min, stok.maximumStok);
       if (durum === 'kritik' || durum === 'dusuk') {
-        await notificationService.createLowStockNotification(
-          stok.companyId,
-          stok.malzemeAdi,
-          yeniMiktar,
-          min,
-          stok.sahaId,
-          stok.santralId
-        );
+        await notificationService.createScopedNotificationClient({
+          companyId: stok.companyId,
+          title: 'Düşük Stok Uyarısı',
+          message: `${stok.malzemeAdi} stoku kritik seviyede (${yeniMiktar}/${min})`,
+          type: 'warning',
+          actionUrl: '/stok',
+          metadata: { itemName: stok.malzemeAdi, currentStock: yeniMiktar, minimumStock: min, sahaId: bildirimSahaId, santralId: stok.santralId },
+          roles: ['yonetici','muhendis','tekniker']
+        });
+        console.log(`✅ Düşük stok uyarısı gönderildi - sahaId: ${bildirimSahaId}`);
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) { 
+      console.error('❌ Stok hareketi bildirimi hatası:', e);
+    }
 
     console.log('Stok hareketi eklendi:', hareketRef.id);
     return hareketRef.id;

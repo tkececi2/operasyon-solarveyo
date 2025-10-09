@@ -100,17 +100,48 @@ export const createVardiyaBildirimi = async (
     };
     const docRef = await addDoc(collection(db, 'vardiyaBildirimleri'), removeUndefinedDeep(newVardiya));
     console.log('Yeni vardiya bildirimi oluşturuldu:', docRef.id);
-    // Bildirim oluştur
+    
+    // Bildirim oluştur (kullanıcı-bazlı hedefli)
     try {
-      await notificationService.createNotification({
+      console.log(`🔔 Vardiya Bildirimi Debug:`, {
+        sahaId: vardiyaData.sahaId || 'YOK',
+        santralId: vardiyaData.santralId || 'YOK',
+        sahaAdi: vardiyaData.sahaAdi || 'YOK',
         companyId: vardiyaData.companyId,
-        title: 'Yeni Vardiya',
-        message: `${vardiyaData.sahaAdi} - ${vardiyaData.vardiyaTipi.toUpperCase()} (${vardiyaData.vardiyaSaatleri.baslangic}-${vardiyaData.vardiyaSaatleri.bitis})`,
-        type: vardiyaData.durum === 'acil' ? 'error' : (vardiyaData.durum === 'dikkat' ? 'warning' : 'info'),
-        actionUrl: '/vardiya',
-        metadata: { vardiyaId: docRef.id, sahaId: vardiyaData.sahaId, santralId: vardiyaData.santralId }
+        durum: vardiyaData.durum
       });
-    } catch {}
+      
+      // metadata'da sahaId veya santralId yoksa bildirim göndermeme
+      const metadata: any = { 
+        vardiyaId: docRef.id,
+        vardiyaTipi: vardiyaData.vardiyaTipi,
+        durum: vardiyaData.durum
+      };
+      
+      // Sadece varsa ekle
+      if (vardiyaData.sahaId) {
+        metadata.sahaId = vardiyaData.sahaId;
+      }
+      if (vardiyaData.santralId) {
+        metadata.santralId = vardiyaData.santralId;
+      }
+      
+      const iconPrefix = vardiyaData.durum === 'acil' ? '🚨' : '🔔';
+      
+      await notificationService.createScopedNotificationClient({
+        companyId: vardiyaData.companyId,
+        title: `${iconPrefix} ${vardiyaData.durum === 'acil' ? 'Acil ' : ''}Vardiya Bildirimi`,
+        message: `${vardiyaData.sahaAdi} - ${vardiyaData.vardiyaTipi.toUpperCase()} vardiyası (${vardiyaData.vardiyaSaatleri.baslangic}-${vardiyaData.vardiyaSaatleri.bitis})`,
+        type: vardiyaData.durum === 'acil' ? 'error' : (vardiyaData.durum === 'dikkat' ? 'warning' : 'info'),
+        actionUrl: '/vardiya-bildirimleri',
+        metadata: metadata,
+        roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
+      });
+      console.log(`✅ Vardiya bildirimi gönderildi - sahaId: ${vardiyaData.sahaId || 'YOK'}, santralId: ${vardiyaData.santralId || 'YOK'}`);
+    } catch (err) {
+      console.warn('Vardiya bildirimi oluşturulamadı:', err);
+    }
+    
     return docRef.id;
   } catch (error) {
     console.error('Vardiya bildirimi oluşturma hatası:', error);
@@ -137,23 +168,33 @@ export const updateVardiyaBildirimi = async (
     
     await updateDoc(vardiyaRef, updateData);
     console.log('Vardiya bildirimi güncellendi:', vardiyaId);
-    // Acil durum bildirimi
+    
+    // Acil durum bildirimi (kullanıcı-bazlı hedefli)
     try {
       if (updates.durum === 'acil' || updates.acilDurum === true) {
         const vardiyaDoc = await getDoc(vardiyaRef);
         if (vardiyaDoc.exists()) {
           const data = vardiyaDoc.data() as VardiyaBildirimi;
-          await notificationService.createNotification({
+          await notificationService.createScopedNotificationClient({
             companyId: data.companyId,
-            title: 'Acil Vardiya',
-            message: `${data.sahaAdi} için acil durum bildirimi`,
+            title: '🚨 ACİL DURUM - Vardiya Güncellendi',
+            message: `${data.sahaAdi} sahasında acil durum bildirimi! ${data.vardiyaTipi} vardiyası`,
             type: 'error',
-            actionUrl: '/vardiya',
-            metadata: { vardiyaId, sahaId: data.sahaId, santralId: data.santralId }
+            actionUrl: '/vardiya-bildirimleri',
+            metadata: { 
+              vardiyaId, 
+              sahaId: data.sahaId, 
+              santralId: data.santralId,
+              vardiyaTipi: data.vardiyaTipi,
+              durum: 'acil'
+            },
+            roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
           });
         }
       }
-    } catch {}
+    } catch (err) {
+      console.warn('Acil vardiya bildirimi oluşturulamadı:', err);
+    }
   } catch (error) {
     console.error('Vardiya bildirimi güncelleme hatası:', error);
     throw new Error('Vardiya bildirimi güncellenemedi');

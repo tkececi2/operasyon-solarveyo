@@ -296,13 +296,13 @@ const Dashboard: React.FC = () => {
 
 
   const content = (
-    <div className="space-y-4 lg:space-y-6">
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">
+    <div className="space-y-3 lg:space-y-4">
+      {/* Welcome Section - Kompakt */}
+      <div className="mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
           Hoş Geldiniz, {userProfile?.ad}!
         </h2>
-        <p className="text-gray-600 mt-2 text-lg">
+        <p className="text-gray-600 mt-1 text-sm md:text-base">
           {new Date().toLocaleDateString('tr-TR', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -314,71 +314,95 @@ const Dashboard: React.FC = () => {
 
       {/* Abonelik ve Depolama Durumu Widget'ları (sadece yöneticiler için) */}
       {userProfile?.rol === 'yonetici' && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <SubscriptionStatusWidget />
           <StorageWarningWidget />
         </div>
       )}
 
-      {/* KPI Cards - Mobilde 2, orta ekranlarda 3, genişte 4 sütun */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-        {kpiData.map((kpi, index) => (
-          <Card key={index} className="p-3 md:p-6">
-            <div className="flex flex-col items-center text-center">
-              <div className={`p-3 rounded-full bg-${kpi.color}-100 mb-2`}>
-                {kpi.icon === 'alert' && <AlertTriangle className={`h-6 w-6 text-${kpi.color}-600`} />}
-                {kpi.icon === 'power' && <Wrench className={`h-6 w-6 text-${kpi.color}-600`} />}
+      {/* KPI Cards - Modern, Kompakt Tasarım */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+        {kpiData.map((kpi, index) => {
+          const getIconBg = (color: string) => {
+            switch(color) {
+              case 'red': return 'bg-red-50 border border-red-100';
+              case 'blue': return 'bg-blue-50 border border-blue-100';
+              case 'green': return 'bg-green-50 border border-green-100';
+              case 'yellow': return 'bg-amber-50 border border-amber-100';
+              default: return 'bg-gray-50 border border-gray-100';
+            }
+          };
+          
+          const getIconColor = (color: string) => {
+            switch(color) {
+              case 'red': return 'text-red-600';
+              case 'blue': return 'text-blue-600';
+              case 'green': return 'text-green-600';
+              case 'yellow': return 'text-amber-600';
+              default: return 'text-gray-600';
+            }
+          };
+          
+          return (
+            <Card key={index} className="p-3 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${getIconBg(kpi.color)} flex-shrink-0`}>
+                  {kpi.icon === 'alert' && <AlertTriangle className={`h-5 w-5 ${getIconColor(kpi.color)}`} />}
+                  {kpi.icon === 'power' && <Wrench className={`h-5 w-5 ${getIconColor(kpi.color)}`} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xl md:text-2xl font-bold text-gray-900">{kpi.value}</p>
+                  <p className="text-xs text-gray-600 truncate">{kpi.title}</p>
+                </div>
               </div>
-              <p className="text-2xl md:text-3xl font-bold text-gray-900">{kpi.value}</p>
-              <p className="text-xs md:text-sm text-gray-600 mt-1">{kpi.title}</p>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
 
       {/* Üst Grid - 3 Kolon: Program Özeti, Hava Durumu, Hızlı Erişim */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
         {/* Program Özeti */}
         <Card className="h-full" padding="sm">
-          <CardHeader className="mb-2">
-            <CardTitle className="text-base md:text-lg">Program Özeti</CardTitle>
+          <CardHeader className="mb-2 pb-2">
+            <CardTitle className="text-sm md:text-base font-semibold">Program Özeti</CardTitle>
           </CardHeader>
-          <CardContent className="">
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <div className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="text-blue-700 mb-1 sm:mb-2">
-                  <Building2 className="h-5 w-5 sm:h-6 sm:w-6" />
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors">
+                <div className="text-blue-700">
+                  <Building2 className="h-5 w-5" />
                 </div>
-                <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{dashboardStats.toplamSahalar}</div>
-                  <div className="text-[10px] sm:text-sm text-gray-600">Toplam Saha</div>
-                </div>
-              </div>
-              <div className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="text-green-700 mb-1 sm:mb-2">
-                  <Sun className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{dashboardStats.toplamSantraller}</div>
-                  <div className="text-[10px] sm:text-sm text-gray-600">Toplam Santral</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg font-bold text-gray-900">{dashboardStats.toplamSahalar}</div>
+                  <div className="text-[10px] text-gray-600 truncate">Toplam Saha</div>
                 </div>
               </div>
-              <div className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="text-purple-700 mb-1 sm:mb-2">
-                  <Users className="h-5 w-5 sm:h-6 sm:w-6" />
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-100 hover:bg-green-100 transition-colors">
+                <div className="text-green-700">
+                  <Sun className="h-5 w-5" />
                 </div>
-                <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{dashboardStats.toplamEkipUyeleri}</div>
-                  <div className="text-[10px] sm:text-sm text-gray-600">Ekip Üyeleri</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg font-bold text-gray-900">{dashboardStats.toplamSantraller}</div>
+                  <div className="text-[10px] text-gray-600 truncate">Toplam Santral</div>
                 </div>
               </div>
-              <div className="flex flex-col items-center p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="text-orange-700 mb-1 sm:mb-2">
-                  <Wrench className="h-5 w-5 sm:h-6 sm:w-6" />
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-purple-50 border border-purple-100 hover:bg-purple-100 transition-colors">
+                <div className="text-purple-700">
+                  <Users className="h-5 w-5" />
                 </div>
-                <div className="text-center">
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{dashboardStats.buAyBakimSayisi || 0}</div>
-                  <div className="text-[10px] sm:text-sm text-gray-600">Bu Ay Bakımlar</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg font-bold text-gray-900">{dashboardStats.toplamEkipUyeleri}</div>
+                  <div className="text-[10px] text-gray-600 truncate">Ekip Üyeleri</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-orange-50 border border-orange-100 hover:bg-orange-100 transition-colors">
+                <div className="text-orange-700">
+                  <Wrench className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-lg font-bold text-gray-900">{dashboardStats.buAyBakimSayisi || 0}</div>
+                  <div className="text-[10px] text-gray-600 truncate">Bu Ay Bakımlar</div>
                 </div>
               </div>
             </div>
@@ -397,29 +421,32 @@ const Dashboard: React.FC = () => {
           />
         )}
 
-        {/* Canlı Akış (eski görünüm) */}
+        {/* Canlı Akış */}
         <Card className="h-full" padding="sm">
-          <CardHeader className="mb-2">
-            <CardTitle className="text-base md:text-lg">Canlı Akış</CardTitle>
+          <CardHeader className="mb-2 pb-2">
+            <CardTitle className="text-sm md:text-base font-semibold flex items-center gap-2">
+              <Activity className="h-4 w-4 text-blue-600" />
+              Canlı Akış
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-1.5 max-h-48 md:max-h-64 overflow-auto text-xs">
+          <CardContent className="pt-0">
+            <div className="space-y-2 max-h-48 md:max-h-64 overflow-auto text-xs">
                 {liveNotifications.length === 0 ? (
-                  <p className="text-xs text-gray-600">Henüz bildirim yok.</p>
+                  <p className="text-xs text-gray-500 text-center py-4">Henüz bildirim yok.</p>
                 ) : (
                   liveNotifications.slice(0,8).map(n => {
                     const color = n.type==='error'?'bg-red-500':n.type==='warning'?'bg-amber-500':n.type==='success'?'bg-emerald-500':'bg-blue-500';
                     return (
-                    <div key={n.id} className="flex items-start gap-2">
-                      <span className="relative mt-1 inline-flex w-2 h-2">
+                    <div key={n.id} className="flex items-start gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                      <span className="relative mt-1 inline-flex w-2 h-2 flex-shrink-0">
                         <span className={`absolute inline-flex rounded-full ${color} opacity-60 animate-ping w-2 h-2`}></span>
                         <span className={`relative inline-block rounded-full ${color} w-2 h-2`}></span>
                       </span>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">{n.title}</div>
-                        <div className="text-gray-600">{n.message}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 text-xs truncate">{n.title}</div>
+                        <div className="text-gray-600 text-[10px] line-clamp-2">{n.message}</div>
                       </div>
-                      <div className="text-gray-500 whitespace-nowrap">{new Date((n.createdAt as any).toDate ? (n.createdAt as any).toDate() : (n.createdAt as any)).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</div>
+                      <div className="text-gray-500 text-[10px] whitespace-nowrap flex-shrink-0">{new Date((n.createdAt as any).toDate ? (n.createdAt as any).toDate() : (n.createdAt as any)).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</div>
                     </div>
                   );})
                 )}
@@ -429,31 +456,31 @@ const Dashboard: React.FC = () => {
 
       </div>
 
-      {/* Aylık Aktivite Özeti - Tam genişlik */}
+      {/* Aylık Aktivite Özeti - Kompakt */}
       <Card padding="sm">
-        <CardHeader className="mb-2">
-          <CardTitle className="text-lg flex items-center">
-            <Sun className="h-5 w-5 mr-2 text-blue-500" />
+        <CardHeader className="mb-2 pb-2">
+          <CardTitle className="text-sm md:text-base font-semibold flex items-center gap-2">
+            <Sun className="h-4 w-4 text-blue-600" />
             {currentMonth} Aktivite Özeti
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="rounded-lg border p-3 md:p-4">
-              <div className="text-xs text-gray-500">Bildirilen Arızalar</div>
-              <div className="text-xl md:text-2xl font-bold">{dashboardStats.aylikArizalar}</div>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="rounded-lg border border-red-100 bg-red-50 p-2 md:p-3 hover:bg-red-100 transition-colors">
+              <div className="text-[10px] text-red-700 font-medium">Bildirilen Arızalar</div>
+              <div className="text-xl md:text-2xl font-bold text-red-900">{dashboardStats.aylikArizalar}</div>
             </div>
-            <div className="rounded-lg border p-3 md:p-4">
-              <div className="text-xs text-gray-500">Yapılan Bakımlar</div>
-              <div className="text-xl md:text-2xl font-bold">{dashboardStats.aylikBakimlar}</div>
+            <div className="rounded-lg border border-blue-100 bg-blue-50 p-2 md:p-3 hover:bg-blue-100 transition-colors">
+              <div className="text-[10px] text-blue-700 font-medium">Yapılan Bakımlar</div>
+              <div className="text-xl md:text-2xl font-bold text-blue-900">{dashboardStats.aylikBakimlar}</div>
             </div>
-            <div className="rounded-lg border p-3 md:p-4">
-              <div className="text-xs text-gray-500">Vardiya Bildirimleri</div>
-              <div className="text-xl md:text-2xl font-bold">{dashboardStats.aylikVardiya}</div>
+            <div className="rounded-lg border border-green-100 bg-green-50 p-2 md:p-3 hover:bg-green-100 transition-colors">
+              <div className="text-[10px] text-green-700 font-medium">Vardiya Bildirimleri</div>
+              <div className="text-xl md:text-2xl font-bold text-green-900">{dashboardStats.aylikVardiya}</div>
             </div>
-            <div className="rounded-lg border p-3 md:p-4">
-              <div className="text-xs text-gray-500">Kritik Stok Uyarıları</div>
-              <div className="text-xl md:text-2xl font-bold">{dashboardStats.aktifStokUyarilari}</div>
+            <div className="rounded-lg border border-amber-100 bg-amber-50 p-2 md:p-3 hover:bg-amber-100 transition-colors">
+              <div className="text-[10px] text-amber-700 font-medium">Kritik Stok Uyarıları</div>
+              <div className="text-xl md:text-2xl font-bold text-amber-900">{dashboardStats.aktifStokUyarilari}</div>
             </div>
           </div>
         </CardContent>
@@ -461,8 +488,8 @@ const Dashboard: React.FC = () => {
 
       {/* Operasyon Haritası - Tam genişlik */}
       <Card padding="sm">
-        <CardHeader className="mb-2">
-          <CardTitle className="text-lg">Operasyon Haritası (Mini)</CardTitle>
+        <CardHeader className="mb-2 pb-2">
+          <CardTitle className="text-sm md:text-base font-semibold">Operasyon Haritası (Mini)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">

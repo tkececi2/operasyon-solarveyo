@@ -19,6 +19,7 @@ import { platform } from './utils/platform';
 import { IOSAuthService } from './services/iosAuthService';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './lib/firebase';
+import { PushNotificationService } from './services/pushNotificationService';
 
 // Lazy loaded components
 const Home = React.lazy(() => import('./pages/marketing/Home'));
@@ -94,6 +95,9 @@ function App() {
   // Uygulama başladığında planları başlat ve iOS ayarlarını yap
   useEffect(() => {
     initializePlans();
+    
+    // Push Notifications'ı başlat (Native platformlarda)
+    PushNotificationService.initialize();
     
     // iOS Native ayarları ve otomatik giriş
     if (Capacitor.isNativePlatform()) {

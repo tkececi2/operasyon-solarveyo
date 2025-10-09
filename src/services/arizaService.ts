@@ -16,7 +16,7 @@ import {
   QueryConstraint
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { createNotification, createNotificationWithEmail } from './notificationService';
+import { notificationService } from './notificationService';
 import type { Fault, FaultStatus, Priority } from '../types';
 import { uploadArizaPhotos, deleteMultipleFiles } from './storageService';
 import { trackEvent } from '../lib/posthog-events';
@@ -45,142 +45,37 @@ export const createFault = async (
       santralId: faultData.santralId
     });
     
-    // Bildirim oluştur - tüm arızalar için
+    // Bildirim oluştur - Kullanıcı-bazlı hedefli (Scoped Notification)
     try {
-      // Önceliğe göre bildirim tipi belirle
+      // Önceliğe göre bildirim tipi ve mesaj belirle
       const notificationType = faultData.oncelik === 'kritik' ? 'error' : 
                               faultData.oncelik === 'yuksek' ? 'warning' : 'info';
       
-      // Genel bildirim oluştur (notifications koleksiyonuna)
-      await createNotification({
+      const titlePrefix = faultData.oncelik === 'kritik' ? '🚨 KRİTİK ARIZA' : 
+                         faultData.oncelik === 'yuksek' ? '⚠️ YÜKSEK ÖNCELİKLİ ARIZA' : 
+                         '🔧 Yeni Arıza';
+      
+      // Firebase Functions üzerinden tüm kullanıcılara hedefli bildirim gönder
+      // Bekçi ve Müşteri rolleri otomatik olarak saha kontrolüne tabi tutulur
+      await notificationService.createScopedNotificationClient({
         companyId: faultData.companyId,
-        title: `Yeni Arıza: ${faultData.baslik}`,
-        message: `${faultData.saha} sahasında ${faultData.santral || 'santral'} için yeni arıza bildirildi.`,
+        title: `${titlePrefix} - ${faultData.baslik}`,
+        message: `${faultData.saha} sahasında ${faultData.santral || 'santral'} için ${faultData.oncelik} öncelikli arıza bildirildi.`,
         type: notificationType,
         actionUrl: `/arizalar/${docRef.id}`,
         metadata: {
           faultId: docRef.id,
           santralId: faultData.santralId,
           sahaId: faultData.sahaId,
-          oncelik: faultData.oncelik
-        }
+          oncelik: faultData.oncelik,
+          screen: '/arizalar'
+        },
+        roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
       });
-
-      // Kritik ve yüksek öncelikli arızalar için email bildirimi
-      if (faultData.oncelik === 'kritik' || faultData.oncelik === 'yuksek') {
-        // Şirketteki tüm ilgili rolleri bul
-        const usersSnapshot = await getDocs(
-          query(
-            collection(db, 'kullanicilar'),
-            where('companyId', '==', faultData.companyId),
-            where('rol', 'in', ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri'])
-          )
-        );
-        
-        // Her kullanıcı için bildirim oluştur (saha kontrolü ile)
-        for (const userDoc of usersSnapshot.docs) {
-          const userData = userDoc.data();
-          
-          // Bekçi ve Müşteri rolleri için saha kontrolü
-          if (userData.rol === 'bekci' || userData.rol === 'musteri') {
-            const userSahalar = userData.sahalar || [];
-            // Bu sahaya atanmamışsa bildirim gönderme
-            if (!userSahalar.includes(faultData.sahaId)) {
-              continue;
-            }
-          }
-          
-          // Kullanıcıya özel bildirim
-          console.log(`📨 Kritik/Yüksek bildirim oluşturuluyor: ${userData.ad} (${userData.rol}) - userId: ${userDoc.id}`);
-          await createNotification({
-            companyId: faultData.companyId,
-            userId: userDoc.id,
-            title: `🚨 ${faultData.oncelik === 'kritik' ? 'KRİTİK' : 'YÜKSEK'} - ${faultData.baslik}`,
-            message: `${faultData.saha} sahasında acil müdahale gerektiren arıza!`,
-            type: notificationType,
-            actionUrl: `/arizalar/${docRef.id}`,
-            metadata: {
-              faultId: docRef.id,
-              santralId: faultData.santralId,
-              sahaId: faultData.sahaId,
-              oncelik: faultData.oncelik
-            }
-          });
-
-          // Email bildirimi (opsiyonel - email servisi aktifse)
-          if (userData.email) {
-            try {
-              await createNotificationWithEmail({
-                companyId: faultData.companyId,
-                userId: userDoc.id,
-                type: 'error',
-                title: `🚨 Yeni Arıza - ${faultData.baslik}`,
-                message: `${faultData.saha} sahasında yeni bir arıza bildirildi. Öncelik: ${faultData.oncelik}`,
-                data: {
-                  faultId: docRef.id,
-                  santralId: faultData.santralId,
-                  saha: faultData.saha
-                },
-              }, {
-                recipients: [{
-                  name: userData.ad || 'Yetkili',
-                  email: userData.email
-                }],
-                type: 'fault_created',
-                data: {
-                  ...newFault,
-                  id: docRef.id
-                },
-                priority: faultData.oncelik as any
-              });
-            } catch (emailError) {
-              // Email hatası bildirimi engellemez
-              console.error('Email gönderme hatası:', emailError);
-            }
-          }
-        }
-      } else {
-        // Düşük ve orta öncelikli arızalar için TÜM rollere bildirim gönder
-        const usersSnapshot = await getDocs(
-          query(
-            collection(db, 'kullanicilar'),
-            where('companyId', '==', faultData.companyId),
-            where('rol', 'in', ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri'])
-          )
-        );
-        
-        for (const userDoc of usersSnapshot.docs) {
-          const userData = userDoc.data();
-          
-          // Bekçi ve Müşteri rolleri için saha kontrolü
-          if (userData.rol === 'bekci' || userData.rol === 'musteri') {
-            const userSahalar = userData.sahalar || [];
-            // Bu sahaya atanmamışsa bildirim gönderme
-            if (!userSahalar.includes(faultData.sahaId)) {
-              continue;
-            }
-          }
-          
-          // Kullanıcıya özel bildirim
-          console.log(`📨 Normal/Düşük bildirim oluşturuluyor: ${userData.ad} (${userData.rol}) - userId: ${userDoc.id}`);
-          await createNotification({
-            companyId: faultData.companyId,
-            userId: userDoc.id,
-            title: `🔧 Yeni Arıza - ${faultData.baslik}`,
-            message: `${faultData.saha} sahasında yeni arıza bildirimi`,
-            type: 'info',
-            actionUrl: `/arizalar/${docRef.id}`,
-            metadata: {
-              faultId: docRef.id,
-              santralId: faultData.santralId,
-              sahaId: faultData.sahaId,
-              oncelik: faultData.oncelik
-            }
-          });
-        }
-      }
+      
+      console.log(`✅ Arıza bildirimi oluşturuldu: ${faultData.baslik} (${faultData.oncelik})`);
     } catch (notificationError) {
-      console.error('Bildirim oluşturma hatası:', notificationError);
+      console.error('❌ Bildirim oluşturma hatası:', notificationError);
       // Bildirim hatası arıza oluşturmayı engellemez
     }
     
@@ -448,33 +343,49 @@ export const updateFaultStatus = async (
         (Date.now() - faultData.olusturmaTarihi.toDate().getTime()) / (1000 * 60 * 60) : 0; // saat cinsinden
       trackEvent.arizaResolved(duration);
 
-      // Arıza çözüldü bildirimi
-      await createNotification({
-        companyId: faultData.companyId,
-        title: `✅ Arıza Çözüldü: ${faultData.baslik}`,
-        message: `${faultData.saha} sahasındaki arıza başarıyla çözüldü.`,
-        type: 'success',
-        actionUrl: `/arizalar/${faultId}`,
-        metadata: {
-          faultId: faultId,
-          santralId: faultData.santralId,
-          sahaId: faultData.sahaId
-        }
-      });
+      // Arıza çözüldü bildirimi (kullanıcı-bazlı hedefli)
+      try {
+        await notificationService.createScopedNotificationClient({
+          companyId: faultData.companyId,
+          title: `✅ Arıza Çözüldü - ${faultData.baslik}`,
+          message: `${faultData.saha} sahasında ${faultData.santral || 'santral'} arızası başarıyla çözüldü.`,
+          type: 'success',
+          actionUrl: `/arizalar/${faultId}`,
+          metadata: {
+            faultId: faultId,
+            santralId: faultData.santralId,
+            sahaId: faultData.sahaId,
+            durum: 'cozuldu',
+            screen: '/arizalar'
+          },
+          roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
+        });
+        console.log(`✅ Arıza çözüldü bildirimi gönderildi: ${faultData.baslik}`);
+      } catch (err) {
+        console.error('❌ Arıza çözüldü bildirimi hatası:', err);
+      }
     } else if (durum === 'devam-ediyor') {
-      // Arıza devam ediyor bildirimi
-      await createNotification({
-        companyId: faultData.companyId,
-        title: `🔄 Arıza Güncellendi: ${faultData.baslik}`,
-        message: `${faultData.saha} sahasındaki arıza üzerinde çalışılıyor.`,
-        type: 'warning',
-        actionUrl: `/arizalar/${faultId}`,
-        metadata: {
-          faultId: faultId,
-          santralId: faultData.santralId,
-          sahaId: faultData.sahaId
-        }
-      });
+      // Arıza devam ediyor bildirimi (kullanıcı-bazlı hedefli)
+      try {
+        await notificationService.createScopedNotificationClient({
+          companyId: faultData.companyId,
+          title: `🔄 Arıza Güncellendi - ${faultData.baslik}`,
+          message: `${faultData.saha} sahasında ${faultData.santral || 'santral'} arızası üzerinde çalışılıyor.`,
+          type: 'warning',
+          actionUrl: `/arizalar/${faultId}`,
+          metadata: {
+            faultId: faultId,
+            santralId: faultData.santralId,
+            sahaId: faultData.sahaId,
+            durum: 'devam-ediyor',
+            screen: '/arizalar'
+          },
+          roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
+        });
+        console.log(`🔄 Arıza güncelleme bildirimi gönderildi: ${faultData.baslik}`);
+      } catch (err) {
+        console.error('❌ Arıza güncelleme bildirimi hatası:', err);
+      }
     }
 
     // Çözüm fotoğrafları varsa yükle

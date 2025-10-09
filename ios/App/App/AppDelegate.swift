@@ -1,5 +1,8 @@
 import UIKit
 import Capacitor
+import FirebaseCore
+import FirebaseMessaging
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,6 +10,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Firebase'i başlat
+        FirebaseApp.configure()
+        
+        // Push Notifications için gerekli
+        UNUserNotificationCenter.current().delegate = self
+        
+        // Firebase Messaging delegate
+        Messaging.messaging().delegate = self
+        
+        // APNs token'ı Firebase'e bağla
+        application.registerForRemoteNotifications()
+        
         // Override point for customization after application launch.
         return true
     }
@@ -45,5 +60,102 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
+    
+    // APNs token başarılı
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        // Firebase'e APNs token'ı ilet
+        Messaging.messaging().apnsToken = deviceToken
+        print("✅ APNs token Firebase'e iletildi")
+        
+        // APNs token geldi, şimdi FCM token'ı alabiliriz
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            Messaging.messaging().token { token, error in
+                if let error = error {
+                    print("❌ FCM Token alma hatası:", error)
+                } else if let token = token {
+                    print("🔥 FCM Token başarıyla alındı:", token)
+                    
+                    // Token'ı kaydet
+                    UserDefaults.standard.set(token, forKey: "fcm_token")
+                    UserDefaults.standard.synchronize()
+                    
+                    if let suite = UserDefaults(suiteName: "CapacitorPreferences") {
+                        suite.set(token, forKey: "fcm_token")
+                        suite.synchronize()
+                        print("✅ FCM Token CapacitorPreferences'a kaydedildi")
+                    }
+                    
+                    // Capacitor Preferences plugin'inde tanımlı özel grup: SolarveyoApp
+                    if let solarveyoSuite = UserDefaults(suiteName: "SolarveyoApp") {
+                        solarveyoSuite.set(token, forKey: "fcm_token")
+                        solarveyoSuite.synchronize()
+                        print("✅ FCM Token SolarveyoApp'a kaydedildi")
+                    }
+                    
+                    // NotificationCenter ile JavaScript tarafına haber ver
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("FCMTokenReceived"),
+                        object: nil,
+                        userInfo: ["token": token]
+                    )
+                }
+            }
+        }
+    }
+    
+    // APNs token hatası
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        print("❌ APNs token alma hatası:", error.localizedDescription)
+    }
 
 }
+
+// MARK: - UNUserNotificationCenterDelegate
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    // Bildirim geldiğinde (uygulama açıkken)
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // Bildirimi göster
+        completionHandler([.banner, .sound, .badge])
+    }
+    
+    // Bildirime tıklandığında
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        completionHandler()
+    }
+}
+
+// MARK: - MessagingDelegate
+extension AppDelegate: MessagingDelegate {
+    // FCM token alındığında
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        print("🔥 FCM Token alındı:", fcmToken ?? "nil")
+        
+        // Token'ı hem UserDefaults hem Capacitor suite'e kaydet
+        if let token = fcmToken {
+            // Standard UserDefaults
+            UserDefaults.standard.set(token, forKey: "fcm_token")
+            UserDefaults.standard.synchronize()
+            
+            // Capacitor Preferences suite
+            if let suite = UserDefaults(suiteName: "CapacitorPreferences") {
+                suite.set(token, forKey: "fcm_token")
+                suite.synchronize()
+                print("✅ FCM Token kaydedildi (CapacitorPreferences)")
+            }
+            
+            // Capacitor Preferences için özel grup: SolarveyoApp
+            if let solarveyoSuite = UserDefaults(suiteName: "SolarveyoApp") {
+                solarveyoSuite.set(token, forKey: "fcm_token")
+                solarveyoSuite.synchronize()
+                print("✅ FCM Token kaydedildi (SolarveyoApp)")
+            }
+            
+            print("✅ FCM Token kaydedildi (UserDefaults)")
+        }
+    }
+}
+

@@ -13,7 +13,8 @@ import {
   QueryConstraint
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { createNotificationWithEmail, createPowerOutageNotification } from './notificationService';
+import { createNotificationWithEmail } from './notificationService';
+import { notificationService } from './notificationService';
 import type { PowerOutage } from '../types';
 
 // Elektrik kesintisi oluşturma
@@ -29,12 +30,18 @@ export const createPowerOutage = async (
 
     const docRef = await addDoc(collection(db, 'elektrikKesintileri'), newOutage);
     
-    // Bildirim + Email (opsiyonel)
+    // Bildirim (scoped) + Email (opsiyonel)
     try {
-      await createPowerOutageNotification(outageData.companyId, outageData.sahaId, outageData.santralId, docRef.id, outageData.neden);
-    } catch (emailError) {
-      console.error('Email bildirimi gönderilemedi:', emailError);
-    }
+      await notificationService.createScopedNotificationClient({
+        companyId: outageData.companyId,
+        title: 'Elektrik Kesintisi',
+        message: outageData.neden ? `Neden: ${outageData.neden}` : 'Elektrik kesintisi bildirildi.',
+        type: 'error',
+        actionUrl: '/arizalar/elektrik-kesintileri',
+        metadata: { outageId: docRef.id, sahaId: outageData.sahaId, santralId: outageData.santralId },
+        roles: ['yonetici','muhendis','tekniker','bekci','musteri']
+      });
+    } catch (err) { /* ignore */ }
 
     return docRef.id;
   } catch (error) {

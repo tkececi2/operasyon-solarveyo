@@ -47,15 +47,60 @@ export const createElectricalMaintenance = async (
       });
     }
 
-    // Bildirim
+    // Bildirim (role/segment hedeflemeli)
     try {
-      await notificationService.createMaintenanceNotification(
-        maintenanceData.companyId,
-        'elektrik',
-        maintenanceData.santralId,
-        docRef.id
-      );
-    } catch (e) { /* ignore */ }
+      // SahaId'yi kontrol et - yoksa santral'dan al
+      let bildirimSahaId = maintenanceData.sahaId;
+      let santralAdi = '';
+      
+      if (maintenanceData.santralId) {
+        const santralDoc = await getDoc(doc(db, 'santraller', maintenanceData.santralId));
+        if (santralDoc.exists()) {
+          const santralData = santralDoc.data();
+          santralAdi = santralData.name || santralData.adi || maintenanceData.santralId;
+          
+          // sahaId yoksa santral'dan al
+          if (!bildirimSahaId || bildirimSahaId === '') {
+            bildirimSahaId = santralData.sahaId;
+            console.log(`🔍 SahaId santral'dan alındı: ${bildirimSahaId}`);
+          }
+        }
+      }
+      
+      console.log(`📊 Elektrik Bakım Bildirimi Debug:`, {
+        sahaId: bildirimSahaId || 'YOK',
+        santralId: maintenanceData.santralId || 'YOK',
+        santralAdi: santralAdi || 'YOK',
+        companyId: maintenanceData.companyId
+      });
+      
+      // metadata'da sahaId veya santralId yoksa bildirim göndermeme
+      const metadata: any = { 
+        maintenanceId: docRef.id, 
+        maintenanceType: 'elektrik'
+      };
+      
+      // Sadece varsa ekle
+      if (bildirimSahaId) {
+        metadata.sahaId = bildirimSahaId;
+      }
+      if (maintenanceData.santralId) {
+        metadata.santralId = maintenanceData.santralId;
+      }
+      
+      await notificationService.createScopedNotificationClient({
+        companyId: maintenanceData.companyId,
+        title: '⚡ Elektrik Bakım Tamamlandı',
+        message: `${santralAdi || 'Santral'} için elektrik bakım işlemi tamamlandı.`,
+        type: 'success',
+        actionUrl: '/bakim/elektrik',
+        metadata: metadata,
+        roles: ['yonetici','muhendis','tekniker','bekci','musteri']
+      });
+      console.log(`✅ Elektrik bakım bildirimi gönderildi - sahaId: ${bildirimSahaId || 'YOK'}, santralId: ${maintenanceData.santralId || 'YOK'}`);
+    } catch (e) { 
+      console.error('❌ Elektrik bakım bildirimi hatası:', e);
+    }
     return docRef.id;
   } catch (error) {
     console.error('Elektrik bakım oluşturma hatası:', error);
@@ -93,13 +138,58 @@ export const createMechanicalMaintenance = async (
     }
 
     try {
-      await notificationService.createMaintenanceNotification(
-        maintenanceData.companyId,
-        'mekanik',
-        maintenanceData.santralId,
-        docRef.id
-      );
-    } catch (e) { /* ignore */ }
+      // SahaId'yi kontrol et - yoksa santral'dan al
+      let bildirimSahaId = maintenanceData.sahaId;
+      let santralAdi = '';
+      
+      if (maintenanceData.santralId) {
+        const santralDoc = await getDoc(doc(db, 'santraller', maintenanceData.santralId));
+        if (santralDoc.exists()) {
+          const santralData = santralDoc.data();
+          santralAdi = santralData.name || santralData.adi || maintenanceData.santralId;
+          
+          // sahaId yoksa santral'dan al
+          if (!bildirimSahaId || bildirimSahaId === '') {
+            bildirimSahaId = santralData.sahaId;
+            console.log(`🔍 SahaId santral'dan alındı: ${bildirimSahaId}`);
+          }
+        }
+      }
+      
+      console.log(`📊 Mekanik Bakım Bildirimi Debug:`, {
+        sahaId: bildirimSahaId || 'YOK',
+        santralId: maintenanceData.santralId || 'YOK',
+        santralAdi: santralAdi || 'YOK',
+        companyId: maintenanceData.companyId
+      });
+      
+      // metadata'da sahaId veya santralId yoksa bildirim göndermeme
+      const metadata: any = { 
+        maintenanceId: docRef.id, 
+        maintenanceType: 'mekanik'
+      };
+      
+      // Sadece varsa ekle
+      if (bildirimSahaId) {
+        metadata.sahaId = bildirimSahaId;
+      }
+      if (maintenanceData.santralId) {
+        metadata.santralId = maintenanceData.santralId;
+      }
+      
+      await notificationService.createScopedNotificationClient({
+        companyId: maintenanceData.companyId,
+        title: '🔧 Mekanik Bakım Tamamlandı',
+        message: `${santralAdi || 'Santral'} için mekanik bakım işlemi tamamlandı.`,
+        type: 'success',
+        actionUrl: '/bakim/mekanik',
+        metadata: metadata,
+        roles: ['yonetici','muhendis','tekniker','bekci','musteri']
+      });
+      console.log(`✅ Mekanik bakım bildirimi gönderildi - sahaId: ${bildirimSahaId || 'YOK'}, santralId: ${maintenanceData.santralId || 'YOK'}`);
+    } catch (e) { 
+      console.error('❌ Mekanik bakım bildirimi hatası:', e);
+    }
     return docRef.id;
   } catch (error) {
     console.error('Mekanik bakım oluşturma hatası:', error);
@@ -415,9 +505,19 @@ export const createYapilanIs = async (
       });
     }
 
-    // Bildirim
+    // Bildirim (saha-bazlı hedefli)
     try {
-      await notificationService.createNotification({
+      // SahaId'yi kontrol et - yoksa santral'dan al
+      let bildirimSahaId = yapilanIsData.sahaId;
+      if ((!bildirimSahaId || bildirimSahaId === '') && yapilanIsData.santralId) {
+        const santralDoc = await getDoc(doc(db, 'santraller', yapilanIsData.santralId));
+        if (santralDoc.exists()) {
+          bildirimSahaId = santralDoc.data().sahaId;
+          console.log(`🔍 SahaId santral'dan alındı: ${bildirimSahaId}`);
+        }
+      }
+      
+      await notificationService.createScopedNotificationClient({
         companyId: yapilanIsData.companyId,
         title: 'Yapılan İş Kaydı Eklendi',
         message: `${yapilanIsData.baslik || 'Yeni kayıt'} eklendi`,
@@ -425,11 +525,15 @@ export const createYapilanIs = async (
         actionUrl: '/bakim/yapilanisler',
         metadata: { 
           yapilanIsId: docRef.id,
-          sahaId: yapilanIsData.sahaId,
+          sahaId: bildirimSahaId,
           santralId: yapilanIsData.santralId
-        }
+        },
+        roles: ['yonetici','muhendis','tekniker','bekci','musteri']
       });
-    } catch (e) { /* ignore */ }
+      console.log(`✅ Yapılan iş bildirimi gönderildi - sahaId: ${bildirimSahaId}`);
+    } catch (e) { 
+      console.error('❌ Yapılan iş bildirimi hatası:', e);
+    }
 
     return docRef.id;
   } catch (error) {

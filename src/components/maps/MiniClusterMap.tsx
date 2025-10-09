@@ -97,35 +97,115 @@ export const MiniClusterMap: React.FC<{ points: Point[]; mapType?: 'roadmap' | '
         return '#2563eb';
       };
 
-      // Vurgulu pin + panel ikonu + renkli halo (yüksek görünürlük)
-      const createProminentPanelPin = (statusColor: string) => {
+      // Profesyonel 3D güneş paneli marker (pin yok, direkt panel)
+      const createProminentPanelPin = (statusColor: string, status?: 'normal' | 'bakim' | 'ariza') => {
+        // Durum renkleri
+        const glowColor = status === 'ariza' ? '#ef4444' : status === 'bakim' ? '#f59e0b' : '#10b981';
+        const borderColor = status === 'ariza' ? '#dc2626' : status === 'bakim' ? '#d97706' : '#059669';
+        
         const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <!-- Güçlü gölge efekti -->
     <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.25"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Panel yüzey gradient -->
+    <linearGradient id="panelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Parlama efekti -->
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0" />
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.4" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </linearGradient>
+    
+    <!-- Durum glow -->
+    <filter id="statusGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
-  <!-- Halo -->
-  <circle cx="22" cy="22" r="16" fill="${statusColor}" opacity="0.2"/>
-  <!-- Klasik pin -->
-  <path d="M22 4c-6.1 0-11 4.9-11 11 0 8.6 8.9 14.6 10.5 20.3.2.7.8.7 1 0C24.1 29.6 33 23.6 33 15 33 8.9 28.1 4 22 4z" fill="${statusColor}" stroke="#ffffff" stroke-width="2.6" filter="url(#shadow)"/>
-  <!-- İç daire arkaplan -->
-  <circle cx="22" cy="15.5" r="6.6" fill="#ffffff"/>
-  <!-- İçeride minyatür panel ikonu -->
-  <g transform="translate(15,10)">
-    <polygon points="1,9 13,7 13,12 1,14" fill="#2563eb" stroke="#1e40af" stroke-width="0.8" />
-    <line x1="2.5" y1="9.5" x2="2.5" y2="13.5" stroke="#fff" stroke-width="0.8" stroke-opacity="0.9" />
-    <line x1="5.5" y1="9" x2="5.5" y2="13" stroke="#fff" stroke-width="0.8" stroke-opacity="0.9" />
-    <line x1="8.5" y1="8.5" x2="8.5" y2="12.5" stroke="#fff" stroke-width="0.8" stroke-opacity="0.9" />
-    <line x1="1" y1="11.8" x2="13" y2="9.8" stroke="#fff" stroke-width="0.8" stroke-opacity="0.9" />
+  
+  <!-- Arka plan glow (durum rengi) -->
+  <circle cx="24" cy="24" r="18" fill="${glowColor}" opacity="0.15"/>
+  
+  <!-- 3D Panel gölgesi -->
+  <rect x="8" y="18" width="32" height="20" rx="2" fill="#000000" opacity="0.15" transform="translate(1, 1)"/>
+  
+  <!-- Ana panel çerçevesi -->
+  <rect x="8" y="18" width="32" height="20" rx="2" 
+        fill="${borderColor}" 
+        stroke="#ffffff" 
+        stroke-width="2" 
+        filter="url(#shadow)"/>
+  
+  <!-- Panel yüzeyi -->
+  <rect x="10" y="20" width="28" height="16" rx="1.5" 
+        fill="url(#panelGradient)" 
+        stroke="${borderColor}" 
+        stroke-width="1"/>
+  
+  <!-- Solar hücreleri - 4x3 grid -->
+  <!-- Üst sıra -->
+  <rect x="12" y="22" width="6" height="4.5" rx="0.5" fill="#3b82f6" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  <rect x="19" y="22" width="6" height="4.5" rx="0.5" fill="#3b82f6" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  <rect x="26" y="22" width="6" height="4.5" rx="0.5" fill="#3b82f6" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  <rect x="33" y="22" width="3" height="4.5" rx="0.5" fill="#3b82f6" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  
+  <!-- Orta sıra -->
+  <rect x="12" y="27.5" width="6" height="4.5" rx="0.5" fill="#3b82f6" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  <rect x="19" y="27.5" width="6" height="4.5" rx="0.5" fill="#3b82f6" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  <rect x="26" y="27.5" width="6" height="4.5" rx="0.5" fill="#3b82f6" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  <rect x="33" y="27.5" width="3" height="4.5" rx="0.5" fill="#3b82f6" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  
+  <!-- Alt sıra -->
+  <rect x="12" y="33" width="6" height="2" rx="0.5" fill="#60a5fa" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  <rect x="19" y="33" width="6" height="2" rx="0.5" fill="#60a5fa" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  <rect x="26" y="33" width="6" height="2" rx="0.5" fill="#60a5fa" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  <rect x="33" y="33" width="3" height="2" rx="0.5" fill="#60a5fa" stroke="#1e40af" stroke-width="0.5" opacity="0.9"/>
+  
+  <!-- Panel üzerinde parlama efekti -->
+  <rect x="10" y="20" width="28" height="6" rx="1.5" fill="url(#shine)" opacity="0.3"/>
+  
+  <!-- Güneş ikonu (küçük, sol üst köşe) -->
+  <g transform="translate(6, 12)">
+    <circle cx="6" cy="6" r="3" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+    <circle cx="6" cy="6" r="1.5" fill="#fef3c7"/>
+    <!-- Işınlar -->
+    <line x1="6" y1="0" x2="6" y2="2" stroke="#f59e0b" stroke-width="0.8" stroke-linecap="round"/>
+    <line x1="6" y1="10" x2="6" y2="12" stroke="#f59e0b" stroke-width="0.8" stroke-linecap="round"/>
+    <line x1="0" y1="6" x2="2" y2="6" stroke="#f59e0b" stroke-width="0.8" stroke-linecap="round"/>
+    <line x1="10" y1="6" x2="12" y2="6" stroke="#f59e0b" stroke-width="0.8" stroke-linecap="round"/>
   </g>
+  
+  <!-- Durum göstergesi (sağ üst küçük daire) -->
+  <circle cx="40" cy="14" r="5" fill="${glowColor}" stroke="#ffffff" stroke-width="2" filter="url(#statusGlow)"/>
+  <text x="40" y="17.5" text-anchor="middle" font-size="8" font-weight="bold" fill="#ffffff">${
+    status === 'ariza' ? '!' : status === 'bakim' ? '⚙' : '✓'
+  }</text>
 </svg>`;
         const url = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
         return {
           url,
-          scaledSize: new window.google.maps.Size(44, 44),
-          anchor: new window.google.maps.Point(22, 42),
+          scaledSize: new window.google.maps.Size(48, 48),
+          anchor: new window.google.maps.Point(24, 28),
         };
       };
 
@@ -138,7 +218,8 @@ export const MiniClusterMap: React.FC<{ points: Point[]; mapType?: 'roadmap' | '
         const marker = new window.google.maps.Marker({
           position,
           title: p.title,
-          icon: createProminentPanelPin(getColorByStatus(p.status)),
+          icon: createProminentPanelPin(getColorByStatus(p.status), p.status),
+          optimized: false, // Daha iyi render kalitesi için
         });
 
         if (p.status === 'ariza') {
@@ -149,15 +230,66 @@ export const MiniClusterMap: React.FC<{ points: Point[]; mapType?: 'roadmap' | '
 
         marker.addListener('click', () => {
           const safeTitle = p.title ?? 'Saha';
-          const subtitle = p.subtitle ? `<div style="color:#64748b;margin-top:2px">${p.subtitle}</div>` : '';
-          const list = (p.details && p.details.length > 0)
-            ? `<ul style="margin:8px 0;padding:0;list-style:none;display:grid;grid-template-columns:1fr;gap:4px">${p.details
-                .map((d) => `<li style=\"display:flex;justify-content:space-between;gap:8px\"><span style=\"color:#64748b\">${d.label}</span><span style=\"font-weight:600;color:#111827\">${d.value}</span></li>`)
-                .join('')}</ul>`
+          
+          // Durum badge'i
+          const statusBadge = p.status 
+            ? `<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-left:8px;background:${
+                p.status === 'ariza' ? '#fee2e2;color:#991b1b' : 
+                p.status === 'bakim' ? '#fef3c7;color:#92400e' : 
+                '#d1fae5;color:#065f46'
+              }">${
+                p.status === 'ariza' ? '⚠️ Arızalı' : 
+                p.status === 'bakim' ? '🔧 Bakımda' : 
+                '✓ Normal'
+              }</span>` 
             : '';
-          const detail = p.url ? `<a href="${p.url}" target="_blank" rel="noopener" style="padding:6px 10px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none">Detaya Git</a>` : '';
-          const direction = `<a href="https://www.google.com/maps?daddr=${p.lat},${p.lng}" target="_blank" rel="noopener" style="padding:6px 10px;background:#0ea5e9;color:#fff;border-radius:6px;text-decoration:none">Yol Tarifi</a>`;
-          const content = `<div style="min-width:240px;max-width:280px">\n<div style="font-weight:600">${safeTitle}</div>${subtitle}${list}\n<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">${detail}${direction}</div>\n</div>`;
+          
+          const subtitle = p.subtitle 
+            ? `<div style="color:#64748b;font-size:13px;margin-top:6px;display:flex;align-items:center"><svg style="width:14px;height:14px;margin-right:4px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>${p.subtitle}</div>` 
+            : '';
+          
+          const list = (p.details && p.details.length > 0)
+            ? `<div style="margin:12px 0;padding:12px;background:#f8fafc;border-radius:8px;border-left:3px solid #2563eb">
+                <div style="display:grid;grid-template-columns:1fr;gap:8px">
+                  ${p.details.map((d) => 
+                    `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+                      <span style="color:#64748b;font-size:12px;font-weight:500">${d.label}</span>
+                      <span style="font-weight:600;color:#0f172a;font-size:13px">${d.value}</span>
+                    </div>`
+                  ).join('')}
+                </div>
+              </div>`
+            : '';
+          
+          const detail = p.url 
+            ? `<a href="${p.url}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:8px 14px;background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;box-shadow:0 2px 4px rgba(37,99,235,0.2);transition:all 0.2s">
+                <svg style="width:14px;height:14px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                Detaya Git
+              </a>` 
+            : '';
+          
+          const direction = `<a href="https://www.google.com/maps?daddr=${p.lat},${p.lng}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:8px 14px;background:linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;box-shadow:0 2px 4px rgba(14,165,233,0.2);transition:all 0.2s">
+              <svg style="width:14px;height:14px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              Yol Tarifi
+            </a>`;
+          
+          const content = `
+            <div style="min-width:260px;max-width:320px;padding:4px">
+              <div style="display:flex;align-items:center;margin-bottom:8px">
+                <svg style="width:20px;height:20px;margin-right:8px;color:#2563eb" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <span style="font-weight:700;font-size:16px;color:#0f172a">${safeTitle}</span>
+                ${statusBadge}
+              </div>
+              ${subtitle}
+              ${list}
+              <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+                ${detail}
+                ${direction}
+              </div>
+            </div>
+          `;
           infoWindow.setContent(content);
           infoWindow.open({ anchor: marker, map });
         });

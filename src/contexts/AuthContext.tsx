@@ -17,6 +17,7 @@ import { logUserAction, logSecurityEvent } from '../services/auditLogService';
 import { analyticsService } from '../services/analyticsService';
 import { SAAS_CONFIG } from '../config/saas.config';
 import { MobileNotificationService } from '../services/mobile/notificationService';
+import { PushNotificationService } from '../services/pushNotificationService';
 import { platform } from '../utils/platform';
 import { Preferences } from '@capacitor/preferences';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -186,6 +187,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             
             toast.error('⛔ Hesabınız devre dışı bırakılmıştır.');
+          } else if (platform.isNative() && profile) {
+            // iOS için: Kullanıcı aktifse push notification'ı başlat
+            try {
+              console.log('🔔 [Auth State] PushNotificationService başlatılıyor...');
+              await PushNotificationService.initialize();
+              
+              // FCM token gelmesi için 2 saniye bekle
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              
+              // FCM token'ı Firestore'a kaydet
+              console.log('💾 [Auth State] FCM Token Firestore\'a kaydediliyor...');
+              await PushNotificationService.setUser(user.uid);
+              console.log('✅ [Auth State] Push notification sistemi hazır!');
+            } catch (error) {
+              console.error('❌ [Auth State] Push notification hatası:', error);
+            }
           }
         } else {
           setCurrentUser(null);
@@ -297,12 +314,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const { value: verifyPassword } = await Preferences.get({ key: 'user_password' });
             console.log('📱 iOS: Bilgiler doğrulandı - Email:', verifyEmail ? '✅' : '❌', 'Password:', verifyPassword ? '✅' : '❌');
             
-            // Push notification'ı başlat
+            // Push notification'ı başlat (YENİ FCM Sistemi)
             try {
-              await MobileNotificationService.initialize(user.uid);
-              console.log('Push notification başarıyla başlatıldı');
+              console.log('🔔 PushNotificationService başlatılıyor...');
+              await PushNotificationService.initialize();
+              console.log('✅ PushNotificationService başlatıldı');
+              
+              // 2 saniye bekle (FCM token gelmesi için)
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              
+              // Kullanıcı ID'sini set et (FCM token Firestore'a kaydedilecek)
+              console.log('💾 FCM Token Firestore\'a kaydediliyor...');
+              await PushNotificationService.setUser(user.uid);
+              console.log('✅ Push notification sistemi tamamen hazır!');
             } catch (notifError) {
-              console.error('Push notification hatası:', notifError);
+              console.error('❌ Push notification hatası:', notifError);
             }
           } catch (error) {
             console.error('iOS bilgi kaydetme hatası:', error);
@@ -577,6 +603,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       await signOut(auth);
+      
+      // Push notification temizle
+      if (platform.isNative()) {
+        try {
+          await PushNotificationService.removeUser();
+          console.log('✅ Push notification temizlendi');
+        } catch (error) {
+          console.error('Push notification temizleme hatası:', error);
+        }
+      }
       
       setCurrentUser(null);
       setUserProfile(null);
