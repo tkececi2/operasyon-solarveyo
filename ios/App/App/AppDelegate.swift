@@ -130,12 +130,22 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
 // MARK: - MessagingDelegate
 extension AppDelegate: MessagingDelegate {
-    // FCM token alındığında
+    // FCM token alındığında veya yenilendiğinde
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-        print("🔥 FCM Token alındı:", fcmToken ?? "nil")
+        print("🔥 FCM Token alındı/yenilendi:", fcmToken ?? "nil")
         
         // Token'ı hem UserDefaults hem Capacitor suite'e kaydet
         if let token = fcmToken {
+            // Önceki token'ı kontrol et
+            let previousToken = UserDefaults.standard.string(forKey: "fcm_token")
+            
+            if previousToken != token {
+                print("⚠️ FCM Token değişti! Eski: \(previousToken?.prefix(20) ?? "nil")... Yeni: \(token.prefix(20))...")
+                
+                // Token değişti flag'ini set et
+                UserDefaults.standard.set(true, forKey: "fcm_token_changed")
+            }
+            
             // Standard UserDefaults
             UserDefaults.standard.set(token, forKey: "fcm_token")
             UserDefaults.standard.synchronize()
@@ -143,6 +153,7 @@ extension AppDelegate: MessagingDelegate {
             // Capacitor Preferences suite
             if let suite = UserDefaults(suiteName: "CapacitorPreferences") {
                 suite.set(token, forKey: "fcm_token")
+                suite.set(true, forKey: "fcm_token_refresh_needed")
                 suite.synchronize()
                 print("✅ FCM Token kaydedildi (CapacitorPreferences)")
             }
@@ -155,6 +166,9 @@ extension AppDelegate: MessagingDelegate {
             }
             
             print("✅ FCM Token kaydedildi (UserDefaults)")
+            
+            // JavaScript tarafına token yenilendiği bilgisini gönder
+            NotificationCenter.default.post(name: NSNotification.Name("FCMTokenRefreshed"), object: token)
         }
     }
 }

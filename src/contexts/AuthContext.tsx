@@ -191,6 +191,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // iOS için: Kullanıcı aktifse push notification'ı başlat
             try {
               console.log('🔔 [Auth State] PushNotificationService başlatılıyor...');
+              
+              // Kullanıcı ID'sini Preferences'a kaydet (otomatik token güncelleme için)
+              await Preferences.set({ key: 'current_user_id', value: user.uid });
+              
               await PushNotificationService.initialize();
               
               // FCM token gelmesi için 2 saniye bekle
@@ -213,6 +217,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
               await Preferences.remove({ key: 'user_email' });
               await Preferences.remove({ key: 'user_password' });
+              await Preferences.remove({ key: 'current_user_id' });
+              await Preferences.remove({ key: 'last_saved_fcm_token' });
               console.log('📱 iOS: Kullanıcı bilgileri silindi');
             } catch (error) {
               console.error('iOS bilgi silme hatası:', error);
@@ -317,6 +323,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Push notification'ı başlat (YENİ FCM Sistemi)
             try {
               console.log('🔔 PushNotificationService başlatılıyor...');
+              
+              // Kullanıcı ID'sini Preferences'a kaydet (otomatik token güncelleme için)
+              await Preferences.set({ key: 'current_user_id', value: user.uid });
+              
               await PushNotificationService.initialize();
               console.log('✅ PushNotificationService başlatıldı');
               

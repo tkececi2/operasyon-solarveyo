@@ -88,8 +88,8 @@ export class PushNotificationService {
         console.log('📋 APNS TOKEN:', token.value);
       }
       
-      // TODO: Token'ı backend'e kaydet
-      // Bu token ile bildirim gönderebilirsiniz
+      // APNs token alındığında otomatik olarak FCM token'ı da kontrol et ve güncelle
+      this.checkAndUpdateFCMToken();
     });
 
     // Token alma hatası
@@ -246,6 +246,95 @@ export class PushNotificationService {
   static async removeUser() {
     console.log('🗑️ Push: Kullanıcı temizleniyor...');
     this.currentToken = null;
+  }
+
+  /**
+   * FCM Token'ı kontrol et ve gerekirse güncelle
+   * Token değiştiğinde veya geçersiz olduğunda otomatik çalışır
+   */
+  private static async checkAndUpdateFCMToken() {
+    try {
+      console.log('🔄 FCM Token kontrolü başlıyor...');
+      
+      // Mevcut kullanıcı ID'sini al (localStorage veya Preferences'tan)
+      const { value: currentUserId } = await Preferences.get({ key: 'current_user_id' });
+      
+      if (!currentUserId) {
+        console.log('⚠️ Kullanıcı ID bulunamadı, token güncellemesi atlanıyor');
+        return;
+      }
+      
+      // FCM Token'ı al
+      let fcmToken = await this.getFCMToken();
+      
+      if (!fcmToken) {
+        console.log('⏳ FCM Token henüz hazır değil, 3 saniye bekleniyor...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        fcmToken = await this.getFCMToken();
+      }
+      
+      if (!fcmToken) {
+        console.error('❌ FCM Token alınamadı!');
+        return;
+      }
+      
+      // Mevcut token'ı kontrol et
+      const { value: savedToken } = await Preferences.get({ key: 'last_saved_fcm_token' });
+      
+      if (savedToken === fcmToken) {
+        console.log('✅ Token değişmemiş, güncelleme gerekmiyor');
+        return;
+      }
+      
+      console.log('🔄 Token değişmiş veya ilk kez alınıyor, Firestore güncelleniyor...');
+      
+      // Firestore'a kaydet
+      await updateDoc(doc(db, 'kullanicilar', currentUserId), {
+        'pushTokens.fcm': fcmToken,
+        pushNotificationsEnabled: true,
+        pushTokenUpdatedAt: serverTimestamp(),
+        platform: Capacitor.getPlatform()
+      });
+      
+      // Son kaydedilen token'ı sakla
+      await Preferences.set({ key: 'last_saved_fcm_token', value: fcmToken });
+      
+      console.log('✅ FCM Token otomatik güncellendi!');
+      
+      // Kullanıcıya bilgi ver (production'da kaldırılabilir)
+      if (Capacitor.isNativePlatform()) {
+        alert('✅ Push bildirimleri otomatik güncellendi!');
+      }
+      
+    } catch (error) {
+      console.error('❌ Otomatik token güncelleme hatası:', error);
+    }
+  }
+
+  /**
+   * Token geçersiz olduğunda yenile
+   * Firebase Functions'tan gelen hata durumunda çağrılabilir
+   */
+  static async refreshTokenIfNeeded() {
+    try {
+      console.log('🔄 Token yenileme başlatılıyor...');
+      
+      // Eski token'ı temizle
+      await Preferences.remove({ key: 'fcm_token' });
+      await Preferences.remove({ key: 'last_saved_fcm_token' });
+      
+      // Yeniden register et
+      await PushNotifications.register();
+      
+      // Token güncellemesini bekle
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Yeni token'ı kontrol et ve kaydet
+      await this.checkAndUpdateFCMToken();
+      
+    } catch (error) {
+      console.error('❌ Token yenileme hatası:', error);
+    }
   }
 }
 
