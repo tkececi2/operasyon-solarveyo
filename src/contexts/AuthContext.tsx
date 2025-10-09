@@ -18,6 +18,7 @@ import { analyticsService } from '../services/analyticsService';
 import { SAAS_CONFIG } from '../config/saas.config';
 import { MobileNotificationService } from '../services/mobile/notificationService';
 import { PushNotificationService } from '../services/pushNotificationService';
+import { WebPushService } from '../services/webPushService';
 import { platform } from '../utils/platform';
 import { Preferences } from '@capacitor/preferences';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -207,6 +208,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } catch (error) {
               console.error('❌ [Auth State] Push notification hatası:', error);
             }
+          } else if (!platform.isNative() && profile) {
+            // Web platformu için push notification başlat
+            try {
+              console.log('🌐 [Auth State] Web Push başlatılıyor...');
+              await WebPushService.initialize();
+              await WebPushService.setUser(user.uid);
+              WebPushService.setupForegroundListener();
+              console.log('✅ [Auth State] Web Push sistemi hazır!');
+            } catch (error) {
+              console.error('❌ [Auth State] Web Push hatası:', error);
+            }
           }
         } else {
           setCurrentUser(null);
@@ -343,6 +355,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch (error) {
             console.error('iOS bilgi kaydetme hatası:', error);
             // Hata olsa bile giriş işlemine devam et
+          }
+        } else {
+          // Web platformu için push notification başlat
+          try {
+            console.log('🌐 Web Push başlatılıyor...');
+            await WebPushService.initialize();
+            await WebPushService.setUser(user.uid);
+            WebPushService.setupForegroundListener();
+            console.log('✅ Web Push sistemi hazır!');
+          } catch (error) {
+            console.error('❌ Web Push hatası:', error);
           }
         }
       }

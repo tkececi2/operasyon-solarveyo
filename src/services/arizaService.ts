@@ -66,7 +66,7 @@ export const createFault = async (
         metadata: {
           faultId: docRef.id,
           santralId: faultData.santralId,
-          sahaId: faultData.sahaId,
+          sahaId: faultData.sahaId || null,
           oncelik: faultData.oncelik,
           screen: '/arizalar'
         },
