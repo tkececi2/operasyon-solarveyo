@@ -13,7 +13,9 @@ import {
   Upload,
   Trash2,
   Eye,
-  EyeOff
+  EyeOff,
+  RefreshCw,
+  Bell
 } from 'lucide-react';
 import { Card, CardHeader, CardContent, Alert, AlertDescription, Badge } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,6 +30,10 @@ import {
 import { User as UserType } from '@/types';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { doc, updateDoc, deleteField } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { PushNotificationService } from '@/services/pushNotificationService';
+import { Capacitor } from '@capacitor/core';
 
 const ProfileSettings: React.FC = () => {
   const { currentUser, userProfile: authUserProfile } = useAuth();
@@ -94,6 +100,49 @@ const ProfileSettings: React.FC = () => {
       loadUserProfile();
     } catch (error: any) {
       toast.error(error.message || 'Profil güncellenemedi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefreshToken = async () => {
+    try {
+      setLoading(true);
+      
+      if (!currentUser?.uid) {
+        throw new Error('Kullanıcı bilgisi bulunamadı');
+      }
+
+      console.log('🔄 FCM Token yenileniyor...');
+      
+      // Mevcut token'ları sil
+      await updateDoc(doc(db, 'kullanicilar', currentUser.uid), {
+        pushTokens: deleteField(),
+        fcmToken: deleteField(),
+        pushTokenUpdatedAt: deleteField()
+      });
+      
+      console.log('🗑️ Eski token silindi');
+      
+      // Native platformda yeni token al
+      if (Capacitor.isNativePlatform()) {
+        // Push notification servisini yeniden başlat
+        await PushNotificationService.initialize();
+        
+        // 2 saniye bekle
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Yeni token'ı kaydet
+        await PushNotificationService.setUser(currentUser.uid);
+        
+        toast.success('✅ Push bildirimleri yenilendi! Uygulamayı arka plana alıp test edebilirsiniz.');
+      } else {
+        toast.info('📱 Bu özellik sadece mobil uygulamada çalışır');
+      }
+      
+    } catch (error: any) {
+      console.error('Token yenileme hatası:', error);
+      toast.error('Token yenilenemedi: ' + (error.message || 'Bilinmeyen hata'));
     } finally {
       setLoading(false);
     }
@@ -397,6 +446,31 @@ const ProfileSettings: React.FC = () => {
                     placeholder="Telefon numaranızı girin"
                   />
                 </div>
+
+                {/* Push Bildirim Token Yenileme - Sadece Native Platformda Göster */}
+                {Capacitor.isNativePlatform() && (
+                  <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-start space-x-3">
+                      <Bell className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                          Push Bildirimleri
+                        </h4>
+                        <p className="text-xs text-blue-700 dark:text-blue-300 mb-3">
+                          Push bildirimleri almıyorsanız token'ınızı yenileyin
+                        </p>
+                        <button
+                          onClick={handleRefreshToken}
+                          disabled={loading}
+                          className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <RefreshCw className={`h-4 w-4 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+                          Token Yenile
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="pt-4">
                   <button
