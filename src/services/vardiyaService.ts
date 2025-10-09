@@ -118,8 +118,10 @@ export const createVardiyaBildirimi = async (
         durum: vardiyaData.durum
       };
       
-      // SahaId'yi null yap ki tüm kullanıcılara gitsin (arıza gibi)
-      metadata.sahaId = null;
+      // SahaId'yi kullan - sadece o sahaya atanan kişilere gitsin  
+      if (vardiyaData.sahaId) {
+        metadata.sahaId = vardiyaData.sahaId;
+      }
       if (vardiyaData.santralId) {
         metadata.santralId = vardiyaData.santralId;
       }

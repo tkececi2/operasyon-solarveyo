@@ -80,8 +80,10 @@ export const createElectricalMaintenance = async (
         maintenanceType: 'elektrik'
       };
       
-      // SahaId'yi null yap ki tüm kullanıcılara gitsin (arıza gibi)
-      metadata.sahaId = null;
+      // SahaId'yi kullan - sadece o sahaya atanan kişilere gitsin
+      if (bildirimSahaId) {
+        metadata.sahaId = bildirimSahaId;
+      }
       if (maintenanceData.santralId) {
         metadata.santralId = maintenanceData.santralId;
       }
@@ -167,8 +169,10 @@ export const createMechanicalMaintenance = async (
         maintenanceType: 'mekanik'
       };
       
-      // SahaId'yi null yap ki tüm kullanıcılara gitsin (arıza gibi)
-      metadata.sahaId = null;
+      // SahaId'yi kullan - sadece o sahaya atanan kişilere gitsin
+      if (bildirimSahaId) {
+        metadata.sahaId = bildirimSahaId;
+      }
       if (maintenanceData.santralId) {
         metadata.santralId = maintenanceData.santralId;
       }

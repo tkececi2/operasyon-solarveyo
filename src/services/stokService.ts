@@ -106,8 +106,10 @@ export const createStok = async (stokData: Omit<StokItem, 'id' | 'sonGuncelleme'
           minimumStock: min
         };
         
-        // SahaId'yi null yap ki tüm kullanıcılara gitsin (arıza gibi)
-        metadata.sahaId = null;
+        // SahaId'yi kullan - sadece o sahaya atanan kişilere gitsin
+        if (bildirimSahaId) {
+          metadata.sahaId = bildirimSahaId;
+        }
         if (newStok.santralId) {
           metadata.santralId = newStok.santralId;
         }
