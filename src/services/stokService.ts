@@ -99,14 +99,14 @@ export const createStok = async (stokData: Omit<StokItem, 'id' | 'sonGuncelleme'
           companyId: newStok.companyId
         });
         
-        // metadata'da sahaId veya santralId yoksa bildirim göndermeme
+        // metadata oluştur
         const metadata: any = { 
           itemName: newStok.malzemeAdi, 
           currentStock: newStok.mevcutStok || 0, 
           minimumStock: min
         };
         
-        // Sadece varsa ekle
+        // Varsa ekle (yoksa da bildirim gönderilecek)
         if (bildirimSahaId) {
           metadata.sahaId = bildirimSahaId;
         }

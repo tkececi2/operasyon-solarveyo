@@ -111,14 +111,14 @@ export const createVardiyaBildirimi = async (
         durum: vardiyaData.durum
       });
       
-      // metadata'da sahaId veya santralId yoksa bildirim göndermeme
+      // metadata oluştur
       const metadata: any = { 
         vardiyaId: docRef.id,
         vardiyaTipi: vardiyaData.vardiyaTipi,
         durum: vardiyaData.durum
       };
       
-      // Sadece varsa ekle
+      // Varsa ekle (yoksa da bildirim gönderilecek)
       if (vardiyaData.sahaId) {
         metadata.sahaId = vardiyaData.sahaId;
       }

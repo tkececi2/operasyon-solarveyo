@@ -74,13 +74,13 @@ export const createElectricalMaintenance = async (
         companyId: maintenanceData.companyId
       });
       
-      // metadata'da sahaId veya santralId yoksa bildirim göndermeme
+      // metadata oluştur
       const metadata: any = { 
         maintenanceId: docRef.id, 
         maintenanceType: 'elektrik'
       };
       
-      // Sadece varsa ekle
+      // Varsa ekle (yoksa da bildirim gönderilecek)
       if (bildirimSahaId) {
         metadata.sahaId = bildirimSahaId;
       }
@@ -163,13 +163,13 @@ export const createMechanicalMaintenance = async (
         companyId: maintenanceData.companyId
       });
       
-      // metadata'da sahaId veya santralId yoksa bildirim göndermeme
+      // metadata oluştur
       const metadata: any = { 
         maintenanceId: docRef.id, 
         maintenanceType: 'mekanik'
       };
       
-      // Sadece varsa ekle
+      // Varsa ekle (yoksa da bildirim gönderilecek)
       if (bildirimSahaId) {
         metadata.sahaId = bildirimSahaId;
       }
