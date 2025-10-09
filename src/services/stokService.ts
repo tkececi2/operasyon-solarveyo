@@ -106,10 +106,8 @@ export const createStok = async (stokData: Omit<StokItem, 'id' | 'sonGuncelleme'
           minimumStock: min
         };
         
-        // Varsa ekle (yoksa da bildirim gönderilecek)
-        if (bildirimSahaId) {
-          metadata.sahaId = bildirimSahaId;
-        }
+        // SahaId'yi null yap ki tüm kullanıcılara gitsin (arıza gibi)
+        metadata.sahaId = null;
         if (newStok.santralId) {
           metadata.santralId = newStok.santralId;
         }

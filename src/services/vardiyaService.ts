@@ -118,10 +118,8 @@ export const createVardiyaBildirimi = async (
         durum: vardiyaData.durum
       };
       
-      // Varsa ekle (yoksa da bildirim gönderilecek)
-      if (vardiyaData.sahaId) {
-        metadata.sahaId = vardiyaData.sahaId;
-      }
+      // SahaId'yi null yap ki tüm kullanıcılara gitsin (arıza gibi)
+      metadata.sahaId = null;
       if (vardiyaData.santralId) {
         metadata.santralId = vardiyaData.santralId;
       }
