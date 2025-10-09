@@ -218,7 +218,9 @@ export class PushNotificationService {
       
       // Token'ı Firestore'a kaydet (standart alanlar + nested pushTokens.fcm)
       await updateDoc(doc(db, 'kullanicilar', userId), {
-        'pushTokens.fcm': fcmToken,
+        pushTokens: {
+          fcm: fcmToken
+        },
         pushNotificationsEnabled: true,
         pushTokenUpdatedAt: serverTimestamp(),
         platform: Capacitor.getPlatform()
@@ -290,7 +292,9 @@ export class PushNotificationService {
       
       // Firestore'a kaydet
       await updateDoc(doc(db, 'kullanicilar', currentUserId), {
-        'pushTokens.fcm': fcmToken,
+        pushTokens: {
+          fcm: fcmToken
+        },
         pushNotificationsEnabled: true,
         pushTokenUpdatedAt: serverTimestamp(),
         platform: Capacitor.getPlatform()

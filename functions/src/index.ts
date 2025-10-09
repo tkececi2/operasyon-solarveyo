@@ -26,11 +26,11 @@ export const sendPushOnNotificationCreate = functions
   .region("us-central1")
   .firestore.document("notifications/{notificationId}")
   .onCreate(async (snap, context) => {
+    const data = snap.data() as any;
+    const { userId, companyId, title, message, type, metadata } = data || {};
+    
     try {
       console.log("🔔 sendPushOnNotificationCreate BAŞLADI - NotificationId:", context.params.notificationId);
-      
-      const data = snap.data() as any;
-      const { userId, companyId, title, message, type, metadata } = data || {};
 
       console.log("📝 Bildirim Data:", { 
         userId: userId || "YOK ❌", 
@@ -64,6 +64,10 @@ export const sendPushOnNotificationCreate = functions
             companyId: companyId
           });
 
+          // ÖNEMLİ: Aynı cihazdan birden fazla kullanıcı giriş yapabilir
+          // Bu yüzden token bazlı değil, kullanıcı bazlı bildirim göndermeliyiz
+          const processedTokens = new Set<string>(); // Aynı token'a birden fazla gönderimi önle
+          
           let q = db.collection("kullanicilar").where("companyId", "==", companyId) as FirebaseFirestore.Query;
           if (Array.isArray(targetRoles) && targetRoles.length > 0 && targetRoles.length <= 10) {
             q = q.where("rol", "in", targetRoles as any);
@@ -117,6 +121,14 @@ export const sendPushOnNotificationCreate = functions
               return;
             }
 
+            // ÖNEMLI: Aynı token'a birden fazla gönderimi önle
+            // Aynı cihazdan farklı kullanıcılar giriş yapmış olabilir
+            if (processedTokens.has(targetToken)) {
+              console.log(`⚠️ Token zaten işlendi, atlanıyor: ${uDoc.id} (${u.email || u.ad})`);
+              return;
+            }
+            processedTokens.add(targetToken);
+
             const screen = (metadata && ((metadata as any).screen || (metadata as any).deepLink)) || "/bildirimler";
             const payload: admin.messaging.Message = {
               token: targetToken,
@@ -135,11 +147,24 @@ export const sendPushOnNotificationCreate = functions
             };
 
             try {
-              console.log("📤 (fanout) FCM mesajı gönderiliyor...", { userId: uDoc.id, token: targetToken.substring(0, 20) + "..." });
+              console.log("📤 (fanout) FCM mesajı gönderiliyor...", { 
+                userId: uDoc.id, 
+                email: u.email || u.ad,
+                rol: u.rol,
+                token: targetToken.substring(0, 20) + "..." 
+              });
               const res = await admin.messaging().send(payload);
               console.log("✅ (fanout) gönderildi", { userId: uDoc.id, messageId: res });
               deliveredUserIds.push(uDoc.id);
             } catch (e: any) {
+              // Token geçersizse, kullanıcının token'ını temizle
+              if (e?.code === 'messaging/registration-token-not-registered') {
+                console.log(`🗑️ Geçersiz token temizleniyor: ${uDoc.id}`);
+                await db.collection("kullanicilar").doc(uDoc.id).update({
+                  'pushTokens': admin.firestore.FieldValue.delete(),
+                  'fcmToken': admin.firestore.FieldValue.delete()
+                }).catch(() => {});
+              }
               console.error("❌ (fanout) gönderilemedi", { userId: uDoc.id, error: e?.message || e });
               errors.push({ userId: uDoc.id, error: String(e?.message || e) });
             }
@@ -234,6 +259,9 @@ export const sendPushOnNotificationCreate = functions
       };
 
       console.log("📤 FCM mesajı gönderiliyor...", { 
+        userId: userId,
+        email: user.email || user.ad,
+        rol: user.rol,
         token: token.substring(0, 20) + "...", 
         title, 
         screen 
@@ -258,6 +286,22 @@ export const sendPushOnNotificationCreate = functions
         code: err?.code, 
         stack: err?.stack 
       });
+      
+      // Token geçersizse otomatik temizle
+      if (err?.code === 'messaging/registration-token-not-registered' && userId) {
+        console.log(`🗑️ Geçersiz token temizleniyor: ${userId}`);
+        try {
+          const db = admin.firestore();
+          await db.collection("kullanicilar").doc(userId).update({
+            'pushTokens': admin.firestore.FieldValue.delete(),
+            'fcmToken': admin.firestore.FieldValue.delete(),
+            'pushTokenUpdatedAt': admin.firestore.FieldValue.delete()
+          });
+          console.log(`✅ Token temizlendi, kullanıcı yeniden giriş yaptığında yeni token alınacak`);
+        } catch (cleanupErr) {
+          console.error("Token temizleme hatası:", cleanupErr);
+        }
+      }
       
       try {
         await snap.ref.update({ 
