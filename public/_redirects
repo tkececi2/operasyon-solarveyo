@@ -1,5 +1,1 @@
-/* /index.html 200
-
-# OneSignal Service Worker MIME type fix
-/OneSignalSDKWorker.js    /OneSignalSDKWorker.js    200    Content-Type: application/javascript
-/OneSignalSDK.sw.js       /OneSignalSDK.sw.js      200    Content-Type: application/javascript
+/*    /index.html   200
