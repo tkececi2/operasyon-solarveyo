@@ -89,7 +89,14 @@ const Login: React.FC = () => {
         console.log('📱 iOS: Login bilgileri kaydedildi');
       }
       
-      navigate('/dashboard');
+      // Auth state güncellenene kadar bekle
+      console.log('🔄 Login başarılı - Auth state güncellenmesini bekliyor...');
+      
+      // Kısa bir delay ekle - auth state değişmesini bekle
+      setTimeout(() => {
+        console.log('✅ Dashboard\'a yönlendiriliyor...');
+        navigate('/dashboard');
+      }, 1000);
       }
     } catch (error: any) {
       // Email ile bulunamazsa, auth ile dene

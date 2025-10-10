@@ -191,22 +191,42 @@ export class PushNotificationService {
   /**
    * Kullanıcı giriş yaptığında token'ı backend'e kaydet
    */
-  static async setUser(userId: string) {
-    console.log('🔔 setUser çağrıldı:', userId);
+  static async setUser(userId: string, maxRetries: number = 3) {
+    console.log(`🔔 setUser çağrıldı: ${userId} (retry: ${maxRetries})`);
     
     // FCM Token'ı almayı dene (iOS native'den geliyor)
     let fcmToken = await this.getFCMToken();
     
     if (!fcmToken) {
-      console.log('⚠️ FCM Token henüz alınmadı, 5 saniye bekleniyor...');
+      console.log('⚠️ FCM Token henüz alınmadı, progressive wait başlatılıyor...');
       
-      // Token'ın gelmesini bekle (native'den gelmesi zaman alabilir)
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      fcmToken = await this.getFCMToken();
+      // Progressive wait: 2s -> 5s -> 10s
+      const waitTimes = [2000, 5000, 10000];
+      
+      for (let i = 0; i < waitTimes.length && !fcmToken; i++) {
+        console.log(`⏳ Bekleme ${i + 1}/${waitTimes.length}: ${waitTimes[i]}ms`);
+        await new Promise(resolve => setTimeout(resolve, waitTimes[i]));
+        fcmToken = await this.getFCMToken();
+        
+        if (fcmToken) {
+          console.log(`✅ Token ${i + 1}. denemede alındı!`);
+          break;
+        }
+      }
       
       if (!fcmToken) {
-        console.log('❌ FCM Token hala yok! Native tarafı kontrol edin.');
+        console.log('❌ FCM Token 17 saniye sonra hala yok!');
         console.log('Debug bilgisi:', await this.getDebugInfo());
+        
+        // Retry mekanizması
+        if (maxRetries > 0) {
+          console.log(`🔄 ${maxRetries} retry kaldı, 30 saniye sonra tekrar denenecek...`);
+          setTimeout(() => {
+            this.setUser(userId, maxRetries - 1);
+          }, 30000);
+        } else {
+          console.log('💀 Retry limit aşıldı - Token kaydedilemedi');
+        }
         return;
       }
     }
@@ -229,12 +249,13 @@ export class PushNotificationService {
       console.log('✅ FCM Token Firestore\'a kaydedildi');
       console.log('Firestore yolu: kullanicilar/' + userId);
       
-      // Debug alert
+      // Başarı bildirimi
       if (Capacitor.isNativePlatform()) {
-        alert('✅ Push Bildirimleri Aktif!\n\n' + 
-              'Token Firestore\'a kaydedildi.\n\n' +
-              'Artık size bildirim gönderilebilir!\n\n' +
-              'Token: ' + fcmToken.substring(0, 30) + '...');
+        console.log('📱 iOS Push bildirimleri aktif!');
+        // Production'da alert gösterme
+        // alert('✅ Push Bildirimleri Aktif!\n\nArtık arıza ve bakım bildirimleri alabilirsiniz!');
+      } else {
+        console.log('🌐 Web Push bildirimleri aktif!');
       }
     } catch (error) {
       console.error('❌ Token kaydetme hatası:', error);

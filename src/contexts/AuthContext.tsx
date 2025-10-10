@@ -359,13 +359,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           // Web platformu için push notification başlat
           try {
-            console.log('🌐 Web Push başlatılıyor...');
+            console.log('🌐 [Auth State] Web Push başlatılıyor...');
             await WebPushService.initialize();
             await WebPushService.setUser(user.uid);
             WebPushService.setupForegroundListener();
-            console.log('✅ Web Push sistemi hazır!');
+            console.log('✅ [Auth State] Web Push sistemi hazır!');
           } catch (error) {
-            console.error('❌ Web Push hatası:', error);
+            console.error('❌ [Auth State] Web Push hatası:', error);
           }
         }
       }
