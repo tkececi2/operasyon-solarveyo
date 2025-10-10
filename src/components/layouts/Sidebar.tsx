@@ -240,6 +240,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
       icon: Database,
       roles: ['yonetici', 'superadmin'],
     },
+    // Test ve geliştirici araçları
+    {
+      name: 'Bildirim Testi',
+      href: '/test/notifications',
+      icon: AlertTriangle,
+      roles: ['yonetici', 'superadmin'],
+    },
   ];
 
   const filteredNavigation = navigation.filter(item => {

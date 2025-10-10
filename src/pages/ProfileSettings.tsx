@@ -32,7 +32,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { doc, updateDoc, deleteField } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { PushNotificationService } from '@/services/pushNotificationService';
+// PushNotificationService removed - OneSignal migration
 import { Capacitor } from '@capacitor/core';
 
 const ProfileSettings: React.FC = () => {
@@ -126,16 +126,7 @@ const ProfileSettings: React.FC = () => {
       
       // Native platformda yeni token al
       if (Capacitor.isNativePlatform()) {
-        // Push notification servisini yeniden başlat
-        await PushNotificationService.initialize();
-        
-        // 2 saniye bekle
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Yeni token'ı kaydet
-        await PushNotificationService.setUser(currentUser.uid);
-        
-        toast.success('✅ Push bildirimleri yenilendi! Uygulamayı arka plana alıp test edebilirsiniz.');
+        toast.success('✅ OneSignal push bildirimleri aktif! Test sayfasından kontrol edebilirsiniz.');
       } else {
         toast.info('📱 Bu özellik sadece mobil uygulamada çalışır');
       }

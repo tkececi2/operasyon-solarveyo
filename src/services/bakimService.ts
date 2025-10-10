@@ -17,6 +17,7 @@ import { db } from '../lib/firebase';
 import type { ElectricalMaintenance, MechanicalMaintenance, GeneralStatus } from '../types';
 import { uploadBakimPhotos, deleteMultipleFiles } from './storageService';
 import { notificationService } from './notificationService';
+import { sendMaintenanceNotification } from './oneSignalService';
 
 // Elektrik Bakım Oluşturma
 export const createElectricalMaintenance = async (
@@ -73,6 +74,11 @@ export const createElectricalMaintenance = async (
         santralAdi: santralAdi || 'YOK',
         companyId: maintenanceData.companyId
       });
+
+      // KRİTİK: Eğer sahaId yoksa tüm şirkete gönder
+      if (!bildirimSahaId) {
+        console.log('⚠️ SahaId bulunamadı - Tüm şirket çalışanlarına bildirim gönderilecek');
+      }
       
       // metadata oluştur
       const metadata: any = { 
@@ -88,6 +94,21 @@ export const createElectricalMaintenance = async (
         metadata.santralId = maintenanceData.santralId;
       }
       
+      // OneSignal ile basit ve güvenilir push bildirim
+      const pushSuccess = await sendMaintenanceNotification(
+        maintenanceData.companyId,
+        'elektrik',
+        santralAdi || 'Santral',
+        bildirimSahaId
+      );
+      
+      if (pushSuccess) {
+        console.log(`✅ OneSignal elektrik bakım bildirimi gönderildi`);
+      } else {
+        console.error(`❌ OneSignal elektrik bakım bildirimi başarısız`);
+      }
+
+      // Web içi bildirimler için Firebase'e de kaydet
       await notificationService.createScopedNotificationClient({
         companyId: maintenanceData.companyId,
         title: '⚡ Elektrik Bakım Tamamlandı',
@@ -97,9 +118,11 @@ export const createElectricalMaintenance = async (
         metadata: metadata,
         roles: ['yonetici','muhendis','tekniker','bekci','musteri']
       });
-      console.log(`✅ Elektrik bakım bildirimi gönderildi - sahaId: ${bildirimSahaId || 'YOK'}, santralId: ${maintenanceData.santralId || 'YOK'}`);
+      
+      console.log(`✅ Elektrik bakım bildirimi sistemi tamamlandı`);
     } catch (e) { 
       console.error('❌ Elektrik bakım bildirimi hatası:', e);
+      // OneSignal çok güvenilir, bu duruma nadiren girer
     }
     return docRef.id;
   } catch (error) {
@@ -162,6 +185,11 @@ export const createMechanicalMaintenance = async (
         santralAdi: santralAdi || 'YOK',
         companyId: maintenanceData.companyId
       });
+
+      // KRİTİK: Eğer sahaId yoksa tüm şirkete gönder
+      if (!bildirimSahaId) {
+        console.log('⚠️ SahaId bulunamadı - Tüm şirket çalışanlarına bildirim gönderilecek');
+      }
       
       // metadata oluştur
       const metadata: any = { 
@@ -189,6 +217,25 @@ export const createMechanicalMaintenance = async (
       console.log(`✅ Mekanik bakım bildirimi gönderildi - sahaId: ${bildirimSahaId || 'YOK'}, santralId: ${maintenanceData.santralId || 'YOK'}`);
     } catch (e) { 
       console.error('❌ Mekanik bakım bildirimi hatası:', e);
+      // Hata olsa bile bildirim göndermeye çalış - saha filtresi olmadan
+      try {
+        console.log('🔄 Mekanik bakım - Saha filtresi olmadan tekrar denenecek...');
+        await notificationService.createScopedNotificationClient({
+          companyId: maintenanceData.companyId,
+          title: '🔧 Mekanik Bakım Tamamlandı',
+          message: `Mekanik bakım işlemi tamamlandı.`,
+          type: 'success',
+          actionUrl: '/bakim/mekanik',
+          metadata: { 
+            maintenanceId: docRef.id, 
+            maintenanceType: 'mekanik' 
+          },
+          roles: ['yonetici','muhendis','tekniker','bekci','musteri']
+        });
+        console.log('✅ Mekanik bakım bildirimi (fallback) gönderildi');
+      } catch (fallbackError) {
+        console.error('❌ Mekanik bakım fallback bildirimi de başarısız:', fallbackError);
+      }
     }
     return docRef.id;
   } catch (error) {

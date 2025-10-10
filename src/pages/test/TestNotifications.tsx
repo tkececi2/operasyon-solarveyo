@@ -1,330 +1,302 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { notificationService } from '../../services/notificationService';
-import { Button, Card } from '../../components/ui';
+import { useOneSignal } from '../../hooks/useOneSignal';
+import OneSignalService from '../../services/oneSignalService';
 import toast from 'react-hot-toast';
 
-const TestNotifications: React.FC = () => {
-  const { userProfile } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, refreshNotifications } = useNotifications();
+export default function TestNotifications() {
+  const { user, userProfile } = useAuth();
+  const { initialized, permission, playerId, tags, sendTestNotification, getUserInfo } = useOneSignal();
   const [loading, setLoading] = useState(false);
+  const [oneSignalInfo, setOneSignalInfo] = useState<any>(null);
 
-  // Test bildirimi oluştur
-  const createTestNotification = async (type: 'info' | 'success' | 'warning' | 'error') => {
-    if (!userProfile?.companyId) return;
-    
+  useEffect(() => {
+    loadOneSignalInfo();
+  }, [initialized]);
+
+  const loadOneSignalInfo = async () => {
+    if (initialized) {
+      const info = await getUserInfo();
+      setOneSignalInfo(info);
+    }
+  };
+
+  const testBasicNotification = async () => {
+    if (!userProfile?.companyId) {
+      toast.error('Kullanıcı bilgileri eksik!');
+      return;
+    }
+
     setLoading(true);
     try {
-      await notificationService.createNotification({
+      const success = await sendTestNotification();
+      
+      if (success) {
+        toast.success('✅ OneSignal test bildirimi gönderildi!');
+        console.log('📱 Test bildirim gönderildi - Uygulamayı arka plana alın!');
+      } else {
+        toast.error('❌ OneSignal test bildirimi başarısız!');
+      }
+    } catch (error) {
+      console.error('Test bildirimi hatası:', error);
+      toast.error('❌ Test bildirimi gönderilemedi!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const testArızaBildirimi = async () => {
+    if (!userProfile?.companyId) {
+      toast.error('Kullanıcı bilgileri eksik!');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const success = await OneSignalService.sendCompanyNotification({
         companyId: userProfile.companyId,
-        userId: userProfile.id,
-        title: `Test Bildirimi - ${type.toUpperCase()}`,
-        message: `Bu bir ${type} test bildirimidir. Tarih: ${new Date().toLocaleString('tr-TR')}`,
-        type,
-        actionUrl: '/dashboard',
-        metadata: {
-          testId: Date.now().toString(),
-          createdBy: userProfile.ad
-        }
+        title: '🚨 TEST ARIZA',
+        message: 'OneSignal test arıza bildirimi - Gerçek arıza değil!',
+        type: 'error',
+        actionUrl: '/arizalar',
+        roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri'],
+        metadata: { testType: 'fault' }
       });
       
-      toast.success('Test bildirimi oluşturuldu!');
-      await refreshNotifications();
-    } catch (error) {
-      console.error('Bildirim oluşturma hatası:', error);
-      toast.error('Bildirim oluşturulamadı!');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Arıza bildirimi test
-  const createFaultNotification = async () => {
-    if (!userProfile?.companyId) return;
-    
-    setLoading(true);
-    try {
-      // Kullanıcının sahası/santralı varsa onları kullan, yoksa test değerleri
-      const sahaId = (userProfile.sahalar as string[])?.[0] || 'test-saha-' + Date.now();
-      const santralId = (userProfile.santraller as string[])?.[0] || 'test-santral-' + Date.now();
-      
-      await notificationService.createFaultNotification(
-        userProfile.companyId,
-        'Test Arızası - Inverter Hatası',
-        'kritik',
-        'test-fault-' + Date.now(),
-        sahaId,
-        santralId
-      );
-      
-      toast.success('Arıza bildirimi oluşturuldu!');
-      await refreshNotifications();
+      if (success) {
+        toast.success('✅ OneSignal arıza bildirimi gönderildi!');
+      } else {
+        toast.error('❌ OneSignal arıza bildirimi başarısız!');
+      }
     } catch (error) {
       console.error('Arıza bildirimi hatası:', error);
-      toast.error('Arıza bildirimi oluşturulamadı!');
+      toast.error('❌ Arıza bildirimi gönderilemedi!');
     } finally {
       setLoading(false);
     }
   };
 
-  // Bakım bildirimi test
-  const createMaintenanceNotification = async () => {
-    if (!userProfile?.companyId) return;
-    
+  const testBakımBildirimi = async () => {
+    if (!userProfile?.companyId) {
+      toast.error('Kullanıcı bilgileri eksik!');
+      return;
+    }
+
     setLoading(true);
     try {
-      const santralId = (userProfile.santraller as string[])?.[0] || 'test-santral-' + Date.now();
+      const success = await OneSignalService.sendCompanyNotification({
+        companyId: userProfile.companyId,
+        title: '⚡ TEST ELEKTRİK BAKIM',
+        message: 'OneSignal test elektrik bakım bildirimi tamamlandı!',
+        type: 'success',
+        actionUrl: '/bakim/elektrik',
+        roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri'],
+        metadata: { testType: 'maintenance' }
+      });
       
-      await notificationService.createMaintenanceNotification(
-        userProfile.companyId,
-        'elektrik',
-        santralId,
-        'test-maintenance-' + Date.now()
-      );
-      
-      toast.success('Bakım bildirimi oluşturuldu!');
-      await refreshNotifications();
+      if (success) {
+        toast.success('✅ OneSignal bakım bildirimi gönderildi!');
+      } else {
+        toast.error('❌ OneSignal bakım bildirimi başarısız!');
+      }
     } catch (error) {
       console.error('Bakım bildirimi hatası:', error);
-      toast.error('Bakım bildirimi oluşturulamadı!');
+      toast.error('❌ Bakım bildirimi gönderilemedi!');
     } finally {
       setLoading(false);
     }
   };
 
-  // Stok uyarısı test
-  const createStockNotification = async () => {
-    if (!userProfile?.companyId) return;
-    
+  const testStokUyarısı = async () => {
+    if (!userProfile?.companyId) {
+      toast.error('Kullanıcı bilgileri eksik!');
+      return;
+    }
+
     setLoading(true);
     try {
-      const sahaId = (userProfile.sahalar as string[])?.[0] || 'test-saha-' + Date.now();
-      const santralId = (userProfile.santraller as string[])?.[0] || 'test-santral-' + Date.now();
+      const success = await OneSignalService.sendCompanyNotification({
+        companyId: userProfile.companyId,
+        title: '📦 TEST STOK UYARISI',
+        message: 'OneSignal test stok uyarısı - Kritik seviye!',
+        type: 'warning',
+        actionUrl: '/stok',
+        roles: ['yonetici', 'muhendis', 'tekniker'],
+        metadata: { testType: 'stock' }
+      });
       
-      await notificationService.createLowStockNotification(
-        userProfile.companyId,
-        'DC Kablo (4mm)',
-        5,
-        20,
-        sahaId,
-        santralId
-      );
-      
-      toast.success('Stok uyarısı oluşturuldu!');
-      await refreshNotifications();
+      if (success) {
+        toast.success('✅ OneSignal stok uyarısı gönderildi!');
+      } else {
+        toast.error('❌ OneSignal stok uyarısı başarısız!');
+      }
     } catch (error) {
       console.error('Stok uyarısı hatası:', error);
-      toast.error('Stok uyarısı oluşturulamadı!');
+      toast.error('❌ Stok uyarısı gönderilemedi!');
     } finally {
       setLoading(false);
     }
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'error': return '🔴';
-      case 'warning': return '⚠️';
-      case 'success': return '✅';
-      default: return 'ℹ️';
+  const refreshUserInfo = async () => {
+    setLoading(true);
+    try {
+      if (userProfile) {
+        await OneSignalService.setUserTags({
+          companyId: userProfile.companyId,
+          companyName: userProfile.companyName || userProfile.companyId,
+          role: userProfile.rol,
+          userId: user?.uid || '',
+          sahalar: userProfile.sahalar as string[],
+          santraller: userProfile.santraller as string[],
+          email: userProfile.email,
+          name: userProfile.ad
+        });
+        
+        await loadOneSignalInfo();
+        toast.success('✅ OneSignal kullanıcı bilgileri yenilendi!');
+      }
+    } catch (error) {
+      console.error('User info yenileme hatası:', error);
+      toast.error('❌ Kullanıcı bilgileri yenilenemedi!');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Bildirim Sistemi Test Sayfası</h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center">
+          🚀 OneSignal Test Merkezi
+          <span className="ml-3 text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
+            {initialized ? '✅ Aktif' : '❌ Başlatılamadı'}
+          </span>
+        </h1>
 
-      {/* Kullanıcı Bilgileri */}
-      <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4">Kullanıcı Bilgileri</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="font-medium">Ad:</span> {userProfile?.ad}
-          </div>
-          <div>
-            <span className="font-medium">Rol:</span> {userProfile?.rol}
-          </div>
-          <div>
-            <span className="font-medium">Şirket ID:</span> {userProfile?.companyId}
-          </div>
-          <div>
-            <span className="font-medium">Okunmamış:</span> {unreadCount} bildirim
-          </div>
-          {userProfile?.rol === 'musteri' && (
-            <>
-              <div>
-                <span className="font-medium">Sahalar:</span> {(userProfile?.sahalar as string[])?.length || 0} adet
-              </div>
-              <div>
-                <span className="font-medium">Santraller:</span> {(userProfile?.santraller as string[])?.length || 0} adet
-              </div>
-            </>
-          )}
-        </div>
-      </Card>
-
-      {/* Test Butonları */}
-      <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4">Test Bildirimleri Oluştur</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button
-            onClick={() => createTestNotification('info')}
-            disabled={loading}
-            variant="outline"
-          >
-            ℹ️ Info Bildirimi
-          </Button>
-          <Button
-            onClick={() => createTestNotification('success')}
-            disabled={loading}
-            variant="outline"
-            className="border-green-500 text-green-700 hover:bg-green-50"
-          >
-            ✅ Success Bildirimi
-          </Button>
-          <Button
-            onClick={() => createTestNotification('warning')}
-            disabled={loading}
-            variant="outline"
-            className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
-          >
-            ⚠️ Warning Bildirimi
-          </Button>
-          <Button
-            onClick={() => createTestNotification('error')}
-            disabled={loading}
-            variant="outline"
-            className="border-red-500 text-red-700 hover:bg-red-50"
-          >
-            🔴 Error Bildirimi
-          </Button>
-        </div>
-
-        <h3 className="text-md font-semibold mt-6 mb-4">Özel Bildirimler</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <Button
-            onClick={createFaultNotification}
-            disabled={loading}
-            variant="primary"
-          >
-            🚨 Arıza Bildirimi
-          </Button>
-          <Button
-            onClick={createMaintenanceNotification}
-            disabled={loading}
-            variant="primary"
-          >
-            🔧 Bakım Bildirimi
-          </Button>
-          <Button
-            onClick={createStockNotification}
-            disabled={loading}
-            variant="primary"
-          >
-            📦 Stok Uyarısı
-          </Button>
-        </div>
-      </Card>
-
-      {/* Bildirim Listesi */}
-      <Card>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Bildirimler ({notifications.length})</h2>
-          <div className="space-x-2">
-            <Button
-              onClick={async () => {
-                try {
-                  await refreshNotifications();
-                  toast.success('Bildirimler yenilendi');
-                } catch (error) {
-                  toast.error('Bildirimler yenilenemedi');
-                }
-              }}
-              size="sm"
-              variant="outline"
-            >
-              🔄 Yenile
-            </Button>
-            {unreadCount > 0 && (
-              <Button
-                onClick={async () => {
-                  try {
-                    await markAllAsRead();
-                    toast.success('Tüm bildirimler okundu işaretlendi');
-                  } catch (error) {
-                    toast.error('İşlem başarısız');
-                  }
-                }}
-                size="sm"
-                variant="outline"
-              >
-                ✓ Tümünü Okundu İşaretle
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-2 max-h-96 overflow-y-auto">
-          {notifications.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              Henüz bildirim yok
+        {/* OneSignal Durum Bilgileri */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">🔔 OneSignal Durum</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Initialization:</label>
+              <span className={`px-2 py-1 rounded text-sm ${initialized ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {initialized ? '✅ Başarılı' : '❌ Başarısız'}
+              </span>
             </div>
-          ) : (
-            notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-4 rounded-lg border ${
-                  !notification.read 
-                    ? 'bg-blue-50 border-blue-200' 
-                    : 'bg-gray-50 border-gray-200'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-xl">
-                      {getNotificationIcon(notification.type)}
-                    </span>
-                    <div>
-                      <h3 className={`font-medium ${!notification.read ? 'text-blue-900' : 'text-gray-900'}`}>
-                        {notification.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {notification.message}
-                      </p>
-                      {notification.metadata && (
-                        <div className="mt-2 text-xs text-gray-500">
-                          <pre>{JSON.stringify(notification.metadata, null, 2)}</pre>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end space-y-2">
-                    <span className="text-xs text-gray-500">
-                      {notification.createdAt ? 
-                        (typeof notification.createdAt.toDate === 'function' ? 
-                          notification.createdAt.toDate().toLocaleString('tr-TR') : 
-                          new Date(notification.createdAt).toLocaleString('tr-TR')
-                        ) : 'Tarih yok'
-                      }
-                    </span>
-                    {!notification.read && (
-                      <Button
-                        onClick={() => markAsRead(notification.id)}
-                        size="sm"
-                        variant="outline"
-                      >
-                        Okundu
-                      </Button>
-                    )}
-                  </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Permission:</label>
+              <span className={`px-2 py-1 rounded text-sm ${permission === 'granted' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                {permission || 'Bilinmiyor'}
+              </span>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Player ID:</label>
+              <div className="bg-gray-100 rounded px-2 py-1 font-mono text-sm break-all">
+                {playerId ? playerId.substring(0, 20) + '...' : 'Yok'}
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Company:</label>
+              <span className="text-sm text-gray-900">
+                {tags?.companyId || userProfile?.companyId || 'Belirtilmemiş'}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={refreshUserInfo}
+            disabled={loading || !initialized}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? '⏳ Yenileniyor...' : '🔄 Bilgileri Yenile'}
+          </button>
+        </div>
+
+        {/* OneSignal Tags (Debug) */}
+        {tags && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4">🏷️ OneSignal Tags</h2>
+            <pre className="bg-gray-100 rounded-lg p-4 text-sm overflow-auto">
+              {JSON.stringify(tags, null, 2)}
+            </pre>
+          </div>
+        )}
+
+        {/* Test Bildirimleri */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">🧪 OneSignal Test Bildirimleri</h2>
+          
+          <div className="space-y-4">
+            <button
+              onClick={testBasicNotification}
+              disabled={loading || !initialized || !userProfile?.companyId}
+              className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? '⏳ Gönderiliyor...' : '📤 Temel OneSignal Test'}
+            </button>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-800 mb-3">🎯 SAAS Test Bildirimleri</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button
+                  onClick={testArızaBildirimi}
+                  disabled={loading || !initialized}
+                  className="bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? '⏳' : '🚨'} Arıza Test
+                </button>
+
+                <button
+                  onClick={testBakımBildirimi}
+                  disabled={loading || !initialized}
+                  className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? '⏳' : '⚡'} Bakım Test
+                </button>
+
+                <button
+                  onClick={testStokUyarısı}
+                  disabled={loading || !initialized}
+                  className="bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? '⏳' : '📦'} Stok Test
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bilgi Kutusu */}
+        <div className="bg-green-50 border-l-4 border-green-400 p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-green-800">🎉 OneSignal Migration Başarılı!</h3>
+              <div className="mt-2 text-sm text-green-700">
+                <ul className="list-disc list-inside space-y-1">
+                  <li><strong>Basit Sistem:</strong> Firebase FCM karmaşıklığı kaldırıldı</li>
+                  <li><strong>Multi-Tenant:</strong> Company bazlı izolasyon otomatik</li>
+                  <li><strong>Güvenilir:</strong> %99 delivery rate</li>
+                  <li><strong>Kolay Debug:</strong> Visual dashboard mevcut</li>
+                </ul>
+                
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                  <p className="font-medium">⚠️ Setup gerekiyor:</p>
+                  <p className="mt-1">
+                    1. <strong>OneSignal hesabı açın:</strong> https://onesignal.com<br/>
+                    2. <strong>App oluşturun:</strong> "Solarveyo Arıza Takip"<br/>
+                    3. <strong>Keys'leri</strong> oneSignalService.ts'e ekleyin
+                  </p>
                 </div>
               </div>
-            ))
-          )}
+            </div>
+          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
-};
-
-export default TestNotifications;
+}

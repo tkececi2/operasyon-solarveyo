@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { notificationService } from './notificationService';
+import { sendShiftNotification } from './oneSignalService';
 
 // Derin şekilde undefined değerleri temizler
 const removeUndefinedDeep = (value: any): any => {
