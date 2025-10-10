@@ -302,15 +302,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const { value: verifyPassword } = await Preferences.get({ key: 'user_password' });
             console.log('📱 iOS: Bilgiler doğrulandı - Email:', verifyEmail ? '✅' : '❌', 'Password:', verifyPassword ? '✅' : '❌');
             
-            // Push notification sistemi kaldırıldı
-            console.log('ℹ️ Push notification sistemi yeniden yapılacak');
+            // Push notification sistemini başlat
+            console.log('🔔 iOS: Push notification sistemi başlatılıyor...');
+            try {
+              const { pushNotificationService } = await import('../services/pushNotificationService');
+              await pushNotificationService.onUserLogin(user.uid, userProfile);
+            } catch (pushError) {
+              console.error('❌ Push notification başlatma hatası:', pushError);
+            }
           } catch (error) {
             console.error('iOS bilgi kaydetme hatası:', error);
             // Hata olsa bile giriş işlemine devam et
           }
         } else {
-          // Web push notification sistemi kaldırıldı
-          console.log('ℹ️ Web push notification sistemi yeniden yapılacak');
+          // Web push notification sistemini başlat
+          console.log('🔔 Web: Push notification sistemi başlatılıyor...');
+          try {
+            const { pushNotificationService } = await import('../services/pushNotificationService');
+            await pushNotificationService.onUserLogin(user.uid, userProfile);
+          } catch (pushError) {
+            console.error('❌ Web push notification başlatma hatası:', pushError);
+          }
         }
       }
       
@@ -579,10 +591,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       
-      await signOut(auth);
+      // Push notification temizle
+      try {
+        const { pushNotificationService } = await import('../services/pushNotificationService');
+        await pushNotificationService.onUserLogout();
+      } catch (pushError) {
+        console.error('❌ Push notification temizleme hatası:', pushError);
+      }
       
-      // Push notification sistemi kaldırıldı
-      console.log('ℹ️ Push notification temizleme atlandı - sistem yok');
+      await signOut(auth);
       
       setCurrentUser(null);
       setUserProfile(null);
