@@ -7,11 +7,26 @@ import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-const VAPID_KEY = 'BH8Q9Z-1234567890abcdef...'; // VAPID key eklenecek
+// VAPID key'i environment variable'dan al
+// Firebase Console > Project Settings > Cloud Messaging > Web Push certificates
+const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY || '';
 
 export class WebPushService {
   private static messaging: any = null;
   private static initialized = false;
+
+  /**
+   * Web Push kullanılabilir mi kontrol et
+   */
+  static isAvailable(): boolean {
+    // VAPID key yoksa web push kullanılamaz
+    if (!VAPID_KEY || VAPID_KEY.length < 20) {
+      console.log('⚠️ Web Push: VAPID key yapılandırılmamış, web push devre dışı');
+      console.log('💡 Firebase Console > Cloud Messaging > Web Push certificates bölümünden VAPID key alın');
+      return false;
+    }
+    return true;
+  }
 
   /**
    * Web Push'u başlat
@@ -19,6 +34,10 @@ export class WebPushService {
   static async initialize() {
     if (typeof window === 'undefined') {
       console.log('🌐 Web Push: Server side, atlanıyor');
+      return;
+    }
+
+    if (!this.isAvailable()) {
       return;
     }
 
@@ -59,6 +78,12 @@ export class WebPushService {
    */
   static async getWebToken(): Promise<string | null> {
     try {
+      // VAPID key kontrolü
+      if (!this.isAvailable()) {
+        console.log('ℹ️ Web Push: VAPID key olmadan token alınamaz, iOS native push kullanılacak');
+        return null;
+      }
+
       if (!this.messaging) {
         await this.initialize();
       }
