@@ -17,7 +17,6 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { notificationService } from './notificationService';
-import { sendFaultNotification } from './oneSignalService';
 import type { Fault, FaultStatus, Priority } from '../types';
 import { uploadArizaPhotos, deleteMultipleFiles } from './storageService';
 import { trackEvent } from '../lib/posthog-events';
@@ -56,31 +55,8 @@ export const createFault = async (
                          faultData.oncelik === 'yuksek' ? '⚠️ YÜKSEK ÖNCELİKLİ ARIZA' : 
                          '🔧 Yeni Arıza';
       
-      // Debug log ekle
-      console.log(`📊 Arıza Bildirimi Debug:`, {
-        companyId: faultData.companyId,
-        sahaId: faultData.sahaId || 'YOK',
-        santralId: faultData.santralId || 'YOK',
-        baslik: faultData.baslik,
-        oncelik: faultData.oncelik
-      });
-
-      // OneSignal ile basit ve güvenilir bildirim gönder
-      const pushSuccess = await sendFaultNotification(
-        faultData.companyId,
-        faultData.baslik,
-        `${faultData.saha} sahasında ${faultData.santral || 'santral'} için ${faultData.oncelik} öncelikli arıza bildirildi.`,
-        faultData.oncelik as 'kritik' | 'yuksek' | 'normal',
-        faultData.sahaId
-      );
-      
-      if (pushSuccess) {
-        console.log(`✅ OneSignal arıza bildirimi gönderildi: ${faultData.baslik}`);
-      } else {
-        console.error(`❌ OneSignal arıza bildirimi başarısız: ${faultData.baslik}`);
-      }
-
-      // Firebase notifications koleksiyonuna da kaydet (web içi bildirimler için)
+      // Firebase Functions üzerinden tüm kullanıcılara hedefli bildirim gönder
+      // Bekçi ve Müşteri rolleri otomatik olarak saha kontrolüne tabi tutulur
       await notificationService.createScopedNotificationClient({
         companyId: faultData.companyId,
         title: `${titlePrefix} - ${faultData.baslik}`,
@@ -97,10 +73,9 @@ export const createFault = async (
         roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
       });
       
-      console.log(`✅ Arıza bildirimi sistemi tamamlandı: ${faultData.baslik} (${faultData.oncelik})`);
+      console.log(`✅ Arıza bildirimi oluşturuldu: ${faultData.baslik} (${faultData.oncelik})`);
     } catch (notificationError) {
       console.error('❌ Bildirim oluşturma hatası:', notificationError);
-      // OneSignal çok güvenilir, bu catch bloğa nadiren girer
       // Bildirim hatası arıza oluşturmayı engellemez
     }
     

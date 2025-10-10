@@ -16,7 +16,9 @@ import toast from 'react-hot-toast';
 import { logUserAction, logSecurityEvent } from '../services/auditLogService';
 import { analyticsService } from '../services/analyticsService';
 import { SAAS_CONFIG } from '../config/saas.config';
-import OneSignalService from '../services/oneSignalService';
+import { MobileNotificationService } from '../services/mobile/notificationService';
+import { PushNotificationService } from '../services/pushNotificationService';
+import { WebPushService } from '../services/webPushService';
 import { platform } from '../utils/platform';
 import { Preferences } from '@capacitor/preferences';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -186,27 +188,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
             
             toast.error('⛔ Hesabınız devre dışı bırakılmıştır.');
-          } else if (profile) {
-            // OneSignal notification setup (both iOS and Web)
+          } else if (platform.isNative() && profile) {
+            // iOS için: Kullanıcı aktifse push notification'ı başlat
             try {
-              console.log('🚀 [Auth State] OneSignal başlatılıyor...');
+              console.log('🔔 [Auth State] PushNotificationService başlatılıyor...');
               
-              const success = await OneSignalService.initialize();
-              if (success) {
-                await OneSignalService.setUserTags({
-                  companyId: profile.companyId,
-                  companyName: profile.companyName || profile.companyId,
-                  role: profile.rol,
-                  userId: user.uid,
-                  sahalar: profile.sahalar as string[],
-                  santraller: profile.santraller as string[],
-                  email: user.email || '',
-                  name: profile.ad
-                });
-                console.log('✅ [Auth State] OneSignal sistemi hazır!');
-              }
+              // Kullanıcı ID'sini Preferences'a kaydet (otomatik token güncelleme için)
+              await Preferences.set({ key: 'current_user_id', value: user.uid });
+              
+              await PushNotificationService.initialize();
+              
+              // FCM token gelmesi için 2 saniye bekle
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              
+              // FCM token'ı Firestore'a kaydet
+              console.log('💾 [Auth State] FCM Token Firestore\'a kaydediliyor...');
+              await PushNotificationService.setUser(user.uid);
+              console.log('✅ [Auth State] Push notification sistemi hazır!');
             } catch (error) {
-              console.error('❌ [Auth State] OneSignal hatası:', error);
+              console.error('❌ [Auth State] Push notification hatası:', error);
+            }
+          } else if (!platform.isNative() && profile) {
+            // Web platformu için push notification başlat
+            try {
+              console.log('🌐 [Auth State] Web Push başlatılıyor...');
+              await WebPushService.initialize();
+              await WebPushService.setUser(user.uid);
+              WebPushService.setupForegroundListener();
+              console.log('✅ [Auth State] Web Push sistemi hazır!');
+            } catch (error) {
+              console.error('❌ [Auth State] Web Push hatası:', error);
             }
           }
         } else {
@@ -290,40 +301,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userProfile.sonGiris = Timestamp.now();
         setUserProfile(userProfile);
         
-        // OneSignal setup (both iOS and Web - unified!)
-        try {
-          console.log('🚀 OneSignal başlatılıyor...');
-          
-          const success = await OneSignalService.initialize();
-          if (success && userProfile) {
-            await OneSignalService.setUserTags({
-              companyId: userProfile.companyId,
-              companyName: userProfile.companyName || userProfile.companyId,
-              role: userProfile.rol,
-              userId: user.uid,
-              sahalar: userProfile.sahalar as string[],
-              santraller: userProfile.santraller as string[],
-              email: user.email || email,
-              name: userProfile.ad
-            });
-            console.log('✅ OneSignal sistemi tamamen hazır!');
-          }
-        } catch (error) {
-          console.error('❌ OneSignal hatası:', error);
-        }
-
-        // iOS için sadece credentials kaydet (auth persistence)
+        // Mobile platform ise bilgileri kaydet ve push notification'ı başlat
         if (platform.isNative()) {
           try {
             console.log('📱 iOS: Kullanıcı bilgileri kaydediliyor...');
             
+            // iOS için kullanıcı bilgilerini güvenli bir şekilde kaydet
             await Preferences.set({ key: 'user_email', value: email });
-            await Preferences.set({ key: 'user_password', value: password });
-            await Preferences.set({ key: 'user_uid', value: user.uid });
+            console.log('✅ Email kaydedildi');
             
-            console.log('✅ iOS credentials kaydedildi');
+            await Preferences.set({ key: 'user_password', value: password });
+            console.log('✅ Password kaydedildi');
+            
+            await Preferences.set({ key: 'user_uid', value: user.uid });
+            console.log('✅ UID kaydedildi');
+            
+            // Firebase auth token'ı da kaydet (varsa)
+            try {
+              const token = await user.getIdToken();
+              if (token) {
+                await Preferences.set({ key: 'auth_token', value: token });
+                console.log('✅ Token kaydedildi');
+              }
+            } catch (tokenError) {
+              console.warn('Token alınamadı:', tokenError);
+            }
+            
+            // Kaydedilen bilgileri doğrula
+            const { value: verifyEmail } = await Preferences.get({ key: 'user_email' });
+            const { value: verifyPassword } = await Preferences.get({ key: 'user_password' });
+            console.log('📱 iOS: Bilgiler doğrulandı - Email:', verifyEmail ? '✅' : '❌', 'Password:', verifyPassword ? '✅' : '❌');
+            
+            // Push notification'ı başlat (YENİ FCM Sistemi)
+            try {
+              console.log('🔔 PushNotificationService başlatılıyor...');
+              
+              // Kullanıcı ID'sini Preferences'a kaydet (otomatik token güncelleme için)
+              await Preferences.set({ key: 'current_user_id', value: user.uid });
+              
+              await PushNotificationService.initialize();
+              console.log('✅ PushNotificationService başlatıldı');
+              
+              // 2 saniye bekle (FCM token gelmesi için)
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              
+              // Kullanıcı ID'sini set et (FCM token Firestore'a kaydedilecek)
+              console.log('💾 FCM Token Firestore\'a kaydediliyor...');
+              await PushNotificationService.setUser(user.uid);
+              console.log('✅ Push notification sistemi tamamen hazır!');
+            } catch (notifError) {
+              console.error('❌ Push notification hatası:', notifError);
+            }
           } catch (error) {
             console.error('iOS bilgi kaydetme hatası:', error);
+            // Hata olsa bile giriş işlemine devam et
+          }
+        } else {
+          // Web platformu için push notification başlat
+          try {
+            console.log('🌐 Web Push başlatılıyor...');
+            await WebPushService.initialize();
+            await WebPushService.setUser(user.uid);
+            WebPushService.setupForegroundListener();
+            console.log('✅ Web Push sistemi hazır!');
+          } catch (error) {
+            console.error('❌ Web Push hatası:', error);
           }
         }
       }
@@ -595,12 +637,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       await signOut(auth);
       
-      // OneSignal temizle
-      try {
-        await OneSignalService.removeUser();
-        console.log('✅ OneSignal temizlendi');
-      } catch (error) {
-        console.error('OneSignal temizleme hatası:', error);
+      // Push notification temizle
+      if (platform.isNative()) {
+        try {
+          await PushNotificationService.removeUser();
+          console.log('✅ Push notification temizlendi');
+        } catch (error) {
+          console.error('Push notification temizleme hatası:', error);
+        }
       }
       
       setCurrentUser(null);

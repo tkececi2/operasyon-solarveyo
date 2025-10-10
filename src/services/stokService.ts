@@ -13,7 +13,6 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { notificationService } from './notificationService';
-import { sendStockAlert } from './oneSignalService';
 
 export interface StokItem {
   id?: string;
@@ -115,22 +114,6 @@ export const createStok = async (stokData: Omit<StokItem, 'id' | 'sonGuncelleme'
           metadata.santralId = newStok.santralId;
         }
         
-        // OneSignal ile basit push bildirim
-        const pushSuccess = await sendStockAlert(
-          newStok.companyId,
-          newStok.malzemeAdi,
-          newStok.mevcutStok || 0,
-          min,
-          bildirimSahaId
-        );
-        
-        if (pushSuccess) {
-          console.log(`✅ OneSignal stok uyarısı gönderildi`);
-        } else {
-          console.error(`❌ OneSignal stok uyarısı başarısız`);
-        }
-
-        // Web içi bildirimler için Firebase'e kaydet
         await notificationService.createScopedNotificationClient({
           companyId: newStok.companyId,
           title: '⚠️ Düşük Stok Uyarısı',
@@ -140,11 +123,10 @@ export const createStok = async (stokData: Omit<StokItem, 'id' | 'sonGuncelleme'
           metadata: metadata,
           roles: ['yonetici','muhendis','tekniker']
         });
-        console.log(`✅ Stok uyarısı bildirimi sistemi tamamlandı`);
+        console.log(`✅ Stok uyarısı bildirimi gönderildi - sahaId: ${bildirimSahaId || 'YOK'}, santralId: ${newStok.santralId || 'YOK'}`);
       }
     } catch (e) {
       console.error('❌ Stok bildirimi hatası:', e);
-      // OneSignal çok güvenilir
     }
     return docRef.id;
   } catch (error) {
@@ -198,27 +180,9 @@ export const updateStok = async (stokId: string, updates: Partial<StokItem>): Pr
           console.log(`✅ Stok uyarısı bildirimi gönderildi - sahaId: ${bildirimSahaId}`);
         }
       }
-        } catch (e) {
-          console.error('❌ Stok güncelleme bildirimi hatası:', e);
-          // Hata olsa bile bildirim göndermeye çalış - saha filtresi olmadan
-          try {
-            console.log('🔄 Stok güncelleme uyarısı - Saha filtresi olmadan tekrar denenecek...');
-            await notificationService.createScopedNotificationClient({
-              companyId: stok.companyId,
-              title: '📦 Düşük Stok Uyarısı',
-              message: `${stok.malzemeAdi} stoku kritik seviyede`,
-              type: 'warning',
-              actionUrl: '/stok',
-              metadata: { 
-                stokId: stokId
-              },
-              roles: ['yonetici','muhendis','tekniker']
-            });
-            console.log('✅ Stok güncelleme uyarısı bildirimi (fallback) gönderildi');
-          } catch (fallbackError) {
-            console.error('❌ Stok güncelleme fallback bildirimi de başarısız:', fallbackError);
-          }
-        }
+    } catch (e) {
+      console.error('❌ Stok güncelleme bildirimi hatası:', e);
+    }
   } catch (error) {
     console.error('Stok güncelleme hatası:', error);
     throw new Error('Stok güncellenemedi');
