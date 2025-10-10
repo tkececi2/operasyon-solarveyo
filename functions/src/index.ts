@@ -88,7 +88,13 @@ export const sendPushOnNotificationCreate = functions
             console.log(`   - Hedef sahaId: ${sahaId || 'YOK'}`);
             console.log(`   - Hedef santralId: ${santralId || 'YOK'}`);
             
-            // ÖNEMLİ: SAHA BAZLI BİLDİRİM SİSTEMİ
+            // ÖNEMLİ: YÖNETİCİ VE MÜHENDİS TÜM SAHALARI GÖRÜR
+            if (u.rol === 'yonetici' || u.rol === 'muhendis') {
+              console.log(`   ✅ Rol: ${u.rol} - TÜM SAHALARA ERİŞİM`);
+              return true;
+            }
+            
+            // ÖNEMLİ: SAHA BAZLI BİLDİRİM SİSTEMİ (Müşteri, Bekçi, Tekniker için)
             // Eğer sahaId yoksa, TÜM kullanıcılara gönder
             if (!sahaId) {
               console.log(`   ✅ SahaId YOK - TÜM kullanıcılara gönderilecek`);
@@ -373,7 +379,13 @@ export const createScopedNotification = functions
         console.log(`   - Atandığı sahalar: ${userSahalar.join(', ') || 'YOK'}`);
         console.log(`   - Bildirim sahaId: ${sahaId || 'YOK'}`);
         
-        // ÖNEMLİ: SAHA BAZLI BİLDİRİM SİSTEMİ
+        // ÖNEMLİ: YÖNETİCİ VE MÜHENDİS TÜM SAHALARI GÖRÜR
+        if (u.rol === 'yonetici' || u.rol === 'muhendis') {
+          console.log(`   ✅ Rol: ${u.rol} - TÜM SAHALARA ERİŞİM`);
+          return true;
+        }
+        
+        // ÖNEMLİ: SAHA BAZLI BİLDİRİM SİSTEMİ (Müşteri, Bekçi, Tekniker için)
         // Eğer sahaId yoksa, TÜM kullanıcılara gönder
         if (!sahaId) {
           console.log(`   ✅ SahaId YOK - TÜM kullanıcılara gönderilecek`);
