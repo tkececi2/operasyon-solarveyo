@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,9 +25,17 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, userProfile } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Login sonrası otomatik redirect
+  useEffect(() => {
+    if (userProfile && userProfile.id) {
+      console.log('✅ UserProfile yüklendi - Dashboard\'a yönlendiriliyor...');
+      navigate('/dashboard');
+    }
+  }, [userProfile, navigate]);
   const [show2FA, setShow2FA] = useState(false);
   const [tempUserId, setTempUserId] = useState<string>('');
   const [temp2FAPhone, setTemp2FAPhone] = useState<string>('');
@@ -39,7 +47,7 @@ const Login: React.FC = () => {
       const unsub = import('firebase/auth').then(m => {
         return m.onAuthStateChanged(m.getAuth(), (u) => {
           if (u) {
-            navigate('/dashboard', { replace: true });
+            // Navigate useEffect'te handle ediliyor
           }
         });
       });
@@ -67,7 +75,7 @@ const Login: React.FC = () => {
       if (!userQuery.exists()) {
         await login(data.email, data.password);
         trackEvent.login('email'); // PostHog event
-        navigate('/dashboard');
+        // Navigate useEffect'te handle ediliyor
         return;
       }
 
@@ -89,11 +97,8 @@ const Login: React.FC = () => {
         console.log('📱 iOS: Login bilgileri kaydedildi');
       }
       
-      // Login başarılı - 2 saniye bekle sonra dashboard'a git
-      console.log('✅ Login başarılı - 2 saniye sonra dashboard açılacak...');
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+      // Login başarılı - AuthContext handle edecek
+      console.log('✅ Login başarılı - AuthContext otomatik redirect yapacak');
       }
     } catch (error: any) {
       // Email ile bulunamazsa, auth ile dene
@@ -120,7 +125,7 @@ const Login: React.FC = () => {
             // Çıkış yap, 2FA sonrası tekrar giriş yapılacak
             await import('firebase/auth').then(m => m.signOut(m.getAuth()));
           } else {
-            navigate('/dashboard');
+            // Navigate useEffect'te handle ediliyor
           }
         }
       } catch (loginError: any) {
@@ -156,7 +161,7 @@ const Login: React.FC = () => {
     try {
       // 2FA doğrulandı, şimdi normal giriş yap
       await login(tempCredentials.email, tempCredentials.password);
-      navigate('/dashboard');
+      // Navigate useEffect'te handle ediliyor
     } catch (error) {
       toast.error('Giriş başarısız');
     } finally {
