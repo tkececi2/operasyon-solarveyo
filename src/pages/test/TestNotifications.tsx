@@ -4,6 +4,7 @@ import { PushNotificationService } from '../../services/pushNotificationService'
 import { WebPushService } from '../../services/webPushService';
 import { notificationService } from '../../services/notificationService';
 import { findUsersWithoutTokens, forceCompanyTokenRefresh } from '../../utils/fixAllTokens';
+import { emergencyTokenFix } from '../../services/simpleNotificationFix';
 import { Capacitor } from '@capacitor/core';
 import toast from 'react-hot-toast';
 import { doc, getDoc } from 'firebase/firestore';
@@ -90,6 +91,25 @@ export default function TestNotifications() {
     }
   };
 
+  const handleEmergencyTokenFix = async () => {
+    if (!userProfile?.companyId) {
+      toast.error('Company ID bulunamadı!');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await emergencyTokenFix(userProfile.companyId);
+      toast.success(`🚨 ACİL DÜZELTİLDİ! ${result.fixed}/${result.total} kullanıcının token'ı düzeltildi!`);
+      await checkCompanyTokens();
+    } catch (error) {
+      console.error('Acil token düzeltme hatası:', error);
+      toast.error('❌ Acil token düzeltme başarısız!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const sendTestNotification = async () => {
     if (!user?.uid || !userProfile?.companyId) {
       toast.error('Kullanıcı bilgileri eksik!');
@@ -158,13 +178,22 @@ export default function TestNotifications() {
               </button>
 
               {userProfile?.rol === 'yonetici' && (
-                <button
-                  onClick={forceRefreshAllTokens}
-                  disabled={loading}
-                  className="flex-1 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 disabled:opacity-50"
-                >
-                  {loading ? '⏳' : '🔄'} Tüm Kullanıcılar
-                </button>
+                <>
+                  <button
+                    onClick={forceRefreshAllTokens}
+                    disabled={loading}
+                    className="flex-1 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 disabled:opacity-50"
+                  >
+                    {loading ? '⏳' : '🔄'} Tüm Kullanıcılar
+                  </button>
+                  <button
+                    onClick={handleEmergencyTokenFix}
+                    disabled={loading}
+                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                  >
+                    {loading ? '⏳' : '🚨'} ACİL DÜZELTİCI
+                  </button>
+                </>
               )}
             </div>
           </div>
