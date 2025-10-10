@@ -47,6 +47,23 @@ export const createFault = async (
     
     // Bildirim oluştur - Kullanıcı-bazlı hedefli (Scoped Notification)
     try {
+      // SahaId'yi kontrol et - yoksa santral'dan al
+      let bildirimSahaId = faultData.sahaId;
+      
+      if ((!bildirimSahaId || bildirimSahaId === '') && faultData.santralId) {
+        const santralDoc = await getDoc(doc(db, 'santraller', faultData.santralId));
+        if (santralDoc.exists()) {
+          bildirimSahaId = santralDoc.data().sahaId;
+          console.log(`🔍 Arıza - SahaId santral'dan alındı: ${bildirimSahaId}`);
+        }
+      }
+      
+      console.log(`📊 Arıza Bildirimi Debug:`, {
+        sahaId: bildirimSahaId || 'YOK',
+        santralId: faultData.santralId || 'YOK',
+        companyId: faultData.companyId
+      });
+      
       // Önceliğe göre bildirim tipi ve mesaj belirle
       const notificationType = faultData.oncelik === 'kritik' ? 'error' : 
                               faultData.oncelik === 'yuksek' ? 'warning' : 'info';
@@ -66,7 +83,7 @@ export const createFault = async (
         metadata: {
           faultId: docRef.id,
           santralId: faultData.santralId,
-          sahaId: faultData.sahaId || null,
+          sahaId: bildirimSahaId, // ✅ Santral'dan alınmış sahaId
           oncelik: faultData.oncelik,
           screen: '/arizalar'
         },
