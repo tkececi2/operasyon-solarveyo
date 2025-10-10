@@ -10,13 +10,7 @@
  * - %99 delivery rate
  */
 
-// OneSignal HTML SDK kullanılıyor (React SDK yerine)
-declare global {
-  interface Window {
-    OneSignal?: any;
-    OneSignalReady?: boolean;
-  }
-}
+import OneSignal from 'react-onesignal';
 
 // OneSignal Configuration - Dashboard'dan alındı
 const ONESIGNAL_APP_ID = 'c7477da8-21b8-4780-aabf-39ede0892ebd'; // ✅ ALINDI!
@@ -57,25 +51,52 @@ export class OneSignalService {
       return true;
     }
 
-    // OneSignal HTML SDK'nın yüklenmesini bekle
-    let attempts = 0;
-    while (attempts < 10 && !window.OneSignalReady) {
-      console.log(`⏳ OneSignal HTML SDK bekleniyor... (${attempts + 1}/10)`);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      attempts++;
-    }
-
-    if (!window.OneSignal || !window.OneSignalReady) {
-      console.error('❌ OneSignal HTML SDK yüklenemedi');
+    if (!ONESIGNAL_APP_ID || ONESIGNAL_APP_ID === 'YOUR_ONESIGNAL_APP_ID') {
+      console.error('❌ OneSignal APP_ID eksik! oneSignalService.ts dosyasını güncelleyin');
       return false;
     }
 
+    // Eğer zaten başlatılmışsa hatayı ignore et
     try {
-      console.log('🚀 OneSignal HTML SDK hazır!');
+      // OneSignal mevcut durumunu kontrol et
+      if (typeof window !== 'undefined' && window.OneSignal && window.OneSignal.initialized) {
+        console.log('🔔 OneSignal zaten mevcut, tekrar başlatma atlanıyor');
+        this.initialized = true;
+        return true;
+      }
+    } catch (e) {
+      // Ignore check errors
+    }
+
+    try {
+      console.log('🚀 OneSignal başlatılıyor...');
+      
+      await OneSignal.init({
+        appId: ONESIGNAL_APP_ID,
+        safari: window.location.origin, // Dynamic domain
+        autoRegister: true,
+        allowLocalhostAsSecureOrigin: true, // Development için
+        requiresUserPrivacyConsent: false, // Development için
+        promptOptions: {
+          slidedown: {
+            enabled: true,
+            autoPrompt: true,
+            timeDelay: 3000 // 3 saniye sonra izin iste
+          }
+        }
+      });
+
+      console.log('✅ OneSignal başarıyla başlatıldı');
       this.initialized = true;
       return true;
       
     } catch (error) {
+      // SDK already initialized hatası = normal
+      if (error.message && error.message.includes('already initialized')) {
+        console.log('🔔 OneSignal SDK zaten başlatıldı');
+        this.initialized = true;
+        return true;
+      }
       console.error('❌ OneSignal başlatma hatası:', error);
       return false;
     }
@@ -86,16 +107,11 @@ export class OneSignalService {
    * Multi-tenant SAAS için company/role/saha bilgileri
    */
   static async setUserTags(userTags: UserTags): Promise<boolean> {
-    if (!window.OneSignal) {
-      console.error('❌ OneSignal SDK mevcut değil');
-      return false;
-    }
-
     try {
       console.log('🏷️ OneSignal tags setleniyor:', userTags);
 
       // OneSignal External User ID set et (Firebase UID)
-      window.OneSignal.login(userTags.userId);
+      await OneSignal.setExternalUserId(userTags.userId);
 
       // Multi-tenant tags
       const tags: Record<string, string> = {
@@ -111,7 +127,7 @@ export class OneSignalService {
       if (userTags.sahalar) tags.sahalar = JSON.stringify(userTags.sahalar);
       if (userTags.santraller) tags.santraller = JSON.stringify(userTags.santraller);
 
-      window.OneSignal.User.addTags(tags);
+      await OneSignal.sendTags(tags);
       
       console.log('✅ OneSignal tags başarıyla setlendi');
       return true;
@@ -126,16 +142,14 @@ export class OneSignalService {
    * Kullanıcı çıkış yaptığında temizle
    */
   static async removeUser(): Promise<void> {
-    if (!window.OneSignal) return;
-
     try {
       console.log('🗑️ OneSignal user temizleniyor...');
       
       // External user ID'yi temizle
-      window.OneSignal.logout();
+      await OneSignal.removeExternalUserId();
       
       // Tags'leri temizle
-      window.OneSignal.User.removeTags(['companyId', 'role', 'userId', 'sahalar', 'santraller']);
+      await OneSignal.deleteTags(['companyId', 'role', 'userId', 'sahalar', 'santraller']);
       
       console.log('✅ OneSignal user temizlendi');
     } catch (error) {
@@ -243,30 +257,20 @@ export class OneSignalService {
    * User bilgilerini al (debugging için)
    */
   static async getUserInfo(): Promise<any> {
-    if (!window.OneSignal) {
-      return {
-        playerId: null,
-        tags: null,
-        permission: 'not-available',
-        initialized: false
-      };
-    }
-
     try {
+      const playerId = await OneSignal.getPlayerId();
+      const tags = await OneSignal.getTags();
+      const permission = await OneSignal.getNotificationPermission();
+      
       return {
-        playerId: window.OneSignal.User?.onesignalId || 'pending',
-        tags: window.OneSignal.User?.getTags() || {},
-        permission: Notification.permission || 'default',
+        playerId,
+        tags,
+        permission,
         initialized: this.initialized
       };
     } catch (error) {
       console.error('OneSignal user info hatası:', error);
-      return {
-        playerId: null,
-        tags: null,
-        permission: 'error',
-        initialized: false
-      };
+      return null;
     }
   }
 }

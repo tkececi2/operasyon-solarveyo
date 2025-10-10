@@ -15,25 +15,6 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="SolarVeyo" />
     <meta name="twitter:description" content="Arıza, bakım, üretim takibi ve daha fazlasını tek platformda yönetin." />
-    <!-- OneSignal Web Push SDK -->
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({
-          appId: "c7477da8-21b8-4780-aabf-39ede0892ebd",
-          safari: window.location.origin,
-          allowLocalhostAsSecureOrigin: true,
-          autoRegister: true,
-          serviceWorkerParam: { scope: '/' },
-          serviceWorkerPath: 'OneSignalSDKWorker.js'
-        });
-        
-        // Global access için window'a ekle
-        window.OneSignalReady = true;
-        console.log('✅ OneSignal HTML SDK başlatıldı');
-      });
-    </script>
   </head>
   <body>
     <div id="root"></div>
