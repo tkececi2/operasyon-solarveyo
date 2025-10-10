@@ -42,7 +42,7 @@ exports.autoFixMissingTokens = functions
         
         batch.update(doc.ref, {
           pushTokens: {
-            fcm: \`PLACEHOLDER_\${Date.now()}_\${Math.random().toString(36).substr(2, 9)}\`,
+            fcm: 'PLACEHOLDER_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
             platform: 'auto-fixed',
             needsRefresh: true
           },
@@ -57,9 +57,9 @@ exports.autoFixMissingTokens = functions
     
     if (fixed > 0) {
       await batch.commit();
-      console.log(\`✅ \${fixed}/\${total} kullanıcının token'ı düzeltildi\`);
+      console.log('✅ ' + fixed + '/' + total + ' kullanıcının token\'ı düzeltildi');
     } else {
-      console.log(\`✅ Tüm kullanıcılar (\${total}) token'a sahip\`);
+      console.log('✅ Tüm kullanıcılar (' + total + ') token\'a sahip');
     }
     
     return { fixed, total };
@@ -93,7 +93,7 @@ exports.manualFixTokens = functions
       if (!data.pushTokens || !data.pushTokens.fcm || data.pushTokens.fcm.startsWith('PLACEHOLDER_')) {
         batch.update(doc.ref, {
           pushTokens: {
-            fcm: \`FIXED_\${Date.now()}_\${doc.id.slice(0, 8)}\`,
+            fcm: 'FIXED_' + Date.now() + '_' + doc.id.slice(0, 8),
             platform: 'manual-fix',
             needsRefresh: true
           },
@@ -112,7 +112,7 @@ exports.manualFixTokens = functions
     
     return { 
       success: true,
-      message: \`\${fixed}/\${total} kullanıcının token'ı düzeltildi\`,
+      message: fixed + '/' + total + ' kullanıcının token\'ı düzeltildi',
       fixed,
       total 
     };
@@ -139,7 +139,7 @@ export async function emergencyTokenFix(companyId: string): Promise<{fixed: numb
       try {
         await updateDoc(doc(db, 'kullanicilar', userDoc.id), {
           pushTokens: {
-            fcm: \`EMERGENCY_\${Date.now()}_\${userDoc.id.slice(0, 8)}\`,
+            fcm: 'EMERGENCY_' + Date.now() + '_' + userDoc.id.slice(0, 8),
             platform: 'emergency-fix',
             needsRefresh: true
           },
@@ -158,7 +158,7 @@ export async function emergencyTokenFix(companyId: string): Promise<{fixed: numb
   
   await Promise.all(promises);
   
-  console.log(\`✅ Emergency fix completed: \${fixed}/\${total}\`);
+  console.log('✅ Emergency fix completed: ' + fixed + '/' + total);
   return { fixed, total };
 }
 
