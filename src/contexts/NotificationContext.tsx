@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { notificationService, type Notification } from '../services/notificationService';
+import { badgeService } from '../services/badgeService';
 import toast from 'react-hot-toast';
 
 interface NotificationContextType {
@@ -29,6 +30,13 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(false);
   const initializedRef = useRef(false);
   const seenIdsRef = useRef<Set<string>>(new Set());
+  
+  // iOS: Uygulama açıldığında badge'i temizle
+  useEffect(() => {
+    badgeService.clearBadge().then(() => {
+      console.log('✅ iOS Badge temizlendi (app mount)');
+    });
+  }, []);
 
   const filterByRole = (items: Notification[]): Notification[] => {
     if (!userProfile) return items;
@@ -88,7 +96,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       console.log('📬 Filtrelenmiş bildirimler:', filtered.length);
       
       setNotifications(filtered);
-      setUnreadCount(filtered.filter(n => !n.read).length);
+      const unread = filtered.filter(n => !n.read).length;
+      setUnreadCount(unread);
+      
+      // KRİTİK: iOS Badge sayısını güncelle
+      await badgeService.setBadgeCount(unread);
+      console.log(`🔴 iOS Badge güncellendi: ${unread}`);
     } catch (error) {
       console.error('Bildirimler yüklenirken hata:', error);
     } finally {
@@ -105,6 +118,12 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       setUnreadCount(0);
       seenIdsRef.current.clear();
       initializedRef.current = false;
+      
+      // KRİTİK: iOS Badge'i temizle
+      badgeService.clearBadge().then(() => {
+        console.log('✅ iOS Badge temizlendi (logout)');
+      });
+      
       return;
     }
 
@@ -137,7 +156,13 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         seenIdsRef.current = new Set(filtered.map(n => n.id));
 
         setNotifications(filtered);
-        setUnreadCount(filtered.filter(n => !n.read).length);
+        const unreadCount = filtered.filter(n => !n.read).length;
+        setUnreadCount(unreadCount);
+        
+        // KRİTİK: iOS Badge sayısını güncelle (realtime)
+        badgeService.setBadgeCount(unreadCount).then(() => {
+          console.log(`🔴 iOS Badge güncellendi (realtime): ${unreadCount}`);
+        });
       },
       userProfile.rol
     );
@@ -160,7 +185,13 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         )
       );
       
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      const newUnreadCount = Math.max(0, unreadCount - 1);
+      setUnreadCount(newUnreadCount);
+      
+      // KRİTİK: iOS Badge'i güncelle
+      badgeService.setBadgeCount(newUnreadCount).then(() => {
+        console.log(`🔴 iOS Badge güncellendi (okundu): ${newUnreadCount}`);
+      });
     } catch (error) {
       console.error('Bildirim okundu işaretleme hatası:', error);
     }
@@ -183,6 +214,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       );
       
       setUnreadCount(0);
+      
+      // KRİTİK: iOS Badge'i temizle (tümü okundu)
+      badgeService.clearBadge().then(() => {
+        console.log('✅ iOS Badge temizlendi (tümü okundu)');
+      });
     } catch (error) {
       console.error('Tüm bildirimler okundu işaretleme hatası:', error);
     }
