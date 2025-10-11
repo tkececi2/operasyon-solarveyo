@@ -34,11 +34,20 @@ export const createPowerOutage = async (
     try {
       await notificationService.createScopedNotificationClient({
         companyId: outageData.companyId,
-        title: 'Elektrik Kesintisi',
-        message: outageData.neden ? `Neden: ${outageData.neden}` : 'Elektrik kesintisi bildirildi.',
+        title: '⚠️ Elektrik Kesintisi',
+        message: outageData.neden 
+          ? `${outageData.saha || 'Saha'} - ${outageData.neden}` 
+          : `${outageData.saha || 'Saha'} - Elektrik kesintisi bildirildi.`,
         type: 'error',
         actionUrl: '/arizalar/elektrik-kesintileri',
-        metadata: { outageId: docRef.id, sahaId: outageData.sahaId, santralId: outageData.santralId },
+        metadata: { 
+          outageId: docRef.id, 
+          sahaId: outageData.sahaId, 
+          santralId: outageData.santralId,
+          targetType: 'outage',
+          targetId: docRef.id,
+          sahaAdi: outageData.saha
+        },
         roles: ['yonetici','muhendis','tekniker','bekci','musteri']
       });
     } catch (err) { /* ignore */ }

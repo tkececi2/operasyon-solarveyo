@@ -60,7 +60,7 @@ export class PushNotificationService {
   }
 
   /**
-   * iOS Native push notifications başlat
+   * iOS Native push notifications başlat - KRİTİK: Her login'de fresh token al
    */
   private async initializeNative(): Promise<boolean> {
     try {
@@ -69,15 +69,24 @@ export class PushNotificationService {
       // Capacitor Firebase Messaging kullan
       const { FirebaseMessaging } = await import('@capacitor-firebase/messaging');
 
-      // İzin iste
-      console.log('📱 iOS: Bildirim izni isteniyor...');
-      const permissionResult = await FirebaseMessaging.requestPermissions();
+      // KRİTİK: Önce mevcut permission durumunu kontrol et
+      console.log('📱 iOS: Mevcut permission durumu kontrol ediliyor...');
+      let permissionResult = await FirebaseMessaging.checkPermissions();
+      console.log('📱 iOS: Mevcut permission:', permissionResult);
+
+      // Eğer permission denied veya prompt ise, yeniden iste
+      if (permissionResult.receive !== 'granted') {
+        console.log('📱 iOS: Bildirim izni isteniyor...');
+        permissionResult = await FirebaseMessaging.requestPermissions();
+      } else {
+        console.log('✅ iOS: Bildirim izni zaten var');
+      }
 
       if (permissionResult.receive === 'granted') {
         console.log('✅ iOS: Bildirim izni verildi');
 
-        // FCM Token al
-        console.log('📱 iOS: FCM Token alınıyor...');
+        // KRİTİK: Her zaman fresh token al
+        console.log('📱 iOS: FCM Token alınıyor (fresh)...');
         const { token } = await FirebaseMessaging.getToken();
 
         if (token) {
@@ -256,9 +265,22 @@ export class PushNotificationService {
    * Token'ı Firestore'a kaydet
    */
   async saveTokenToFirestore(userId: string, userProfile?: any): Promise<boolean> {
+    console.log('💾 saveTokenToFirestore çağrıldı - Token durumu:', {
+      hasToken: !!this.currentToken,
+      tokenLength: this.currentToken?.length || 0,
+      platform: this.platform
+    });
+    
     if (!this.currentToken) {
       console.log('❌ Token bulunamadı, kaydetme atlanıyor');
-      return false;
+      // KRİTİK: Token yoksa yeniden almayı dene
+      console.log('🔄 Token yok - yeniden alma deneniyor...');
+      await this.initialize(); // Token refresh için
+      
+      if (!this.currentToken) {
+        console.error('❌ Token refresh başarısız');
+        return false;
+      }
     }
 
     try {
@@ -291,27 +313,36 @@ export class PushNotificationService {
   }
 
   /**
-   * Kullanıcı giriş yaptığında çağrıl
+   * Kullanıcı giriş yaptığında çağrıl - KRİTİK: Her login'de fresh token al
    */
   async onUserLogin(userId: string, userProfile?: any): Promise<void> {
-    console.log('🔔 PushNotificationService: Kullanıcı giriş yaptı');
+    console.log('🔔 PushNotificationService: Kullanıcı giriş yaptı (userId:', userId, ')');
 
     try {
-      // Sistem başlatılmamışsa başlat
-      if (!this.initialized) {
-        const success = await this.initialize();
-        if (!success) {
-          console.error('❌ Push notification sistemi başlatılamadı');
-          return;
-        }
+      console.log('🔔 PushNotificationService: initialized status:', this.initialized);
+      
+      // KRİTİK: Her login'de sistemi yeniden başlat (fresh token için)
+      console.log('🔔 PushNotificationService: Sistem yeniden başlatılıyor (fresh token)...');
+      this.initialized = false; // Force re-init
+      const success = await this.initialize();
+      if (!success) {
+        console.error('❌ Push notification sistemi başlatılamadı');
+        return;
       }
+      console.log('✅ Push notification sistemi başlatıldı');
+
+      console.log('🔔 PushNotificationService: Token durumu:', {
+        currentToken: this.currentToken ? 'Var' : 'Yok',
+        tokenLength: this.currentToken?.length,
+        platform: this.platform
+      });
 
       // Token'ı kaydet
       const saved = await this.saveTokenToFirestore(userId, userProfile);
       if (saved) {
-        console.log('🎉 Push notifications kullanıcı için aktif!');
+        console.log('🎉 Push notifications kullanıcı için aktif! Token kaydedildi.');
       } else {
-        console.error('❌ Token kaydetme başarısız');
+        console.error('❌ Token kaydetme başarısız - FCM token yok mu?');
       }
     } catch (error) {
       console.error('❌ Push notification login hatası:', error);
@@ -319,17 +350,49 @@ export class PushNotificationService {
   }
 
   /**
-   * Kullanıcı çıkış yaptığında çağrıl
+   * Kullanıcı çıkış yaptığında çağrıl - KRİTİK: Tüm token'ları temizle
    */
-  async onUserLogout(): Promise<void> {
-    console.log('🔔 PushNotificationService: Kullanıcı çıkış yaptı');
+  async onUserLogout(userId?: string): Promise<void> {
+    console.log('🔔 PushNotificationService: Kullanıcı çıkış yapıyor, tokenlar temizleniyor...');
     
-    // Token'ı temizle (isteğe bağlı)
-    this.currentToken = null;
-    
-    // Web için localStorage'ı temizle
-    if (!Capacitor.isNativePlatform()) {
-      localStorage.removeItem('web_fcm_token');
+    try {
+      // Firestore'dan kullanıcının FCM token'ını temizle
+      if (userId) {
+        console.log('🗑️ Firestore FCM token temizleniyor...');
+        const userRef = doc(db, 'kullanicilar', userId);
+        await updateDoc(userRef, {
+          fcmToken: null,
+          pushTokens: null,
+          pushNotificationsEnabled: false,
+          tokenUpdatedAt: serverTimestamp()
+        });
+        console.log('✅ Firestore FCM token temizlendi');
+      }
+      
+      // Yerel token'ı temizle
+      this.currentToken = null;
+      
+      // Platform bazlı temizlik
+      if (Capacitor.isNativePlatform()) {
+        // iOS için Capacitor Preferences'tan token'ı sil
+        try {
+          const { Preferences } = await import('@capacitor/preferences');
+          await Preferences.remove({ key: 'fcm_token' });
+          await Preferences.remove({ key: 'push_enabled' });
+          console.log('✅ iOS: FCM token Preferences\'tan temizlendi');
+        } catch (error) {
+          console.error('❌ iOS FCM token temizleme hatası:', error);
+        }
+      } else {
+        // Web için localStorage temizle
+        localStorage.removeItem('web_fcm_token');
+        localStorage.removeItem('push_permission');
+        console.log('✅ Web: FCM token localStorage\'tan temizlendi');
+      }
+      
+      console.log('🎉 Push notification logout temizliği tamamlandı');
+    } catch (error) {
+      console.error('❌ Push notification logout temizlik hatası:', error);
     }
   }
 

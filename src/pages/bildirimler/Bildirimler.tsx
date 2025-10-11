@@ -164,7 +164,7 @@ const Bildirimler: React.FC = () => {
     }
   };
 
-  // Bildirime tıklandığında
+  // Bildirime tıklandığında - KRİTİK: Detay sayfasına yönlendir
   const handleNotificationClick = async (notification: Notification) => {
     // Seçim modundaysa seçimi değiştir
     if (selectMode) {
@@ -183,9 +183,38 @@ const Bildirimler: React.FC = () => {
       await markAsRead(notification.id);
     }
 
-    // Eğer actionUrl varsa yönlendir
-    if (notification.actionUrl) {
+    // KRİTİK: Metadata'ya göre detay sayfasına yönlendir
+    const metadata = notification.metadata || {};
+    
+    // Arıza bildirimi ise arıza detayına git
+    if (metadata.faultId && metadata.targetType === 'fault') {
+      navigate(`/arizalar`); // Şu an detay modal yok, listeye git
+      console.log('📍 Arıza sayfasına yönlendirildi - faultId:', metadata.faultId);
+    }
+    // Bakım bildirimi
+    else if (metadata.maintenanceId || metadata.targetType === 'maintenance') {
+      navigate('/bakim/elektrik');
+      console.log('📍 Elektrik bakım sayfasına yönlendirildi');
+    }
+    // Vardiya bildirimi
+    else if (metadata.vardiyaId) {
+      navigate('/vardiya-bildirimleri');
+      console.log('📍 Vardiya bildirimleri sayfasına yönlendirildi');
+    }
+    // Stok bildirimi
+    else if (metadata.stokId) {
+      navigate('/stok-kontrol');
+      console.log('📍 Stok kontrol sayfasına yönlendirildi');
+    }
+    // Elektrik kesintisi
+    else if (metadata.outageId) {
+      navigate('/arizalar/elektrik-kesintileri');
+      console.log('📍 Elektrik kesintileri sayfasına yönlendirildi');
+    }
+    // Genel actionUrl varsa kullan
+    else if (notification.actionUrl) {
       navigate(notification.actionUrl);
+      console.log('📍 ActionUrl ile yönlendirildi:', notification.actionUrl);
     }
   };
 

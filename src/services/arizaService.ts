@@ -79,13 +79,15 @@ export const createFault = async (
         title: `${titlePrefix} - ${faultData.baslik}`,
         message: `${faultData.saha} sahasında ${faultData.santral || 'santral'} için ${faultData.oncelik} öncelikli arıza bildirildi.`,
         type: notificationType,
-        actionUrl: `/arizalar/${docRef.id}`,
+        actionUrl: `/arizalar`,
         metadata: {
           faultId: docRef.id,
           santralId: faultData.santralId,
           sahaId: bildirimSahaId, // ✅ Santral'dan alınmış sahaId
           oncelik: faultData.oncelik,
-          screen: '/arizalar'
+          screen: '/arizalar',
+          targetType: 'fault', // KRİTİK: Hedef tipi
+          targetId: docRef.id // KRİTİK: Arıza ID
         },
         roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
       });
@@ -367,13 +369,15 @@ export const updateFaultStatus = async (
           title: `✅ Arıza Çözüldü - ${faultData.baslik}`,
           message: `${faultData.saha} sahasında ${faultData.santral || 'santral'} arızası başarıyla çözüldü.`,
           type: 'success',
-          actionUrl: `/arizalar/${faultId}`,
+          actionUrl: `/arizalar`, // KRİTİK: Genel sayfa yerine metadata'da faultId var
           metadata: {
             faultId: faultId,
             santralId: faultData.santralId,
             sahaId: faultData.sahaId,
             durum: 'cozuldu',
-            screen: '/arizalar'
+            screen: '/arizalar', // iOS için
+            targetType: 'fault', // Hedef tipi
+            targetId: faultId // Hedef ID
           },
           roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
         });
@@ -389,13 +393,15 @@ export const updateFaultStatus = async (
           title: `🔄 Arıza Güncellendi - ${faultData.baslik}`,
           message: `${faultData.saha} sahasında ${faultData.santral || 'santral'} arızası üzerinde çalışılıyor.`,
           type: 'warning',
-          actionUrl: `/arizalar/${faultId}`,
+          actionUrl: `/arizalar`,
           metadata: {
             faultId: faultId,
             santralId: faultData.santralId,
             sahaId: faultData.sahaId,
             durum: 'devam-ediyor',
-            screen: '/arizalar'
+            screen: '/arizalar',
+            targetType: 'fault', // KRİTİK: Hedef tipi
+            targetId: faultId // KRİTİK: Arıza ID
           },
           roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
         });

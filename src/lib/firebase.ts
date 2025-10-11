@@ -28,9 +28,9 @@ let db;
 
 if (isNativePlatform) {
   // iOS/Android için özel auth initialization
-  // iOS'ta Firebase Auth persistence sorunlu olduğu için manuel yönetim
+  // Normal persistence + logout flag kontrolü
   auth = initializeAuth(app, {
-    persistence: [indexedDBLocalPersistence, browserLocalPersistence] // Birden fazla persistence deneme
+    persistence: [indexedDBLocalPersistence] // Normal persistence
   });
   
   // Firestore için de özel ayarlar - CORS'u bypass et
@@ -40,7 +40,7 @@ if (isNativePlatform) {
     cacheSizeBytes: 50 * 1024 * 1024 // 50MB cache
   });
   
-  console.log('🔧 Firebase iOS modunda başlatıldı - Multi-persistence aktif');
+  console.log('🔧 Firebase iOS modunda başlatıldı - IndexedDB persistence + logout flag kontrolü');
 } else {
   // Web için normal initialization
   auth = getAuth(app);

@@ -134,7 +134,12 @@ export const createVardiyaBildirimi = async (
         message: `${vardiyaData.sahaAdi} - ${vardiyaData.vardiyaTipi.toUpperCase()} vardiyası (${vardiyaData.vardiyaSaatleri.baslangic}-${vardiyaData.vardiyaSaatleri.bitis})`,
         type: vardiyaData.durum === 'acil' ? 'error' : (vardiyaData.durum === 'dikkat' ? 'warning' : 'info'),
         actionUrl: '/vardiya-bildirimleri',
-        metadata: metadata,
+        metadata: {
+          ...metadata,
+          targetType: 'vardiya', // KRİTİK: Hedef tipi
+          targetId: docRef.id, // KRİTİK: Vardiya ID
+          sahaAdi: vardiyaData.sahaAdi // Saha adını ekle
+        },
         roles: ['yonetici', 'muhendis', 'tekniker', 'bekci', 'musteri']
       });
       console.log(`✅ Vardiya bildirimi gönderildi - sahaId: ${vardiyaData.sahaId || 'YOK'}, santralId: ${vardiyaData.santralId || 'YOK'}`);

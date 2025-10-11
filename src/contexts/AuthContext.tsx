@@ -18,6 +18,7 @@ import { analyticsService } from '../services/analyticsService';
 import { SAAS_CONFIG } from '../config/saas.config';
 // Bildirim sistemi kaldırıldı - baştan yapılacak
 import { platform } from '../utils/platform';
+import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 import { SplashScreen } from '@capacitor/splash-screen';
 
@@ -50,6 +51,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // DEBUG: Component mount edildiğinde
+  console.log('🔥 AuthProvider component mount edildi');
 
   // Kullanıcı profili getir
   const fetchUserProfile = async (uid: string) => {
@@ -75,99 +79,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Auth state değişikliklerini dinle + iOS persistence
   useEffect(() => {
+    console.log('🔥 AuthContext useEffect çalıştı!');
     let mounted = true;
-    
-    // iOS için otomatik giriş fonksiyonu
-    const attemptAutoLogin = async () => {
-      if (!platform.isNative()) return false;
-      
-      try {
-        console.log('📱 iOS: Kaydedilmiş bilgiler kontrol ediliyor...');
-        
-        // Direkt email/password kontrolü yap (token kontrolü yerine)
-        const { value: savedEmail } = await Preferences.get({ key: 'user_email' });
-        const { value: savedPassword } = await Preferences.get({ key: 'user_password' });
-        
-        console.log('📱 iOS: Kaydedilmiş email:', savedEmail ? 'Var' : 'Yok');
-        console.log('📱 iOS: Kaydedilmiş password:', savedPassword ? 'Var' : 'Yok');
-        
-        if (savedEmail && savedPassword && mounted) {
-          try {
-            console.log('📱 iOS: Otomatik giriş deneniyor...');
-            const userCredential = await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
-            
-            if (userCredential.user) {
-              console.log('✅ iOS: Otomatik giriş başarılı!');
-              // Profili getir
-              await fetchUserProfile(userCredential.user.uid);
-              return true;
-            }
-          } catch (error: any) {
-            console.error('❌ iOS otomatik giriş hatası:', error.code, error.message);
-            // Hata durumunda kayıtlı bilgileri temizle
-            // NOT: Sadece authentication hatası varsa temizle, başka hatalar için temizleme
-            if (error.code === 'auth/invalid-credential' || 
-                error.code === 'auth/user-disabled' || 
-                error.code === 'auth/user-not-found') {
-              await clearSavedCredentials();
-            }
-          }
-        } else {
-          console.log('📱 iOS: Kaydedilmiş bilgi bulunamadı');
-        }
-      } catch (error) {
-        console.error('Auto-login genel hatası:', error);
-        // Genel hata durumunda bilgileri temizleme, sadece logla
-      }
-      return false;
-    };
-    
-    // Kayıtlı bilgileri temizle
-    const clearSavedCredentials = async () => {
-      if (!platform.isNative()) return;
-      
-      console.log('🗑️ iOS: Kaydedilmiş bilgiler temizleniyor...');
-      await Preferences.remove({ key: 'user_email' });
-      await Preferences.remove({ key: 'user_password' });
-      await Preferences.remove({ key: 'auth_token' });
-      await Preferences.remove({ key: 'user_uid' });
-      console.log('✅ iOS: Bilgiler temizlendi');
-    };
     
     const initAuth = async () => {
       console.log('🚀 initAuth başladı, platform:', platform.getPlatformName(), 'isNative:', platform.isNative());
       
-      // iOS için önce otomatik giriş dene
-      if (platform.isNative()) {
-        console.log('📱 iOS: App başlatıldı, otomatik giriş kontrolü yapılıyor...');
-        
-        // Biraz bekle - Preferences'ın yüklenmesi için
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        try {
-          const autoLoginSuccess = await attemptAutoLogin();
-          if (autoLoginSuccess) {
-            console.log('✅ iOS: Otomatik giriş başarılı');
-            // Başarılıysa auth state change bekle
-          } else if (mounted) {
-            console.log('❌ iOS: Otomatik giriş başarısız, login sayfasına yönlendirilecek');
-            // Auto-login başarısız, loading'i kapat
-            setTimeout(() => {
-              if (mounted) setLoading(false);
-            }, 500);
-          }
-        } catch (error) {
-          console.error('❌ initAuth içinde hata:', error);
-          if (mounted) setLoading(false);
-        }
-      } else {
-        console.log('🌐 Web platformu tespit edildi');
-      }
+      // KRİTİK: Auto-login KALDIRILDI - Sadece logout flag kontrolü
+      console.log('📱 iOS: Auto-login devre dışı - sadece logout flag kontrolü aktif');
       
+      // Firebase auth state listener
       const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (!mounted) return;
         
         console.log('🔄 Auth state changed:', { userId: user?.uid, email: user?.email });
+        
+        // KRİTİK: iOS için logout flag kontrolü - Force logout
+        if (platform.isNative() && user) {
+          const { value: logoutFlag } = await Preferences.get({ key: 'user_logged_out' });
+          console.log('🔍 Logout flag kontrolü:', logoutFlag);
+          if (logoutFlag === 'true') {
+            console.log('⚠️ LOGOUT FLAG AKTİF - Kullanıcı force logout ediliyor!');
+            await signOut(auth);
+            setCurrentUser(null);
+            setUserProfile(null);
+            setLoading(false);
+            return;
+          }
+        }
         
         if (user) {
           setCurrentUser(user);
@@ -191,21 +130,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             console.log('ℹ️ Push notification sistemi aktif değil - yeniden yapılacak');
           }
         } else {
+          // Kullanıcı yok
           setCurrentUser(null);
           setUserProfile(null);
+          setLoading(false); // KRİTİK: Loading'i kapat - Login sayfası göster!
           
-          // iOS için: Logout olduğunda bilgileri sil
-          if (platform.isNative()) {
-            try {
-              await Preferences.remove({ key: 'user_email' });
-              await Preferences.remove({ key: 'user_password' });
-              await Preferences.remove({ key: 'current_user_id' });
-              await Preferences.remove({ key: 'last_saved_fcm_token' });
-              console.log('📱 iOS: Kullanıcı bilgileri silindi');
-            } catch (error) {
-              console.error('iOS bilgi silme hatası:', error);
-            }
-          }
+          console.log('🚪 Kullanıcı yok - Login sayfası gösterilecek');
+          
+          // Splash Screen'i kapat
+          setTimeout(() => {
+            SplashScreen.hide();
+            console.log('📱 Splash Screen kapatıldı');
+          }, 100);
         }
         
         // Loading state yönetimi
@@ -241,6 +177,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Giriş yap
   const login = async (email: string, password: string) => {
     try {
+      // KRİTİK: Logout flag'ini GİRİŞ YAPMADAN ÖNCE temizle!
+      if (platform.isNative()) {
+        await Preferences.remove({ key: 'user_logged_out' });
+        console.log('✅ Login başlamadan önce logout flag temizlendi');
+      }
+      
       // Gerçek Firebase authentication
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -271,58 +213,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userProfile.sonGiris = Timestamp.now();
         setUserProfile(userProfile);
         
-        // Mobile platform ise bilgileri kaydet ve push notification'ı başlat
-        if (platform.isNative()) {
-          try {
-            console.log('📱 iOS: Kullanıcı bilgileri kaydediliyor...');
-            
-            // iOS için kullanıcı bilgilerini güvenli bir şekilde kaydet
-            await Preferences.set({ key: 'user_email', value: email });
-            console.log('✅ Email kaydedildi');
-            
-            await Preferences.set({ key: 'user_password', value: password });
-            console.log('✅ Password kaydedildi');
-            
-            await Preferences.set({ key: 'user_uid', value: user.uid });
-            console.log('✅ UID kaydedildi');
-            
-            // Firebase auth token'ı da kaydet (varsa)
-            try {
-              const token = await user.getIdToken();
-              if (token) {
-                await Preferences.set({ key: 'auth_token', value: token });
-                console.log('✅ Token kaydedildi');
-              }
-            } catch (tokenError) {
-              console.warn('Token alınamadı:', tokenError);
-            }
-            
-            // Kaydedilen bilgileri doğrula
-            const { value: verifyEmail } = await Preferences.get({ key: 'user_email' });
-            const { value: verifyPassword } = await Preferences.get({ key: 'user_password' });
-            console.log('📱 iOS: Bilgiler doğrulandı - Email:', verifyEmail ? '✅' : '❌', 'Password:', verifyPassword ? '✅' : '❌');
-            
-            // Push notification sistemini başlat
-            console.log('🔔 iOS: Push notification sistemi başlatılıyor...');
-            try {
-              const { pushNotificationService } = await import('../services/pushNotificationService');
-              await pushNotificationService.onUserLogin(user.uid, userProfile);
-            } catch (pushError) {
-              console.error('❌ Push notification başlatma hatası:', pushError);
-            }
-          } catch (error) {
-            console.error('iOS bilgi kaydetme hatası:', error);
-            // Hata olsa bile giriş işlemine devam et
-          }
-        } else {
-          // Web push notification sistemini başlat
-          console.log('🔔 Web: Push notification sistemi başlatılıyor...');
-          try {
-            const { pushNotificationService } = await import('../services/pushNotificationService');
-            await pushNotificationService.onUserLogin(user.uid, userProfile);
-          } catch (pushError) {
-            console.error('❌ Web push notification başlatma hatası:', pushError);
-          }
+        // NOT: Logout flag login başında temizlenmiş olmalı
+        
+        // Push notification sistemini başlat (iOS ve Web için)
+        console.log('🔔 Push notification sistemi başlatılıyor...');
+        try {
+          const { pushNotificationService } = await import('../services/pushNotificationService');
+          await pushNotificationService.onUserLogin(user.uid, userProfile);
+          console.log('✅ Push notification sistemi başlatıldı');
+        } catch (pushError) {
+          console.error('❌ Push notification başlatma hatası:', pushError);
         }
       }
       
@@ -578,31 +478,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         analyticsService.logout();
       }
       
-      // iOS için: Logout olduğunda tüm credentials'ı sil
+      // iOS için: Logout flag set et - Oturum kontrolü için
       if (platform.isNative()) {
         try {
-          await Preferences.remove({ key: 'user_email' });
-          await Preferences.remove({ key: 'user_password' });
-          await Preferences.remove({ key: 'auth_token' });
-          await Preferences.remove({ key: 'user_uid' });
-          console.log('📱 iOS: Logout - Tüm kullanıcı bilgileri temizlendi');
+          // KRİTİK: Logout flag'ini set et
+          await Preferences.set({ key: 'user_logged_out', value: 'true' });
+          console.log('📱 iOS: Logout flag set edildi');
+          
+          // Push notification cache temizle  
+          await Preferences.remove({ key: 'fcm_token' });
+          await Preferences.remove({ key: 'push_enabled' });
+          
+          console.log('✅ iOS: Logout işlemi tamamlandı');
         } catch (error) {
-          console.error('iOS logout bilgi silme hatası:', error);
+          console.error('iOS logout hatası:', error);
         }
       }
       
-      // Push notification temizle
+      // Push notification temizle - KRİTİK: userId göndererek Firestore'ı da temizle
       try {
         const { pushNotificationService } = await import('../services/pushNotificationService');
-        await pushNotificationService.onUserLogout();
+        await pushNotificationService.onUserLogout(currentUser.uid);
       } catch (pushError) {
         console.error('❌ Push notification temizleme hatası:', pushError);
       }
       
+      // KRİTİK: Firebase Auth logout - force all sessions
+      console.log('🚪 Firebase Auth logout yapılıyor...');
       await signOut(auth);
+      console.log('✅ Firebase Auth logout tamamlandı');
       
+      // Force clear authentication state
       setCurrentUser(null);
       setUserProfile(null);
+      
+      // iOS için ek güvenlik - auth state'i force reset
+      if (platform.isNative()) {
+        // AuthContext state'ini tamamen sıfırla
+        setTimeout(() => {
+          setLoading(false);
+          console.log('✅ iOS: Loading state resetlendi');
+        }, 100);
+      }
+      
       toast.success('Başarıyla çıkış yaptınız.');
     } catch (error) {
       console.error('Çıkış hatası:', error);

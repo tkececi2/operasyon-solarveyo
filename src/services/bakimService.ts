@@ -91,10 +91,18 @@ export const createElectricalMaintenance = async (
       await notificationService.createScopedNotificationClient({
         companyId: maintenanceData.companyId,
         title: '⚡ Elektrik Bakım Tamamlandı',
-        message: `${santralAdi || 'Santral'} için elektrik bakım işlemi tamamlandı.`,
+        message: santralAdi 
+          ? `${santralAdi} santralinde elektrik bakım işlemi tamamlandı.`
+          : `${maintenanceData.saha || 'Saha'} - Elektrik bakım işlemi tamamlandı.`,
         type: 'success',
         actionUrl: '/bakim/elektrik',
-        metadata: metadata,
+        metadata: {
+          ...metadata,
+          santralAdi: santralAdi, // Santral adını ekle
+          sahaAdi: maintenanceData.saha, // Saha adını ekle
+          targetType: 'maintenance',
+          targetId: docRef.id
+        },
         roles: ['yonetici','muhendis','tekniker','bekci','musteri']
       });
       console.log(`✅ Elektrik bakım bildirimi gönderildi - sahaId: ${bildirimSahaId || 'YOK'}, santralId: ${maintenanceData.santralId || 'YOK'}`);

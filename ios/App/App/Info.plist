@@ -90,6 +90,8 @@
 	<string>Arıza fotoğraflarını galeriden seçmek için erişim gereklidir.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Saha konumunuzu doğrulamak için konum erişimi gereklidir.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Arıza, bakım ve acil durum bildirimleri için bildirim izni gereklidir.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

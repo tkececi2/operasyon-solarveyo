@@ -181,6 +181,38 @@ export const getUserNotifications = async (
   }
 };
 
+// Güvenlik: Kullanıcının gerçekten sahaya erişimi var mı kontrol et
+const validateUserAccess = (notification: any, userSahalar: string[], userSantraller: string[], role?: string): boolean => {
+  const metadata = notification.metadata || {};
+  
+  // SuperAdmin ve Yönetici tüm bildirimleri görebilir
+  if (role === 'superadmin' || role === 'yonetici') {
+    return true;
+  }
+  
+  // Mühendis tüm sahalar için bildirim alabilir
+  if (role === 'muhendis') {
+    return true;
+  }
+  
+  // Müşteri ve Bekçi için sıkı kontrol
+  if (role === 'musteri' || role === 'bekci') {
+    // SahaId kontrolü - müşteri sadece atandığı sahalardaki bildirimleri görebilir
+    if (metadata.sahaId && !userSahalar.includes(metadata.sahaId)) {
+      console.log(`🔒 Access denied: User not assigned to saha ${metadata.sahaId}`);
+      return false;
+    }
+    
+    // SantralId kontrolü 
+    if (metadata.santralId && !userSantraller.includes(metadata.santralId)) {
+      console.log(`🔒 Access denied: User not assigned to santral ${metadata.santralId}`);
+      return false;
+    }
+  }
+  
+  return true;
+};
+
 // Kullanıcının atanmış saha/santrallerine göre bildirimleri getir (scoped)
 export const getScopedUserNotifications = async (
   companyId: string,
@@ -224,16 +256,12 @@ export const getScopedUserNotifications = async (
     
     console.log(`🔍 userId filtresi sonrası: ${beforeFilter} -> ${items.length}`);
 
-    // Saha/santral izolasyonu (yalnızca musteri ve bekci için uygula)
-    const shouldApplyScope = role === 'musteri' || role === 'bekci';
-    if (shouldApplyScope) {
-      items = items.filter(n => {
-        const md = (n.metadata || {}) as Record<string, any>;
-        const sahaOk = md.sahaId ? userSahalar.includes(md.sahaId) : true;
-        const santralOk = md.santralId ? userSantraller.includes(md.santralId) : true;
-        return sahaOk && santralOk;
-      });
-    }
+    // Güvenlik kontrolü - KRİTİK: Her bildirim için erişim kontrolü yap
+    console.log(`🔒 Güvenlik kontrolü başlıyor (rol: ${role})...`);
+    const beforeSecurityFilter = items.length;
+    items = items.filter(n => validateUserAccess(n, userSahalar, userSantraller, role));
+    
+    console.log(`🔒 Güvenlik filtresi sonrası: ${beforeSecurityFilter} -> ${items.length}`);
 
     return items as Notification[];
   } catch (error) {
@@ -371,16 +399,8 @@ export const subscribeToScopedNotifications = (
       if (hiddenBy.includes(userId)) return false;
       return !('userId' in n) || n.userId === userId;
     });
-    // Saha/santral izolasyonu (yalnızca musteri ve bekci için uygula)
-    const shouldApplyScope = role === 'musteri' || role === 'bekci';
-    if (shouldApplyScope) {
-      notifications = notifications.filter(n => {
-        const md = (n.metadata || {}) as Record<string, any>;
-        const sahaOk = md.sahaId ? userSahalar.includes(md.sahaId) : true;
-        const santralOk = md.santralId ? userSantraller.includes(md.santralId) : true;
-        return sahaOk && santralOk;
-      });
-    }
+    // Real-time güvenlik kontrolü - KRİTİK: Her bildirim için erişim kontrolü yap
+    notifications = notifications.filter(n => validateUserAccess(n, userSahalar, userSantraller, role));
     callback(notifications as Notification[]);
   });
 };
