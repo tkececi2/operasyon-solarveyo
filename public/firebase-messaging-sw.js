@@ -12,9 +12,9 @@ const firebaseConfig = {
   apiKey: "AIzaSyAZdHmOkHazCMnRZuZ6STP17wjG4QMHaxk",
   authDomain: "yenisirket-2ec3b.firebaseapp.com",
   projectId: "yenisirket-2ec3b",
-  storageBucket: "yenisirket-2ec3b.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+  storageBucket: "yenisirket-2ec3b.firebasestorage.app",
+  messagingSenderId: "155422395281",
+  appId: "1:155422395281:web:6535d30f4c1ea85280a830"
 };
 
 // Firebase'i başlat
