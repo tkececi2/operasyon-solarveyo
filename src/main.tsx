@@ -12,6 +12,15 @@ import './utils/quickFix'
 import './utils/forceDarkMode'
 import './lib/posthog' // PostHog analytics başlat
 import { overrideConsole } from './utils/logger' // Production'da console.log'ları kapat
+import { Capacitor } from '@capacitor/core'
+
+// iOS Status Bar - Beyaz arka plan
+if (Capacitor.isNativePlatform()) {
+  import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
+    StatusBar.setStyle({ style: Style.Light }).catch(console.error);
+    StatusBar.setBackgroundColor({ color: '#ffffff' }).catch(console.error);
+  }).catch(console.error);
+}
 
 // Production'da console.log'ları kapat
 if (import.meta.env.PROD) {
