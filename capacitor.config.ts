@@ -11,6 +11,10 @@ const config: CapacitorConfig = {
     allowNavigation: ['*']
   },
   plugins: {
+    StatusBar: {
+      style: "LIGHT",
+      backgroundColor: "#ffffff"
+    },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"]
     },
