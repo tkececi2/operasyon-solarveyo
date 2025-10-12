@@ -128,6 +128,18 @@ export class PushNotificationService {
     try {
       console.log('🌐 Web Push Notifications başlatılıyor...');
 
+      // MOBİL WEB KONTROLÜ - Push notification sadece DESKTOP'ta çalışır
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        console.log('📱 Mobil web tarayıcısı tespit edildi');
+        console.log('⚠️ Mobil web push notifications güvenilir değil, devre dışı bırakıldı');
+        console.log('💡 Çözüm 1: Bilgisayardan web\'e giriş yapın (push çalışır)');
+        console.log('💡 Çözüm 2: iOS/Android native uygulamayı indirin (önerilen)');
+        return false; // Mobile web push'u skip et
+      }
+
+      console.log('💻 Desktop web tarayıcısı - Push notifications aktif');
+
       // Service Worker desteği kontrol et
       if (!('serviceWorker' in navigator)) {
         console.error('❌ Service Worker desteklenmiyor');
