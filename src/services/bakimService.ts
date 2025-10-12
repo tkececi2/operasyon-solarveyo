@@ -88,21 +88,10 @@ export const createElectricalMaintenance = async (
         metadata.santralId = maintenanceData.santralId;
       }
       
-      // Bildirimi oluştur - santral adını veya saha adını kullan
-      const bildirimBaslik = santralAdi 
-        ? `${santralAdi} - Elektrik Bakım Tamamlandı`
-        : '⚡ Elektrik Bakım Tamamlandı';
-      
-      const bildirimMesaj = santralAdi 
-        ? `${santralAdi} santralinde elektrik bakım işlemi tamamlandı.`
-        : maintenanceData.saha
-          ? `${maintenanceData.saha} sahasında elektrik bakım işlemi tamamlandı.`
-          : 'Elektrik bakım işlemi tamamlandı.';
-      
       await notificationService.createScopedNotificationClient({
         companyId: maintenanceData.companyId,
-        title: bildirimBaslik,
-        message: bildirimMesaj,
+        title: '⚡ Elektrik Bakım Tamamlandı',
+        message: 'Elektrik bakım işlemi başarıyla tamamlandı.',
         type: 'success',
         actionUrl: '/bakim/elektrik',
         metadata: {
@@ -194,21 +183,10 @@ export const createMechanicalMaintenance = async (
         metadata.santralId = maintenanceData.santralId;
       }
       
-      // Bildirimi oluştur - santral adını veya saha adını kullan
-      const bildirimBaslik = santralAdi 
-        ? `${santralAdi} - Mekanik Bakım Tamamlandı`
-        : '🔧 Mekanik Bakım Tamamlandı';
-      
-      const bildirimMesaj = santralAdi 
-        ? `${santralAdi} santralinde mekanik bakım işlemi tamamlandı.`
-        : maintenanceData.saha
-          ? `${maintenanceData.saha} sahasında mekanik bakım işlemi tamamlandı.`
-          : 'Mekanik bakım işlemi tamamlandı.';
-      
       await notificationService.createScopedNotificationClient({
         companyId: maintenanceData.companyId,
-        title: bildirimBaslik,
-        message: bildirimMesaj,
+        title: '🔧 Mekanik Bakım Tamamlandı',
+        message: 'Mekanik bakım işlemi başarıyla tamamlandı.',
         type: 'success',
         actionUrl: '/bakim/mekanik',
         metadata: {
