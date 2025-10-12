@@ -120,56 +120,103 @@ export const sendPushOnNotificationCreate = functions
 
           await Promise.all(recipients.map(async (uDoc) => {
             const u = uDoc.data() as any;
-            const targetToken: string | undefined = u?.pushTokens?.fcm || u?.fcmToken || u?.fcm; // legacy fallback
-            if (!targetToken) {
+            
+            // MULTI-DEVICE: Kullanıcının tüm cihaz token'larını al
+            const devices = u?.devices || {};
+            const userTokens: string[] = Object.values(devices)
+              .map((d: any) => d?.token)
+              .filter(Boolean);
+            
+            // Fallback: Eski format token varsa ekle
+            const oldToken = u?.pushTokens?.fcm || u?.fcmToken || u?.fcm;
+            if (oldToken && !userTokens.includes(oldToken)) {
+              userTokens.push(oldToken);
+            }
+            
+            if (userTokens.length === 0) {
               errors.push({ userId: uDoc.id, error: "no-token" });
               return;
             }
 
             // ÖNEMLI: Aynı token'a birden fazla gönderimi önle
             // Aynı cihazdan farklı kullanıcılar giriş yapmış olabilir
-            if (processedTokens.has(targetToken)) {
-              console.log(`⚠️ Token zaten işlendi, atlanıyor: ${uDoc.id} (${u.email || u.ad})`);
+            const tokensToSend = userTokens.filter(token => !processedTokens.has(token));
+            if (tokensToSend.length === 0) {
+              console.log(`⚠️ Kullanıcının tüm token'ları zaten işlendi, atlanıyor: ${uDoc.id}`);
               return;
             }
-            processedTokens.add(targetToken);
+            
+            tokensToSend.forEach(token => processedTokens.add(token));
 
             const screen = (metadata && ((metadata as any).screen || (metadata as any).deepLink)) || "/bildirimler";
-            const payload: admin.messaging.Message = {
-              token: targetToken,
-              notification: { title, body: message },
-              data: {
-                type: String(type || "info"),
-                companyId: String(companyId),
-                userId: String(uDoc.id),
-                screen: String(screen),
-                notificationId: String(context.params.notificationId),
-              },
-              apns: {
-                headers: { "apns-push-type": "alert", "apns-priority": "10" },
-                payload: { aps: { sound: "default", badge: 1 } },
-              },
-            };
+            
+            console.log(`📤 (fanout) ${tokensToSend.length} cihaza FCM mesajı gönderiliyor...`, { 
+              userId: uDoc.id, 
+              email: u.email || u.ad,
+              rol: u.rol,
+              tokenCount: tokensToSend.length,
+              tokens: tokensToSend.map(t => t.substring(0, 20) + "...")
+            });
 
             try {
-              console.log("📤 (fanout) FCM mesajı gönderiliyor...", { 
-                userId: uDoc.id, 
-                email: u.email || u.ad,
-                rol: u.rol,
-                token: targetToken.substring(0, 20) + "..." 
+              // MULTI-DEVICE: sendEachForMulticast ile tüm cihazlara gönder
+              const response = await admin.messaging().sendEachForMulticast({
+                tokens: tokensToSend,
+                notification: { title, body: message },
+                data: {
+                  type: String(type || "info"),
+                  companyId: String(companyId),
+                  userId: String(uDoc.id),
+                  screen: String(screen),
+                  notificationId: String(context.params.notificationId),
+                },
+                apns: {
+                  headers: { "apns-push-type": "alert", "apns-priority": "10" },
+                  payload: { aps: { sound: "default", badge: 1 } },
+                },
               });
-              const res = await admin.messaging().send(payload);
-              console.log("✅ (fanout) gönderildi", { userId: uDoc.id, messageId: res });
-              deliveredUserIds.push(uDoc.id);
-            } catch (e: any) {
-              // Token geçersizse, kullanıcının token'ını temizle
-              if (e?.code === 'messaging/registration-token-not-registered') {
-                console.log(`🗑️ Geçersiz token temizleniyor: ${uDoc.id}`);
-                await db.collection("kullanicilar").doc(uDoc.id).update({
-                  'pushTokens': admin.firestore.FieldValue.delete(),
-                  'fcmToken': admin.firestore.FieldValue.delete()
-                }).catch(() => {});
+              
+              console.log(`✅ (fanout) ${response.successCount}/${tokensToSend.length} cihaza gönderildi`, { 
+                userId: uDoc.id,
+                success: response.successCount,
+                failed: response.failureCount
+              });
+              
+              if (response.successCount > 0) {
+                deliveredUserIds.push(uDoc.id);
               }
+              
+              // Başarısız token'ları temizle
+              if (response.failureCount > 0) {
+                const failedTokens: string[] = [];
+                response.responses.forEach((resp, idx) => {
+                  if (!resp.success) {
+                    const errorCode = (resp.error as any)?.code;
+                    if (errorCode === 'messaging/invalid-registration-token' || 
+                        errorCode === 'messaging/registration-token-not-registered') {
+                      failedTokens.push(tokensToSend[idx]);
+                    }
+                  }
+                });
+                
+                // Geçersiz token'ları sil
+                if (failedTokens.length > 0) {
+                  console.log(`🗑️ ${failedTokens.length} geçersiz token temizleniyor...`);
+                  const deviceKeys = Object.keys(devices).filter(key => 
+                    failedTokens.includes(devices[key]?.token)
+                  );
+                  
+                  const updateObj: any = {};
+                  deviceKeys.forEach(key => {
+                    updateObj[`devices.${key}`] = admin.firestore.FieldValue.delete();
+                  });
+                  
+                  if (Object.keys(updateObj).length > 0) {
+                    await db.collection("kullanicilar").doc(uDoc.id).update(updateObj).catch(() => {});
+                  }
+                }
+              }
+            } catch (e: any) {
               console.error("❌ (fanout) gönderilemedi", { userId: uDoc.id, error: e?.message || e });
               errors.push({ userId: uDoc.id, error: String(e?.message || e) });
             }
@@ -220,15 +267,26 @@ export const sendPushOnNotificationCreate = functions
         return null;
       }
 
-      const token: string | undefined = user?.pushTokens?.fcm || user?.fcmToken || (user as any)?.fcm; // legacy fallback
+      // MULTI-DEVICE: Kullanıcının tüm cihaz token'larını al
+      const devices = user?.devices || {};
+      const tokens: string[] = Object.values(devices)
+        .map((d: any) => d?.token)
+        .filter(Boolean);
+      
+      // Fallback: Eski format token varsa ekle
+      const oldToken = user?.pushTokens?.fcm || user?.fcmToken || (user as any)?.fcm;
+      if (oldToken && !tokens.includes(oldToken)) {
+        tokens.push(oldToken);
+      }
+      
       console.log("🔑 FCM Token kontrolü:", { 
-        hasPushTokens: !!user?.pushTokens, 
-        hasFcm: !!user?.pushTokens?.fcm, 
-        hasOldToken: !!user?.fcmToken,
-        tokenLength: token?.length || 0 
+        hasDevices: !!user?.devices,
+        deviceCount: Object.keys(devices).length,
+        tokenCount: tokens.length,
+        hasOldToken: !!oldToken
       });
       
-      if (!token) {
+      if (tokens.length === 0) {
         console.error("❌ FCM Token yok:", { userId });
         await snap.ref.update({ pushTriedAt: admin.firestore.FieldValue.serverTimestamp(), pushError: "no-token" });
         return null;
@@ -236,8 +294,19 @@ export const sendPushOnNotificationCreate = functions
 
       const screen = (metadata && (metadata.screen || metadata.deepLink)) || "/bildirimler";
 
-      const payload: admin.messaging.Message = {
-        token,
+      console.log(`📤 ${tokens.length} cihaza FCM mesajı gönderiliyor...`, { 
+        userId: userId,
+        email: user.email || user.ad,
+        rol: user.rol,
+        tokenCount: tokens.length,
+        tokens: tokens.map(t => t.substring(0, 20) + "..."),
+        title, 
+        screen 
+      });
+      
+      // MULTI-DEVICE: sendEachForMulticast ile tüm cihazlara gönder
+      const response = await admin.messaging().sendEachForMulticast({
+        tokens: tokens,
         notification: {
           title: title,
           body: message,
@@ -261,24 +330,51 @@ export const sendPushOnNotificationCreate = functions
             },
           },
         },
-      };
-
-      console.log("📤 FCM mesajı gönderiliyor...", { 
-        userId: userId,
-        email: user.email || user.ad,
-        rol: user.rol,
-        token: token.substring(0, 20) + "...", 
-        title, 
-        screen 
       });
       
-      const res = await admin.messaging().send(payload);
+      console.log(`✅ FCM mesajı gönderildi: ${response.successCount}/${tokens.length} cihaz`, { 
+        success: response.successCount, 
+        failed: response.failureCount 
+      });
       
-      console.log("✅ FCM mesajı başarıyla gönderildi!", { messageId: res });
+      // Başarısız token'ları temizle
+      if (response.failureCount > 0) {
+        const failedTokens: string[] = [];
+        response.responses.forEach((resp, idx) => {
+          if (!resp.success) {
+            const errorCode = (resp.error as any)?.code;
+            console.log(`❌ Token başarısız: ${tokens[idx].substring(0, 20)}... - Hata: ${errorCode}`);
+            
+            if (errorCode === 'messaging/invalid-registration-token' || 
+                errorCode === 'messaging/registration-token-not-registered') {
+              failedTokens.push(tokens[idx]);
+            }
+          }
+        });
+        
+        // Geçersiz token'ları sil
+        if (failedTokens.length > 0) {
+          console.log(`🗑️ ${failedTokens.length} geçersiz token temizleniyor...`);
+          const deviceKeys = Object.keys(devices).filter(key => 
+            failedTokens.includes(devices[key]?.token)
+          );
+          
+          const updateObj: any = {};
+          deviceKeys.forEach(key => {
+            updateObj[`devices.${key}`] = admin.firestore.FieldValue.delete();
+          });
+          
+          if (Object.keys(updateObj).length > 0) {
+            await db.collection("kullanicilar").doc(userId).update(updateObj);
+            console.log(`✅ ${deviceKeys.length} geçersiz cihaz temizlendi`);
+          }
+        }
+      }
       
       await snap.ref.update({ 
         pushSentAt: admin.firestore.FieldValue.serverTimestamp(), 
-        pushMessageId: res, 
+        pushSentToDevices: response.successCount,
+        pushFailedDevices: response.failureCount,
         pushError: admin.firestore.FieldValue.delete() 
       });
       

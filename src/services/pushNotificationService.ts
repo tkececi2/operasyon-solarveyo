@@ -7,6 +7,7 @@
 import { Capacitor } from '@capacitor/core';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { registerDevice, unregisterDevice, migrateOldTokenFormat } from './multiDeviceTokenService';
 
 /**
  * Push Notification için platform tipi
@@ -262,7 +263,8 @@ export class PushNotificationService {
   }
 
   /**
-   * Token'ı Firestore'a kaydet
+   * Token'ı Firestore'a kaydet - MULTI-DEVICE
+   * Her cihaz için ayrı token kaydeder, override etmez!
    */
   async saveTokenToFirestore(userId: string, userProfile?: any): Promise<boolean> {
     console.log('💾 saveTokenToFirestore çağrıldı - Token durumu:', {
@@ -284,28 +286,23 @@ export class PushNotificationService {
     }
 
     try {
-      console.log(`💾 Token Firestore'a kaydediliyor (${this.platform})...`);
+      console.log(`💾 Token multi-device sistemine kaydediliyor (${this.platform})...`);
 
-      // pushTokens objesi oluştur
-      const pushTokensUpdate: any = {
-        fcm: this.currentToken,
-        platform: this.platform,
-        updatedAt: serverTimestamp()
-      };
+      // KRİTİK: Eski token'ları yeni formata migrate et
+      await migrateOldTokenFormat(userId);
 
-      // Kullanıcı verilerini güncelle
-      await updateDoc(doc(db, 'kullanicilar', userId), {
-        pushTokens: pushTokensUpdate,
-        fcmToken: this.currentToken, // Geriye dönük uyumluluk için
-        pushNotificationsEnabled: true,
-        tokenUpdatedAt: serverTimestamp()
-      });
-
-      console.log('✅ Token Firestore\'a kaydedildi');
-      console.log('   Platform:', this.platform);
-      console.log('   Token preview:', this.currentToken.substring(0, 30) + '...');
+      // MULTI-DEVICE: Token'ı cihaz listesine ekle (override etmez!)
+      const success = await registerDevice(userId, this.currentToken, true);
       
-      return true;
+      if (success) {
+        console.log('✅ Token multi-device sistemine kaydedildi');
+        console.log('   Platform:', this.platform);
+        console.log('   Token preview:', this.currentToken.substring(0, 30) + '...');
+        console.log('   📱 Kullanıcının tüm cihazları artık bildirim alacak!');
+        return true;
+      }
+      
+      return false;
     } catch (error) {
       console.error('❌ Token kaydetme hatası:', error);
       return false;
@@ -350,27 +347,32 @@ export class PushNotificationService {
   }
 
   /**
-   * Kullanıcı çıkış yaptığında çağrıl - KRİTİK: Tüm token'ları temizle
+   * Kullanıcı çıkış yaptığında çağrıl - MULTI-DEVICE
+   * SADECE bu cihazın token'ını siler, diğer cihazlar etkilenmez!
    */
   async onUserLogout(userId?: string): Promise<void> {
-    console.log('🔔 PushNotificationService: Kullanıcı çıkış yapıyor, tokenlar temizleniyor...');
+    console.log('🔔 PushNotificationService: Kullanıcı çıkış yapıyor...');
     
     try {
-      // Firestore'dan kullanıcının FCM token'ını temizle
-      if (userId) {
-        console.log('🗑️ Firestore FCM token temizleniyor...');
-        const userRef = doc(db, 'kullanicilar', userId);
-        await updateDoc(userRef, {
-          fcmToken: null,
-          pushTokens: null,
-          pushNotificationsEnabled: false,
-          tokenUpdatedAt: serverTimestamp()
-        });
-        console.log('✅ Firestore FCM token temizlendi');
+      // KRİTİK: SADECE bu cihazın token'ını sil, diğer cihazları etkileme!
+      if (userId && this.currentToken) {
+        console.log('🗑️ MULTI-DEVICE: Bu cihazın token\'ı kaldırılıyor...');
+        console.log('   Token preview:', this.currentToken.substring(0, 30) + '...');
+        console.log('   Platform:', this.platform);
+        
+        const success = await unregisterDevice(userId, this.currentToken);
+        
+        if (success) {
+          console.log('✅ Bu cihazın token\'ı başarıyla kaldırıldı');
+          console.log('   📱 Kullanıcının diğer cihazları hala bildirim alacak!');
+        } else {
+          console.warn('⚠️ Token kaldırılamadı (zaten silinmiş olabilir)');
+        }
       }
       
       // Yerel token'ı temizle
       this.currentToken = null;
+      this.initialized = false;
       
       // Platform bazlı temizlik
       if (Capacitor.isNativePlatform()) {
