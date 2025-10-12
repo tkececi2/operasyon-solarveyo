@@ -195,10 +195,15 @@ export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel, initi
       // Tarih/saat string'ini Date objesine çevir
       const bakimDate = new Date(data.bakimTarihSaat);
       
+      // Santral adını al
+      const selectedSantral = santraller.find(s => s.id === data.santralId);
+      const santralAdi = selectedSantral?.name || selectedSantral?.adi || '';
+      
       const bakimData: any = {
         companyId: company.id,
         santralId: data.santralId,
         sahaId: data.sahaId,
+        saha: santralAdi, // Santral adını bildirimde kullanmak için ekle
         tarih: Timestamp.fromDate(bakimDate),
         yapanKisi: data.yapanKisi, // Geriye uyumluluk için
         yapanKisiId: userProfile?.id, // Yeni: Kullanıcı ID'si (dinamik isim için)
