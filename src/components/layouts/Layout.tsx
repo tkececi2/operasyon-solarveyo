@@ -22,7 +22,7 @@ export const Layout: React.FC = () => {
         
         {/* Main container */}
         <div className="flex flex-col h-full">
-          {/* Header - Sabit header */}
+          {/* Header - Sabit header, safe-area padding yok (status bar altında) */}
           <div className="flex-shrink-0">
             <Header 
               onMenuClick={() => setSidebarOpen(true)}

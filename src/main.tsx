@@ -14,10 +14,10 @@ import './lib/posthog' // PostHog analytics başlat
 import { overrideConsole } from './utils/logger' // Production'da console.log'ları kapat
 import { Capacitor } from '@capacitor/core'
 
-// iOS Status Bar - Beyaz arka plan
+// iOS Status Bar - Beyaz arka plan, koyu ikonlar/metin
 if (Capacitor.isNativePlatform()) {
   import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
-    StatusBar.setStyle({ style: Style.Light }).catch(console.error);
+    StatusBar.setStyle({ style: Style.Dark }).catch(console.error);
     StatusBar.setBackgroundColor({ color: '#ffffff' }).catch(console.error);
   }).catch(console.error);
 }

@@ -100,9 +100,11 @@ function App() {
     
     // iOS Native ayarları ve otomatik giriş
     if (Capacitor.isNativePlatform()) {
-      // Status Bar ayarları - BEYAZ ARKAPLAN
+      // Status Bar ayarları - BEYAZ ARKAPLAN, KOYU İKONLAR
       if (Capacitor.getPlatform() === 'ios') {
-        StatusBar.setStyle({ style: 'light' }); // BEYAZ arkaplan, SİYAH yazı
+        // Koyu ikonlar/metin için 'dark' kullan
+        StatusBar.setStyle({ style: 'dark' });
+        // WebView status bar altında başlar (overlay: false)
         StatusBar.setOverlaysWebView({ overlay: false });
         StatusBar.setBackgroundColor({ color: '#ffffff' });
       }

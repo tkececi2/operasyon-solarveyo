@@ -88,12 +88,21 @@ export const createElectricalMaintenance = async (
         metadata.santralId = maintenanceData.santralId;
       }
       
+      // Bildirimi oluştur - santral adını veya saha adını kullan
+      const bildirimBaslik = santralAdi 
+        ? `${santralAdi} - Elektrik Bakım Tamamlandı`
+        : '⚡ Elektrik Bakım Tamamlandı';
+      
+      const bildirimMesaj = santralAdi 
+        ? `${santralAdi} santralinde elektrik bakım işlemi tamamlandı.`
+        : maintenanceData.saha
+          ? `${maintenanceData.saha} sahasında elektrik bakım işlemi tamamlandı.`
+          : 'Elektrik bakım işlemi tamamlandı.';
+      
       await notificationService.createScopedNotificationClient({
         companyId: maintenanceData.companyId,
-        title: '⚡ Elektrik Bakım Tamamlandı',
-        message: santralAdi 
-          ? `${santralAdi} santralinde elektrik bakım işlemi tamamlandı.`
-          : `${maintenanceData.saha || 'Saha'} - Elektrik bakım işlemi tamamlandı.`,
+        title: bildirimBaslik,
+        message: bildirimMesaj,
         type: 'success',
         actionUrl: '/bakim/elektrik',
         metadata: {
@@ -185,13 +194,28 @@ export const createMechanicalMaintenance = async (
         metadata.santralId = maintenanceData.santralId;
       }
       
+      // Bildirimi oluştur - santral adını veya saha adını kullan
+      const bildirimBaslik = santralAdi 
+        ? `${santralAdi} - Mekanik Bakım Tamamlandı`
+        : '🔧 Mekanik Bakım Tamamlandı';
+      
+      const bildirimMesaj = santralAdi 
+        ? `${santralAdi} santralinde mekanik bakım işlemi tamamlandı.`
+        : maintenanceData.saha
+          ? `${maintenanceData.saha} sahasında mekanik bakım işlemi tamamlandı.`
+          : 'Mekanik bakım işlemi tamamlandı.';
+      
       await notificationService.createScopedNotificationClient({
         companyId: maintenanceData.companyId,
-        title: '🔧 Mekanik Bakım Tamamlandı',
-        message: `${santralAdi || 'Santral'} için mekanik bakım işlemi tamamlandı.`,
+        title: bildirimBaslik,
+        message: bildirimMesaj,
         type: 'success',
         actionUrl: '/bakim/mekanik',
-        metadata: metadata,
+        metadata: {
+          ...metadata,
+          santralAdi: santralAdi,
+          sahaAdi: maintenanceData.saha
+        },
         roles: ['yonetici','muhendis','tekniker','bekci','musteri']
       });
       console.log(`✅ Mekanik bakım bildirimi gönderildi - sahaId: ${bildirimSahaId || 'YOK'}, santralId: ${maintenanceData.santralId || 'YOK'}`);
