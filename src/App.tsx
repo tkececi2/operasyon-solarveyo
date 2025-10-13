@@ -149,10 +149,32 @@ function App() {
   // iOS auth check - Suspense dışında kontrol et
   if (Capacitor.isNativePlatform() && !iosAuthChecked) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <LoadingSpinner size="xl" />
-          <p className="mt-4 text-gray-600 font-medium">Yükleniyor...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600">
+        <div className="text-center space-y-6">
+          {/* Ana Logo/İkon */}
+          <div className="flex justify-center">
+            <div className="relative">
+              {/* Pulse efekt arka plan */}
+              <div className="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
+              {/* Ana ikon container */}
+              <div className="relative bg-white rounded-full p-6 shadow-2xl">
+                {/* SolarVeyo Logo veya Icon */}
+                <svg className="w-16 h-16 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          
+          {/* Yükleme metni */}
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-white">SolarVeyo</h2>
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            </div>
+          </div>
         </div>
       </div>
     );
