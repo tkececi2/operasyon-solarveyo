@@ -9,14 +9,17 @@ import {
   Modal,
   Input,
   Badge,
-  Select
+  Select,
+  NewBadge
 } from '../../components/ui';
+import PullToRefresh from '../../components/ui/PullToRefresh';
 import { ElektrikKesintiForm } from '../../components/forms/ElektrikKesintiForm';
 import { useAuth } from '../../hooks/useAuth';
 import { elektrikKesintiService } from '../../services/elektrikKesintiService';
 import { getAllSahalar } from '../../services/sahaService';
 import type { PowerOutage } from '../../types';
 import { formatDate, formatDateTime } from '../../utils/formatters';
+import { isNewItem, getNewItemClasses, getNewItemHoverClasses, getTimeAgo } from '../../utils/newItemUtils';
 import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -200,15 +203,17 @@ const ElektrikKesintileri: React.FC = () => {
         return false;
       }
 
-      // Tarih filtresi
-      if (filterYear !== 'all' || filterMonth !== 'all') {
-        const tarih = kesinti.baslangicTarihi.toDate();
-        if (filterYear !== 'all' && tarih.getFullYear() !== filterYear) {
-          return false;
-        }
-        if (filterMonth !== 'all' && tarih.getMonth() !== filterMonth - 1) {
-          return false;
-        }
+      // Tarih filtresi - Yıl ve Ay filtreleri bağımsız çalışır
+      const tarih = kesinti.baslangicTarihi.toDate();
+      
+      // Yıl filtresi kontrolü
+      if (filterYear !== 'all' && tarih.getFullYear() !== filterYear) {
+        return false;
+      }
+      
+      // Ay filtresi kontrolü (yıl seçilmemiş olsa bile çalışır)
+      if (filterMonth !== 'all' && tarih.getMonth() !== filterMonth - 1) {
+        return false;
       }
 
       return true;
@@ -331,8 +336,15 @@ const ElektrikKesintileri: React.FC = () => {
     })();
   }, [filteredKesintiler]);
 
+  // Pull-to-refresh handler
+  const handleRefresh = async () => {
+    await loadKesintiler();
+    await loadSahalar();
+  };
+
   return (
-    <div className="space-y-6" ref={contentRef}>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-6" ref={contentRef}>
       {/* Başlık ve İstatistikler */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
@@ -550,9 +562,22 @@ const ElektrikKesintileri: React.FC = () => {
           filteredKesintiler.map((kesinti) => {
             const sahaAdi = sahalar.find(s => s.id === kesinti.sahaId)?.ad || 'Bilinmeyen Saha';
             const devamEdiyor = !kesinti.bitisTarihi;
+            const isNew = isNewItem(kesinti.olusturmaTarihi);
+            const timeAgo = isNew ? getTimeAgo(kesinti.olusturmaTarihi) : '';
             
             return (
-              <Card key={kesinti.id} className={devamEdiyor ? 'border-orange-500' : ''}>
+              <Card 
+                key={kesinti.id} 
+                className={`${devamEdiyor ? 'border-orange-500' : ''} ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
+              >
+                {/* YENİ Badge */}
+                <NewBadge 
+                  show={isNew} 
+                  position="absolute"
+                  timeAgo={timeAgo}
+                  className="z-10"
+                />
+                
                 <CardContent className="p-4 space-y-3">
                   {/* Başlık */}
                   <div className="flex justify-between items-start">
@@ -688,7 +713,8 @@ const ElektrikKesintileri: React.FC = () => {
           }}
         />
       </Modal>
-    </div>
+      </div>
+    </PullToRefresh>
   );
 };
 

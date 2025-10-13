@@ -23,6 +23,7 @@ import type { Fault } from '../../types';
 import type { ColumnDef } from '../../components/ui/DataTable';
 import { formatDate, formatDateTime } from '../../utils/formatters';
 import { isNewItem, getNewItemClasses, getNewItemHoverClasses, getTimeAgo } from '../../utils/newItemUtils';
+import PullToRefresh from '../../components/ui/PullToRefresh';
 import toast from 'react-hot-toast';
 import { getAllSahalar } from '../../services/sahaService';
 import { getSantrallerBySaha, getAllSantraller } from '../../services/santralService';
@@ -853,8 +854,15 @@ const Arizalar: React.FC = () => {
     }
   };
 
+  // Pull-to-refresh handler
+  const handleRefresh = async () => {
+    await fetchArizalar(true, false);
+    await loadSahaOptions();
+  };
+
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-6 pb-20 md:pb-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
@@ -2008,7 +2016,8 @@ const Arizalar: React.FC = () => {
           </div>
         )}
       </Modal>
-    </div>
+      </div>
+    </PullToRefresh>
   );
 };
 

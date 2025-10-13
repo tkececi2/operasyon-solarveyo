@@ -197,9 +197,9 @@ const Bildirimler: React.FC = () => {
       console.log('📍 Elektrik bakım sayfasına yönlendirildi');
     }
     // Vardiya bildirimi
-    else if (metadata.vardiyaId) {
-      navigate('/vardiya');
-      console.log('📍 Vardiya sayfasına yönlendirildi');
+    else if (metadata.vardiyaId || metadata.targetType === 'vardiya') {
+      navigate('/vardiya-bildirimleri');
+      console.log('📍 Vardiya bildirimleri sayfasına yönlendirildi - vardiyaId:', metadata.vardiyaId);
     }
     // Stok bildirimi
     else if (metadata.stokId) {

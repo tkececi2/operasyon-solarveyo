@@ -12,6 +12,7 @@ import { getAllSantraller } from '../../services/santralService';
 import type { ElectricalMaintenance, MechanicalMaintenance } from '../../types';
 import { formatDate, formatDateTime, formatRelativeTime, translateStatus } from '../../utils/formatters';
 import { isNewItem, getNewItemClasses, getNewItemHoverClasses, getTimeAgo } from '../../utils/newItemUtils';
+import PullToRefresh from '../../components/ui/PullToRefresh';
 import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -741,8 +742,15 @@ const Bakim: React.FC = () => {
   const filteredMekanik = filterMaintenanceData(mekanikBakimlar);
   const filteredYapilanIsler = filterMaintenanceData(yapilanIsler);
 
+  // Pull-to-refresh handler
+  const handleRefresh = async () => {
+    await fetchMaintenanceData();
+    await loadData();
+  };
+
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-6 pb-20 md:pb-0">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -1423,7 +1431,8 @@ const Bakim: React.FC = () => {
             )}
           </div>
       )}
-    </div>
+      </div>
+    </PullToRefresh>
   );
 };
 

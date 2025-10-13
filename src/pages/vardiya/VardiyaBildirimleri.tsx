@@ -44,6 +44,7 @@ import { getAllSahalar } from '../../services/sahaService';
 import { formatDate, formatDateTime, formatRelativeTime } from '../../utils/formatters';
 import { isNewItem, getNewItemClasses, getNewItemHoverClasses, getTimeAgo } from '../../utils/newItemUtils';
 import { generateGoogleMapsUrls, getGoogleMapsApiKey } from '../../utils/googleMaps';
+import PullToRefresh from '../../components/ui/PullToRefresh';
 import toast from 'react-hot-toast';
 
 const VardiyaBildirimleri: React.FC = () => {
@@ -277,8 +278,14 @@ const VardiyaBildirimleri: React.FC = () => {
     );
   }
 
+  // Pull-to-refresh handler
+  const handleRefresh = async () => {
+    await fetchData();
+  };
+
   return (
-    <div className="space-y-6 pb-20 md:pb-0">
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-6 pb-20 md:pb-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
@@ -1098,7 +1105,8 @@ const VardiyaBildirimleri: React.FC = () => {
           </div>
         )}
       </Modal>
-    </div>
+      </div>
+    </PullToRefresh>
   );
 };
 
