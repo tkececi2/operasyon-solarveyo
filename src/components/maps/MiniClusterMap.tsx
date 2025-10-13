@@ -190,6 +190,12 @@ export const MiniClusterMap: React.FC<{
         const bounds = new window.google.maps.LatLngBounds();
         const markers = points.map((p) => {
           const position = { lat: p.lat, lng: p.lng };
+          const safeTitle = p.title ?? 'Saha';
+          const safeSubtitle = p.subtitle ?? '';
+          
+          // Glow rengi (tüm scope için)
+          const glowColor = getColorByStatus(p.status);
+          
           const marker = new window.google.maps.Marker({
             position,
             title: p.title,
@@ -205,11 +211,6 @@ export const MiniClusterMap: React.FC<{
           bounds.extend(position);
 
           marker.addListener('click', () => {
-            const safeTitle = p.title ?? 'Saha';
-            const safeSubtitle = p.subtitle ?? '';
-            
-            // Glow rengi (hover border için)
-            const glowColor = getColorByStatus(p.status);
             
             // Durum badge
             let statusBadge = '';
