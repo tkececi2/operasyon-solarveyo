@@ -133,11 +133,47 @@
       ]
     },
     {
+      "collectionGroup": "elektrikBakimlar",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "companyId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "santralId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "tarih",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "mekanikBakimlar",
       "queryScope": "COLLECTION",
       "fields": [
         {
           "fieldPath": "companyId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "tarih",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "mekanikBakimlar",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "companyId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "santralId",
           "order": "ASCENDING"
         },
         {
