@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Input, Textarea } from '../ui';
-import { SAAS_CONFIG, getPlanById } from '../../config/saas.config';
+import { getPlanById } from '../../config/saas.config';
 import { createUpgradeRequest } from '../../services/subscriptionRequestService';
 import { toast } from 'react-hot-toast';
 
@@ -31,7 +31,6 @@ export const UpgradeRequestModal: React.FC<UpgradeRequestModalProps> = ({
   const displayName = plan?.displayName || planName || planId;
   const price = plan?.price ?? planPrice ?? 0;
 
-  const bank = SAAS_CONFIG.PAYMENT.bankTransfer;
   const [note, setNote] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,7 +49,9 @@ export const UpgradeRequestModal: React.FC<UpgradeRequestModalProps> = ({
         },
         note
       });
-      toast.success('Yükseltme talebiniz iletildi. Onay sonrası planınız güncellenecek.');
+      toast.success('✅ Talebiniz alındı! Ekibimiz en kısa sürede sizinle iletişime geçecektir.', {
+        duration: 5000
+      });
       onClose();
     } catch (e) {
       console.error('Upgrade request error', e);
@@ -76,21 +77,29 @@ export const UpgradeRequestModal: React.FC<UpgradeRequestModalProps> = ({
           </div>
         </div>
 
-        <div className="bg-gray-50 p-4 rounded">
-          <div className="font-medium text-gray-900 mb-1">Banka Havalesi / EFT Bilgileri</div>
-          <div className="text-sm text-gray-700 space-y-1">
-            <div><strong>Banka:</strong> {bank.bankName}</div>
-            <div><strong>Hesap Adı:</strong> {bank.accountName}</div>
-            <div><strong>IBAN:</strong> {bank.iban}</div>
-            <div className="text-gray-600">{bank.instructions}</div>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-4 rounded-lg">
+          <div className="flex items-start gap-3">
+            <div className="bg-blue-500 rounded-full p-2 flex-shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-1">Plan Yükseltme Talebi</h3>
+              <p className="text-sm text-gray-700">
+                Talebiniz kaydedilecek ve en kısa sürede sizinle iletişime geçilecektir. 
+                Ödeme detayları telefon görüşmesinde paylaşılacaktır.
+              </p>
+            </div>
           </div>
         </div>
 
         <Textarea
-          label="Not / Açıklama (opsiyonel)"
+          label="İletişim Bilgileri veya Notunuz (opsiyonel)"
           value={note}
           onChange={(e: any) => setNote(e.target.value)}
-          placeholder="Örn: Ödemeyi bugün gerçekleştireceğiz. Fatura bilgileri..."
+          placeholder="Örn: En hızlı şekilde ulaşabileceğiniz telefon numarası veya tercih ettiğiniz iletişim saati..."
+          rows={4}
         />
 
         <div className="flex justify-end gap-2">
