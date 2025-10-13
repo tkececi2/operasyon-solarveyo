@@ -200,24 +200,24 @@ const Dashboard: React.FC = () => {
         } : 'YOK'
       });
 
-      // Kritik stok uyarıları - Tüm varyasyonları kontrol et
+      // Kritik stok uyarıları - mevcutStok <= minimumStok kontrolü
       let kritikStokUyarilari = 0;
       try {
         kritikStokUyarilari = (stokData || []).filter((stok: any) => {
-          if (!stok || !stok.durum) return false;
-          const durum = stok.durum.toString().toLowerCase().trim();
-          return durum === 'kritik' || durum === 'critical' || stok.kritikSeviye === true;
+          if (!stok) return false;
+          const mevcutStok = stok.mevcutStok || stok.miktar || 0;
+          const minimumStok = stok.minimumStok || stok.minimumStokSeviyesi || 0;
+          return mevcutStok <= minimumStok;
         }).length;
         
         // Debug - Stok durumları
         console.log('📦 Dashboard Stok Debug:', {
           toplam: stokData.length,
           kritik: kritikStokUyarilari,
-          durumlar: stokData.map((s: any) => s.durum).filter((d: any, i: number, arr: any[]) => arr.indexOf(d) === i),
           ilkStok: stokData[0] ? {
             ad: stokData[0].malzemeAdi,
-            durum: stokData[0].durum,
-            kritikSeviye: stokData[0].kritikSeviye
+            mevcut: stokData[0].mevcutStok || stokData[0].miktar,
+            minimum: stokData[0].minimumStok || stokData[0].minimumStokSeviyesi
           } : 'YOK'
         });
       } catch (e) {

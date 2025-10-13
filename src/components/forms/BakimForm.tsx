@@ -173,7 +173,7 @@ export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel, initi
       return;
     }
     
-    setSelectedFiles(prev => [...prev, ...imageFiles].slice(0, 10)); // Max 10 dosya
+    setSelectedFiles(prev => [...prev, ...imageFiles].slice(0, 5)); // Max 5 dosya
   };
 
   const removeFile = (index: number) => {
@@ -355,7 +355,7 @@ export const BakimForm: React.FC<BakimFormProps> = ({ onSuccess, onCancel, initi
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Bakım Fotoğrafları
-          <span className="text-gray-500 text-xs ml-2">(Opsiyonel, max 10 adet)</span>
+          <span className="text-gray-500 text-xs ml-2">(Opsiyonel, max 5 adet)</span>
         </label>
         
         <div className="space-y-3">
