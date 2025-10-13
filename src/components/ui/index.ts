@@ -13,6 +13,7 @@ export {
 } from './Dropdown';
 export { LoadingSpinner, InlineSpinner, PageLoading, TableSkeleton, CardSkeleton } from './LoadingSpinner';
 export { Badge, StatusBadge, PriorityBadge } from './Badge';
+export { NewBadge } from './NewBadge';
 export { 
   Table, 
   TableHeader, 

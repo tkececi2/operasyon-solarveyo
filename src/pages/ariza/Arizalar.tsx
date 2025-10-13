@@ -10,7 +10,8 @@ import {
   Input,
   DataTable,
   StatusBadge,
-  PriorityBadge
+  PriorityBadge,
+  NewBadge
 } from '../../components/ui';
 import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { ArizaForm } from '../../components/forms/ArizaForm';
@@ -21,6 +22,7 @@ import { arizaService } from '../../services';
 import type { Fault } from '../../types';
 import type { ColumnDef } from '../../components/ui/DataTable';
 import { formatDate, formatDateTime } from '../../utils/formatters';
+import { isNewItem, getNewItemClasses, getNewItemHoverClasses, getTimeAgo } from '../../utils/newItemUtils';
 import toast from 'react-hot-toast';
 import { getAllSahalar } from '../../services/sahaService';
 import { getSantrallerBySaha, getAllSantraller } from '../../services/santralService';
@@ -1122,12 +1124,23 @@ const Arizalar: React.FC = () => {
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {items.map((ariza) => (
+          {items.map((ariza) => {
+            const isNew = isNewItem(ariza.olusturmaTarihi);
+            const timeAgo = isNew ? getTimeAgo(ariza.olusturmaTarihi) : '';
+            
+            return (
             <Card 
               key={ariza.id}
-              className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
+              className={`cursor-pointer transition-all duration-200 ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
               onClick={() => handleViewDetail(ariza)}
             >
+              {/* YENİ Badge */}
+              <NewBadge 
+                show={isNew} 
+                position="absolute"
+                timeAgo={timeAgo}
+              />
+              
               <div className="relative">
                 <img
                   src={(ariza.fotograflar && ariza.fotograflar[0]) || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'120\'></svg>'}
@@ -1403,7 +1416,8 @@ const Arizalar: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
       </div>

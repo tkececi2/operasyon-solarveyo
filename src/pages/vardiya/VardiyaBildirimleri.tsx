@@ -32,7 +32,8 @@ import {
   Modal,
   StatusBadge,
   Badge,
-  LoadingSpinner
+  LoadingSpinner,
+  NewBadge
 } from '../../components/ui';
 import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { VardiyaForm } from '../../components/forms/VardiyaForm';
@@ -41,6 +42,7 @@ import { useCompany } from '../../hooks/useCompany';
 import { vardiyaService, type VardiyaBildirimi } from '../../services/vardiyaService';
 import { getAllSahalar } from '../../services/sahaService';
 import { formatDate, formatDateTime, formatRelativeTime } from '../../utils/formatters';
+import { isNewItem, getNewItemClasses, getNewItemHoverClasses, getTimeAgo } from '../../utils/newItemUtils';
 import { generateGoogleMapsUrls, getGoogleMapsApiKey } from '../../utils/googleMaps';
 import toast from 'react-hot-toast';
 
@@ -513,19 +515,30 @@ const VardiyaBildirimleri: React.FC = () => {
                       </div>
                     </div>
                     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                      {list.map((bildirim) => (
+                      {list.map((bildirim) => {
+                        const isNew = isNewItem(bildirim.tarih);
+                        const timeAgo = isNew ? getTimeAgo(bildirim.tarih) : '';
+                        
+                        return (
               <div
                 key={bildirim.id}
                           role="button"
                           tabIndex={0}
                           onClick={(e)=>onCardClick(e, bildirim)}
                           onKeyDown={(e)=>{ if(e.key==='Enter'){ setSelectedVardiya(bildirim); setShowDetailModal(true);} }}
-                          className={`cursor-pointer bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border ${
+                          className={`relative cursor-pointer bg-white rounded-lg shadow-sm transition-all duration-200 overflow-hidden border ${
                             bildirim.durum==='acil' ? 'border-red-200 bg-red-50/30' : 
                             bildirim.durum==='dikkat' ? 'border-yellow-200 bg-yellow-50/30' : 
                             'border-gray-200'
-                          }`}
+                          } ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
               >
+                {/* YENİ Badge */}
+                <NewBadge 
+                  show={isNew} 
+                  position="absolute"
+                  timeAgo={timeAgo}
+                  className="z-20"
+                />
                 {/* Vardiya Başlık */}
                 <div className={`px-4 py-3 ${
                   bildirim.vardiyaTipi === 'sabah' ? 'bg-gradient-to-r from-yellow-100 to-orange-100' :
@@ -692,7 +705,8 @@ const VardiyaBildirimleri: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
                     </div>
                   </div>
                 );

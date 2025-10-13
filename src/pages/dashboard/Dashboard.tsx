@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent, CardHeader, CardTitle, LoadingSpinner, SubscriptionStatusWidget, StorageWarningWidget } from '../../components/ui';
 import { KPICards, FaultStatusChart } from '../../components/charts';
 import { CompactWeatherWidget } from '../../components/weather/CompactWeatherWidget';
+import { RecentItemsWidget } from '../../components/dashboard/RecentItemsWidget';
 import { arizaService, bakimService } from '../../services';
 import { notificationService, Notification } from '../../services/notificationService';
 import { getGoogleMapsApiKey, generateGoogleMapsUrls } from '../../utils/googleMaps';
@@ -456,35 +457,50 @@ const Dashboard: React.FC = () => {
 
       </div>
 
-      {/* Aylık Aktivite Özeti - Kompakt */}
-      <Card padding="sm">
-        <CardHeader className="mb-2 pb-2">
-          <CardTitle className="text-sm md:text-base font-semibold flex items-center gap-2">
-            <Sun className="h-4 w-4 text-blue-600" />
-            {currentMonth} Aktivite Özeti
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <div className="rounded-lg border border-red-100 bg-red-50 p-2 md:p-3 hover:bg-red-100 transition-colors">
-              <div className="text-[10px] text-red-700 font-medium">Bildirilen Arızalar</div>
-              <div className="text-xl md:text-2xl font-bold text-red-900">{dashboardStats.aylikArizalar}</div>
-            </div>
-            <div className="rounded-lg border border-blue-100 bg-blue-50 p-2 md:p-3 hover:bg-blue-100 transition-colors">
-              <div className="text-[10px] text-blue-700 font-medium">Yapılan Bakımlar</div>
-              <div className="text-xl md:text-2xl font-bold text-blue-900">{dashboardStats.aylikBakimlar}</div>
-            </div>
-            <div className="rounded-lg border border-green-100 bg-green-50 p-2 md:p-3 hover:bg-green-100 transition-colors">
-              <div className="text-[10px] text-green-700 font-medium">Vardiya Bildirimleri</div>
-              <div className="text-xl md:text-2xl font-bold text-green-900">{dashboardStats.aylikVardiya}</div>
-            </div>
-            <div className="rounded-lg border border-amber-100 bg-amber-50 p-2 md:p-3 hover:bg-amber-100 transition-colors">
-              <div className="text-[10px] text-amber-700 font-medium">Kritik Stok Uyarıları</div>
-              <div className="text-xl md:text-2xl font-bold text-amber-900">{dashboardStats.aktifStokUyarilari}</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Grid: Aylık Aktivite Özeti + Yeni Eklenenler */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
+        {/* Aylık Aktivite Özeti - Kompakt */}
+        <div className="lg:col-span-2">
+          <Card padding="sm" className="h-full">
+            <CardHeader className="mb-2 pb-2">
+              <CardTitle className="text-sm md:text-base font-semibold flex items-center gap-2">
+                <Sun className="h-4 w-4 text-blue-600" />
+                {currentMonth} Aktivite Özeti
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="rounded-lg border border-red-100 bg-red-50 p-2 md:p-3 hover:bg-red-100 transition-colors">
+                  <div className="text-[10px] text-red-700 font-medium">Bildirilen Arızalar</div>
+                  <div className="text-xl md:text-2xl font-bold text-red-900">{dashboardStats.aylikArizalar}</div>
+                </div>
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-2 md:p-3 hover:bg-blue-100 transition-colors">
+                  <div className="text-[10px] text-blue-700 font-medium">Yapılan Bakımlar</div>
+                  <div className="text-xl md:text-2xl font-bold text-blue-900">{dashboardStats.aylikBakimlar}</div>
+                </div>
+                <div className="rounded-lg border border-green-100 bg-green-50 p-2 md:p-3 hover:bg-green-100 transition-colors">
+                  <div className="text-[10px] text-green-700 font-medium">Vardiya Bildirimleri</div>
+                  <div className="text-xl md:text-2xl font-bold text-green-900">{dashboardStats.aylikVardiya}</div>
+                </div>
+                <div className="rounded-lg border border-amber-100 bg-amber-50 p-2 md:p-3 hover:bg-amber-100 transition-colors">
+                  <div className="text-[10px] text-amber-700 font-medium">Kritik Stok Uyarıları</div>
+                  <div className="text-xl md:text-2xl font-bold text-amber-900">{dashboardStats.aktifStokUyarilari}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Yeni Eklenenler Widget */}
+        <div>
+          <RecentItemsWidget 
+            companyId={userProfile?.companyId || ''} 
+            userRole={userProfile?.rol}
+            userSahalar={userProfile?.sahalar}
+            userSantraller={userProfile?.santraller}
+          />
+        </div>
+      </div>
 
       {/* Operasyon Haritası - Tam genişlik */}
       <Card padding="sm">

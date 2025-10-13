@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Plus, Wrench, Zap, Cog, Calendar, Clock, CheckCircle, Eye, Edit, List, Grid3X3, Download, Search, Filter, Building2, MapPin, User, X, ChevronRight, Image as ImageIcon, FileText } from 'lucide-react';
-import { Button, Card, CardContent, CardHeader, CardTitle, Modal, LoadingSpinner, Badge, Input, Select, LazyImage } from '../../components/ui';
+import { Button, Card, CardContent, CardHeader, CardTitle, Modal, LoadingSpinner, Badge, Input, Select, LazyImage, NewBadge } from '../../components/ui';
 import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { BakimForm } from '../../components/forms/BakimForm';
 import { YapilanIsForm } from '../../components/forms/YapilanIsForm';
@@ -11,6 +11,7 @@ import { getAllSahalar } from '../../services/sahaService';
 import { getAllSantraller } from '../../services/santralService';
 import type { ElectricalMaintenance, MechanicalMaintenance } from '../../types';
 import { formatDate, formatDateTime, formatRelativeTime, translateStatus } from '../../utils/formatters';
+import { isNewItem, getNewItemClasses, getNewItemHoverClasses, getTimeAgo } from '../../utils/newItemUtils';
 import toast from 'react-hot-toast';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -407,12 +408,24 @@ const Bakim: React.FC = () => {
   };
 
   // Render maintenance card
-  const renderMaintenanceCard = (bakim: any, type: string) => (
+  const renderMaintenanceCard = (bakim: any, type: string) => {
+    const isNew = isNewItem(bakim.tarih);
+    const timeAgo = isNew ? getTimeAgo(bakim.tarih) : '';
+    
+    return (
     <Card 
       key={bakim.id} 
-      className="hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
+      className={`transition-all duration-200 overflow-hidden cursor-pointer ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
       onClick={() => handleViewDetails(bakim, type)}
     >
+      {/* YENİ Badge */}
+      <NewBadge 
+        show={isNew} 
+        position="absolute"
+        timeAgo={timeAgo}
+        className="z-20"
+      />
+      
       {/* Image section - ilk 3 fotoğraf kolaj */}
       {bakim.fotograflar && bakim.fotograflar.length > 0 && (() => {
         const photos = (bakim.fotograflar as string[]).slice(0, 3);
@@ -613,7 +626,8 @@ const Bakim: React.FC = () => {
         </div>
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   // Render maintenance list item
   const renderMaintenanceListItem = (bakim: any, type: string) => (
