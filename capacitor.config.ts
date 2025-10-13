@@ -19,11 +19,14 @@ const config: CapacitorConfig = {
       presentationOptions: ["badge", "sound", "alert"]
     },
     SplashScreen: {
-      launchShowDuration: 2000,
-      launchAutoHide: false,  // Manuel olarak kapatacağız
-      backgroundColor: "#1E40AF",
-      showSpinner: true,
-      spinnerColor: "#FBBF24"
+      launchShowDuration: 500,  // Kısa süre göster
+      launchAutoHide: true,  // Otomatik kapat
+      backgroundColor: "#ffffff",  // Beyaz arka plan
+      showSpinner: false,  // Spinner'ı kapat - React'ta göstereceğiz
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+      iosSpinnerStyle: "small",
+      spinnerColor: "#3b82f6"  // Mavi (opsiyonel, zaten kapalı)
     },
     Keyboard: {
       resize: "body",

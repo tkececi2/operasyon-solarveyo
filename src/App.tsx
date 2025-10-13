@@ -146,35 +146,28 @@ function App() {
     }
   }, []);
   
-  // iOS auth check - Suspense dışında kontrol et
+  // iOS auth check - Clean, tek loading ekranı
   if (Capacitor.isNativePlatform() && !iosAuthChecked) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600">
-        <div className="text-center space-y-6">
-          {/* Ana Logo/İkon */}
-          <div className="flex justify-center">
-            <div className="relative">
-              {/* Pulse efekt arka plan */}
-              <div className="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
-              {/* Ana ikon container */}
-              <div className="relative bg-white rounded-full p-6 shadow-2xl">
-                {/* SolarVeyo Logo veya Icon */}
-                <svg className="w-16 h-16 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          {/* Tek, clean spinner */}
+          <div className="relative inline-block">
+            {/* Outer ring - pulse */}
+            <div className="absolute inset-0 border-4 border-blue-200 rounded-full animate-ping opacity-75"></div>
+            {/* Inner spinning ring */}
+            <div className="relative border-4 border-gray-200 rounded-full w-16 h-16">
+              <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+              {/* Center icon */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
                 </svg>
               </div>
             </div>
           </div>
-          
-          {/* Yükleme metni */}
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-white">SolarVeyo</h2>
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-            </div>
-          </div>
+          {/* Text */}
+          <p className="mt-4 text-gray-600 font-medium text-sm">Yükleniyor...</p>
         </div>
       </div>
     );
@@ -210,8 +203,26 @@ function App() {
           />
           
           <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center">
-              <LoadingSpinner />
+            <div className="min-h-screen flex items-center justify-center bg-white">
+              <div className="text-center">
+                {/* Tek, clean spinner */}
+                <div className="relative inline-block">
+                  {/* Outer ring - pulse */}
+                  <div className="absolute inset-0 border-4 border-blue-200 rounded-full animate-ping opacity-75"></div>
+                  {/* Inner spinning ring */}
+                  <div className="relative border-4 border-gray-200 rounded-full w-16 h-16">
+                    <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                    {/* Center icon */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                {/* Text */}
+                <p className="mt-4 text-gray-600 font-medium text-sm">Yükleniyor...</p>
+              </div>
             </div>
           }>
             {/* iOS auth check artık yukarıda yapılıyor */}
