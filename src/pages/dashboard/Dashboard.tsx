@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCompany } from '../../contexts/CompanyContext';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, CardContent, CardHeader, CardTitle, LoadingSpinner, SubscriptionStatusWidget, StorageWarningWidget } from '../../components/ui';
+import { Button, Card, CardContent, CardHeader, CardTitle, LoadingSpinner, SubscriptionStatusWidget, StorageWarningWidget, PullToRefresh } from '../../components/ui';
 import { KPICards, FaultStatusChart } from '../../components/charts';
 import { CompactWeatherWidget } from '../../components/weather/CompactWeatherWidget';
 import { RecentItemsWidget } from '../../components/dashboard/RecentItemsWidget';
@@ -291,10 +291,19 @@ const Dashboard: React.FC = () => {
     }
   ];
 
+  // Pull-to-refresh handler
+  const handleRefresh = async () => {
+    try {
+      await fetchDashboardData();
+    } catch (error) {
+      console.error('Dashboard yenileme hatası:', error);
+      // Sessizce devam et
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
-
 
   const content = (
     <div className="space-y-3 lg:space-y-4">
@@ -589,7 +598,11 @@ const Dashboard: React.FC = () => {
     </div>
   );
 
-  return content;
+  return (
+    <PullToRefresh onRefresh={handleRefresh}>
+      {content}
+    </PullToRefresh>
+  );
 };
 
 export default Dashboard;

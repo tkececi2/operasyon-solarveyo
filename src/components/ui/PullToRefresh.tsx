@@ -1,92 +1,67 @@
 /**
  * PullToRefresh Component
- * iOS ve Web için pull-to-refresh özelliği
+ * iOS native-like pull-to-refresh özelliği
  * Sayfa aşağı çekilince yenileme yapar
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 
 interface PullToRefreshProps {
   onRefresh: () => Promise<void>;
   children: React.ReactNode;
+  /** Pull to refresh devre dışı bırak */
+  disabled?: boolean;
 }
 
-export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, children }) => {
+export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, children, disabled = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const startY = useRef<number>(0);
-  const currentY = useRef<number>(0);
   const isDragging = useRef<boolean>(false);
-  const refreshThreshold = 80; // 80px çekince yenileme başlar
+  const refreshThreshold = 70; // 70px çekince yenileme başlar
 
   useEffect(() => {
+    if (disabled) return;
+    
     const container = containerRef.current;
-    if (!container) return;
-
-    let refreshIndicator: HTMLDivElement | null = null;
+    const content = contentRef.current;
+    if (!container || !content) return;
 
     const handleTouchStart = (e: TouchEvent) => {
       // Sadece en üstteyken pull-to-refresh aktif
-      if (window.scrollY === 0) {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      if (scrollTop === 0 && !isRefreshing) {
         startY.current = e.touches[0].clientY;
         isDragging.current = true;
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging.current) return;
-      if (window.scrollY > 0) {
+      if (!isDragging.current || isRefreshing) return;
+      
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      if (scrollTop > 0) {
         isDragging.current = false;
+        setPullDistance(0);
         return;
       }
 
-      currentY.current = e.touches[0].clientY;
-      const diff = currentY.current - startY.current;
+      const currentY = e.touches[0].clientY;
+      const diff = currentY - startY.current;
 
       if (diff > 0) {
-        // Aşağı çekiliyor
-        e.preventDefault();
+        // Aşağı çekiliyor - iOS gibi resistance effect
+        const resistance = 0.5; // Direnç faktörü (0.5 = yarı hızda)
+        const distance = Math.min(diff * resistance, refreshThreshold * 1.5);
         
-        if (!refreshIndicator) {
-          // Yenileme göstergesini oluştur
-          refreshIndicator = document.createElement('div');
-          refreshIndicator.className = 'pull-to-refresh-indicator';
-          refreshIndicator.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: ${Math.min(diff, refreshThreshold)}px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(to bottom, rgba(59, 130, 246, 0.1), transparent);
-            z-index: 9999;
-            transition: background 0.2s;
-          `;
-          
-          const spinner = document.createElement('div');
-          spinner.innerHTML = '↓';
-          spinner.style.cssText = `
-            font-size: 24px;
-            color: #3b82f6;
-            transform: rotate(${Math.min(diff / refreshThreshold * 180, 180)}deg);
-            transition: transform 0.1s;
-          `;
-          
-          refreshIndicator.appendChild(spinner);
-          document.body.appendChild(refreshIndicator);
-        } else {
-          // Göstergeyi güncelle
-          refreshIndicator.style.height = `${Math.min(diff, refreshThreshold)}px`;
-          const spinner = refreshIndicator.querySelector('div');
-          if (spinner) {
-            spinner.style.transform = `rotate(${Math.min(diff / refreshThreshold * 180, 180)}deg)`;
-            if (diff >= refreshThreshold) {
-              spinner.innerHTML = '↻';
-            } else {
-              spinner.innerHTML = '↓';
-            }
-          }
+        setPullDistance(distance);
+        
+        // Scroll'u engelle
+        if (diff > 10) {
+          e.preventDefault();
         }
       }
     };
@@ -95,90 +70,76 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
       if (!isDragging.current) return;
       isDragging.current = false;
 
-      const diff = currentY.current - startY.current;
-
-      if (diff >= refreshThreshold && refreshIndicator) {
-        // Yenileme animasyonu
-        refreshIndicator.style.background = 'linear-gradient(to bottom, rgba(59, 130, 246, 0.2), transparent)';
-        const spinner = refreshIndicator.querySelector('div');
-        if (spinner) {
-          spinner.innerHTML = '↻';
-          spinner.style.animation = 'spin 1s linear infinite';
-        }
-
-        // Stil ekle
-        if (!document.getElementById('ptr-styles')) {
-          const style = document.createElement('style');
-          style.id = 'ptr-styles';
-          style.textContent = `
-            @keyframes spin {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(360deg); }
-            }
-          `;
-          document.head.appendChild(style);
-        }
+      if (pullDistance >= refreshThreshold && !isRefreshing) {
+        // Yenileme başlat
+        setIsRefreshing(true);
+        setPullDistance(refreshThreshold);
 
         try {
           await onRefresh();
         } catch (error) {
           console.error('Pull-to-refresh error:', error);
-          // Hata durumunda bile göstergeyi kaldır
-        }
-
-        // Göstergeyi kaldır
-        setTimeout(() => {
-          if (refreshIndicator) {
-            refreshIndicator.style.transition = 'opacity 0.3s, height 0.3s';
-            refreshIndicator.style.opacity = '0';
-            refreshIndicator.style.height = '0';
-            setTimeout(() => {
-              if (refreshIndicator && refreshIndicator.parentNode) {
-                refreshIndicator.parentNode.removeChild(refreshIndicator);
-                refreshIndicator = null;
-              }
-            }, 300);
-          }
-        }, 500);
-      } else {
-        // Eşiğe ulaşılmadı, göstergeyi kaldır
-        if (refreshIndicator) {
-          refreshIndicator.style.transition = 'opacity 0.2s, height 0.2s';
-          refreshIndicator.style.opacity = '0';
-          refreshIndicator.style.height = '0';
+        } finally {
+          // Animasyonlu geri dönüş
           setTimeout(() => {
-            if (refreshIndicator && refreshIndicator.parentNode) {
-              refreshIndicator.parentNode.removeChild(refreshIndicator);
-              refreshIndicator = null;
-            }
-          }, 200);
+            setIsRefreshing(false);
+            setPullDistance(0);
+          }, 500);
         }
+      } else {
+        // Eşiğe ulaşılmadı, geri çek
+        setPullDistance(0);
       }
-
-      startY.current = 0;
-      currentY.current = 0;
     };
 
-    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    // Event listener'ları ekle
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
     container.addEventListener('touchmove', handleTouchMove, { passive: false });
-    container.addEventListener('touchend', handleTouchEnd);
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
-      
-      // Cleanup
-      const indicator = document.querySelector('.pull-to-refresh-indicator');
-      if (indicator && indicator.parentNode) {
-        indicator.parentNode.removeChild(indicator);
-      }
     };
-  }, [onRefresh]);
+  }, [onRefresh, disabled, isRefreshing, pullDistance]);
+
+  // Pull-to-refresh göstergesi için opacity ve rotation hesapla
+  const progress = Math.min(pullDistance / refreshThreshold, 1);
+  const rotation = progress * 360;
+  const opacity = Math.min(progress, 1);
 
   return (
-    <div ref={containerRef} style={{ minHeight: '100vh' }}>
-      {children}
+    <div ref={containerRef} className="relative min-h-screen">
+      {/* Pull-to-Refresh Göstergesi - iOS Native Gibi */}
+      <div
+        className="absolute left-0 right-0 flex items-center justify-center pointer-events-none transition-all duration-200 ease-out z-50"
+        style={{
+          top: pullDistance > 0 ? `${Math.max(pullDistance - 50, 0)}px` : '-50px',
+          opacity: opacity,
+          transform: `translateY(${pullDistance > 0 ? '0' : '-20px'})`
+        }}
+      >
+        <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
+          <RefreshCw 
+            className={`h-5 w-5 text-blue-600 transition-transform duration-200 ${isRefreshing ? 'animate-spin' : ''}`}
+            style={{
+              transform: isRefreshing ? 'rotate(0deg)' : `rotate(${rotation}deg)`
+            }}
+          />
+        </div>
+      </div>
+
+      {/* İçerik - Çekilirken yumuşak hareket */}
+      <div
+        ref={contentRef}
+        className="transition-transform duration-200 ease-out"
+        style={{
+          transform: `translateY(${pullDistance * 0.3}px)` // İçerik hafifçe kayar
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 };
