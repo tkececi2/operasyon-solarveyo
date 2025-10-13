@@ -169,37 +169,61 @@ const Dashboard: React.FC = () => {
       }).length;
 
       // Bu ayın vardiya bildirimlerini filtrele
-      const aylikVardiyaBildirimleri = vardiyaData.filter((vardiya: any) => {
-        // Bazı eski kayıtlarda 'tarih' alanı olmayabilir; olusturmaTarihi'ne düş
-        let vardiyaTarihi: Date | null = null;
-        if (vardiya.tarih) {
-          vardiyaTarihi = vardiya.tarih.toDate ? vardiya.tarih.toDate() : new Date(vardiya.tarih);
-        } else if (vardiya.olusturmaTarihi) {
-          vardiyaTarihi = vardiya.olusturmaTarihi.toDate ? vardiya.olusturmaTarihi.toDate() : new Date(vardiya.olusturmaTarihi);
-        }
-        if (!vardiyaTarihi || isNaN(vardiyaTarihi.getTime())) return false;
-        return vardiyaTarihi >= ayBaslangic && vardiyaTarihi < sonrakiAyBaslangic;
-      }).length;
+      let aylikVardiyaBildirimleri = 0;
+      try {
+        aylikVardiyaBildirimleri = (vardiyaData || []).filter((vardiya: any) => {
+          if (!vardiya) return false;
+          // Bazı eski kayıtlarda 'tarih' alanı olmayabilir; olusturmaTarihi'ne düş
+          let vardiyaTarihi: Date | null = null;
+          if (vardiya.tarih) {
+            vardiyaTarihi = vardiya.tarih.toDate ? vardiya.tarih.toDate() : new Date(vardiya.tarih);
+          } else if (vardiya.olusturmaTarihi) {
+            vardiyaTarihi = vardiya.olusturmaTarihi.toDate ? vardiya.olusturmaTarihi.toDate() : new Date(vardiya.olusturmaTarihi);
+          }
+          if (!vardiyaTarihi || isNaN(vardiyaTarihi.getTime())) return false;
+          return vardiyaTarihi >= ayBaslangic && vardiyaTarihi < sonrakiAyBaslangic;
+        }).length;
+      } catch (e) {
+        console.error('Vardiya filtreleme hatası:', e);
+        aylikVardiyaBildirimleri = 0;
+      }
       
       // Debug - Toplam vardiya sayısı
-      console.log('📊 Dashboard Vardiya:', {
+      console.log('📊 Dashboard Vardiya Debug:', {
         toplam: vardiyaData.length,
         buAy: aylikVardiyaBildirimleri,
         ayBaslangic: ayBaslangic.toISOString(),
-        sonrakiAy: sonrakiAyBaslangic.toISOString()
+        sonrakiAy: sonrakiAyBaslangic.toISOString(),
+        ilkVardiya: vardiyaData[0] ? {
+          tarih: vardiyaData[0].tarih?.toDate ? vardiyaData[0].tarih.toDate().toISOString() : vardiyaData[0].tarih,
+          olusturmaTarihi: vardiyaData[0].olusturmaTarihi?.toDate ? vardiyaData[0].olusturmaTarihi.toDate().toISOString() : vardiyaData[0].olusturmaTarihi
+        } : 'YOK'
       });
 
-      // Kritik stok uyarıları - Case insensitive
-      const kritikStokUyarilari = stokData.filter((stok: any) => 
-        stok.durum && stok.durum.toLowerCase() === 'kritik'
-      ).length;
-      
-      // Debug - Stok durumları
-      console.log('📦 Dashboard Stok:', {
-        toplam: stokData.length,
-        kritik: kritikStokUyarilari,
-        durumlar: stokData.map((s: any) => s.durum).filter((d: any, i: number, arr: any[]) => arr.indexOf(d) === i)
-      });
+      // Kritik stok uyarıları - Tüm varyasyonları kontrol et
+      let kritikStokUyarilari = 0;
+      try {
+        kritikStokUyarilari = (stokData || []).filter((stok: any) => {
+          if (!stok || !stok.durum) return false;
+          const durum = stok.durum.toString().toLowerCase().trim();
+          return durum === 'kritik' || durum === 'critical' || stok.kritikSeviye === true;
+        }).length;
+        
+        // Debug - Stok durumları
+        console.log('📦 Dashboard Stok Debug:', {
+          toplam: stokData.length,
+          kritik: kritikStokUyarilari,
+          durumlar: stokData.map((s: any) => s.durum).filter((d: any, i: number, arr: any[]) => arr.indexOf(d) === i),
+          ilkStok: stokData[0] ? {
+            ad: stokData[0].malzemeAdi,
+            durum: stokData[0].durum,
+            kritikSeviye: stokData[0].kritikSeviye
+          } : 'YOK'
+        });
+      } catch (e) {
+        console.error('Stok filtreleme hatası:', e);
+        kritikStokUyarilari = 0;
+      }
       
       // Dashboard istatistiklerini güncelle
       const musteriSayisiFromRole = (ekipDataResp || []).filter((u:any) => u.rol === 'musteri').length;
