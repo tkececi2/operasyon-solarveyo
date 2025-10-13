@@ -146,6 +146,18 @@ function App() {
     }
   }, []);
   
+  // iOS auth check - Suspense dışında kontrol et
+  if (Capacitor.isNativePlatform() && !iosAuthChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <LoadingSpinner size="xl" />
+          <p className="mt-4 text-gray-600 font-medium">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <Router>
@@ -180,11 +192,7 @@ function App() {
               <LoadingSpinner />
             </div>
           }>
-            {Capacitor.isNativePlatform() && !iosAuthChecked ? (
-              <div className="min-h-screen flex items-center justify-center">
-                <LoadingSpinner />
-              </div>
-            ) : (
+            {/* iOS auth check artık yukarıda yapılıyor */}
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
@@ -389,7 +397,6 @@ function App() {
               {/* 404 */}
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
-            )}
           </Suspense>
           </NotificationProvider>
         </CompanyProvider>
