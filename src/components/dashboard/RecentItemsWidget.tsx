@@ -146,7 +146,7 @@ export const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({
             icon: <Shield className="h-4 w-4" />,
             color: vardiya.durum === 'acil' ? 'text-red-500' : 
                    vardiya.durum === 'dikkat' ? 'text-yellow-500' : 'text-green-500',
-            path: '/vardiya-bildirimleri'
+            path: '/vardiya'
           });
         });
       } catch (error) {

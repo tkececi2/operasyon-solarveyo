@@ -180,9 +180,26 @@ const Dashboard: React.FC = () => {
         if (!vardiyaTarihi || isNaN(vardiyaTarihi.getTime())) return false;
         return vardiyaTarihi >= ayBaslangic && vardiyaTarihi < sonrakiAyBaslangic;
       }).length;
+      
+      // Debug - Toplam vardiya sayısı
+      console.log('📊 Dashboard Vardiya:', {
+        toplam: vardiyaData.length,
+        buAy: aylikVardiyaBildirimleri,
+        ayBaslangic: ayBaslangic.toISOString(),
+        sonrakiAy: sonrakiAyBaslangic.toISOString()
+      });
 
-      // Kritik stok uyarıları
-      const kritikStokUyarilari = stokData.filter((stok: any) => stok.durum === 'Kritik').length;
+      // Kritik stok uyarıları - Case insensitive
+      const kritikStokUyarilari = stokData.filter((stok: any) => 
+        stok.durum && stok.durum.toLowerCase() === 'kritik'
+      ).length;
+      
+      // Debug - Stok durumları
+      console.log('📦 Dashboard Stok:', {
+        toplam: stokData.length,
+        kritik: kritikStokUyarilari,
+        durumlar: stokData.map((s: any) => s.durum).filter((d: any, i: number, arr: any[]) => arr.indexOf(d) === i)
+      });
       
       // Dashboard istatistiklerini güncelle
       const musteriSayisiFromRole = (ekipDataResp || []).filter((u:any) => u.rol === 'musteri').length;
@@ -574,11 +591,9 @@ const Dashboard: React.FC = () => {
                   subtitle: `${sahaSantraller.length} Santral • ${toplamKapasite.toFixed(1)} kW`,
                   status: status,
                   details: [
-                    { label: 'İl/İlçe', value: `${saha.il}, ${saha.ilce}` },
                     { label: 'Santral Sayısı', value: sahaSantraller.length.toString() },
-                    { label: 'Toplam Kapasite', value: `${toplamKapasite.toFixed(1)} kW` },
-                    { label: 'Durum', value: saha.durum === 'aktif' ? 'Aktif' : 'Pasif' }
-                  ]
+                    { label: 'Toplam Kapasite', value: `${toplamKapasite.toFixed(1)} kW` }
+                  ].filter(d => d.value && d.value !== 'undefined' && d.value !== 'null')
                 };
               });
               
