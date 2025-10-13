@@ -515,45 +515,48 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* KPI Cards - Modern, Kompakt Tasarım */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
-        {kpiData.map((kpi, index) => {
-          const getIconBg = (color: string) => {
-            switch(color) {
-              case 'red': return 'bg-red-50 border border-red-100';
-              case 'blue': return 'bg-blue-50 border border-blue-100';
-              case 'green': return 'bg-green-50 border border-green-100';
-              case 'yellow': return 'bg-amber-50 border border-amber-100';
-              default: return 'bg-gray-50 border border-gray-100';
-            }
-          };
-          
-          const getIconColor = (color: string) => {
-            switch(color) {
-              case 'red': return 'text-red-600';
-              case 'blue': return 'text-blue-600';
-              case 'green': return 'text-green-600';
-              case 'yellow': return 'text-amber-600';
-              default: return 'text-gray-600';
-            }
-          };
-          
-          return (
-            <Card key={index} className="p-3 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${getIconBg(kpi.color)} flex-shrink-0`}>
-                  {kpi.icon === 'alert' && <AlertTriangle className={`h-5 w-5 ${getIconColor(kpi.color)}`} />}
-                  {kpi.icon === 'power' && <Wrench className={`h-5 w-5 ${getIconColor(kpi.color)}`} />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xl md:text-2xl font-bold text-gray-900">{kpi.value}</p>
-                  <p className="text-xs text-gray-600 truncate">{kpi.title}</p>
-                </div>
+      {/* Bu Ay Özeti - Program Özeti Stili */}
+      <Card className="h-full" padding="sm">
+        <CardHeader className="mb-2 pb-2">
+          <CardTitle className="text-sm md:text-base font-semibold">Bu Ay Özeti</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-3 gap-2">
+            {/* Bu Ay Arızalar */}
+            <div className="flex flex-col items-center gap-2 p-2 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 transition-colors">
+              <div className="text-red-600">
+                <AlertTriangle className="h-5 w-5" />
               </div>
-            </Card>
-          );
-        })}
-      </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-gray-900">{dashboardStats.aylikArizalar}</div>
+                <div className="text-[10px] text-gray-600">Bu Ay Arızalar</div>
+              </div>
+            </div>
+            
+            {/* Bu Ay Bakımlar */}
+            <div className="flex flex-col items-center gap-2 p-2 rounded-lg bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors">
+              <div className="text-blue-600">
+                <Wrench className="h-5 w-5" />
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-gray-900">{dashboardStats.aylikBakimlar}</div>
+                <div className="text-[10px] text-gray-600">Bu Ay Bakımlar</div>
+              </div>
+            </div>
+            
+            {/* Kritik Stok Uyarıları */}
+            <div className="flex flex-col items-center gap-2 p-2 rounded-lg bg-amber-50 border border-amber-100 hover:bg-amber-100 transition-colors">
+              <div className="text-amber-600">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-gray-900">{dashboardStats.aktifStokUyarilari}</div>
+                <div className="text-[10px] text-gray-600">Kritik Stok</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Üst Grid - 3 Kolon: Program Özeti, Hava Durumu, Hızlı Erişim */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">

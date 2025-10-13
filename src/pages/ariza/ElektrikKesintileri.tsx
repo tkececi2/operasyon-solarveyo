@@ -309,6 +309,37 @@ const ElektrikKesintileri: React.FC = () => {
     return years;
   }, []);
 
+  // Filtrelenmiş kesintilerden istatistikleri hesapla (gerçek zamanlı)
+  const filteredIstatistikler = useMemo(() => {
+    const total = filteredKesintiler.length;
+    const devam = filteredKesintiler.filter(k => !k.bitisTarihi).length;
+    const bitti = filteredKesintiler.filter(k => k.bitisTarihi).length;
+    
+    let toplamKayipEnerji = 0;
+    let toplamSure = 0;
+    let toplamGelirKaybi = 0;
+    
+    filteredKesintiler.forEach(k => {
+      if (k.kayilanUretim) toplamKayipEnerji += k.kayilanUretim;
+      if (k.kayilanGelir) toplamGelirKaybi += k.kayilanGelir;
+      if (k.sure) {
+        toplamSure += k.sure;
+      } else if (k.bitisTarihi) {
+        const sure = Math.round((k.bitisTarihi.toDate().getTime() - k.baslangicTarihi.toDate().getTime()) / (1000 * 60));
+        toplamSure += sure;
+      }
+    });
+    
+    return {
+      toplamKesinti: total,
+      devamEdenKesinti: devam,
+      tamamlananKesinti: bitti,
+      toplamSure,
+      toplamKayipUretim: toplamKayipEnerji,
+      toplamKayipGelir: toplamGelirKaybi
+    };
+  }, [filteredKesintiler]);
+
   // Görünen kartlardaki raporlayan kullanıcıları getir (ad + foto)
   useEffect(() => {
     (async () => {
@@ -390,75 +421,73 @@ const ElektrikKesintileri: React.FC = () => {
           </div>
         </div>
 
-        {/* İstatistik Kartları - Mobil için optimize edilmiş */}
-        {istatistikler && (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-            <Card>
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
-                  <div className="text-center sm:text-left">
-                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Toplam Kesinti</p>
-                    <p className="text-lg sm:text-2xl font-bold">{istatistikler.toplamKesinti}</p>
-                  </div>
-                  <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500 mb-1 sm:mb-0" />
+        {/* İstatistik Kartları - Filtreye göre dinamik */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+          <Card>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                <div className="text-center sm:text-left">
+                  <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Toplam Kesinti</p>
+                  <p className="text-lg sm:text-2xl font-bold">{filteredIstatistikler.toplamKesinti}</p>
                 </div>
-              </CardContent>
-            </Card>
+                <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500 mb-1 sm:mb-0" />
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
-                  <div className="text-center sm:text-left">
-                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Devam Eden</p>
-                    <p className="text-lg sm:text-2xl font-bold text-orange-600">{istatistikler.devamEdenKesinti}</p>
-                  </div>
-                  <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-orange-500 mb-1 sm:mb-0" />
+          <Card>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                <div className="text-center sm:text-left">
+                  <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Devam Eden</p>
+                  <p className="text-lg sm:text-2xl font-bold text-orange-600">{filteredIstatistikler.devamEdenKesinti}</p>
                 </div>
-              </CardContent>
-            </Card>
+                <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-orange-500 mb-1 sm:mb-0" />
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
-                  <div className="text-center sm:text-left">
-                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Toplam Süre</p>
-                    <p className="text-sm sm:text-lg lg:text-2xl font-bold">{formatSure(istatistikler.toplamSure)}</p>
-                  </div>
-                  <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500 mb-1 sm:mb-0" />
+          <Card>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                <div className="text-center sm:text-left">
+                  <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Toplam Süre</p>
+                  <p className="text-sm sm:text-lg lg:text-2xl font-bold">{formatSure(filteredIstatistikler.toplamSure)}</p>
                 </div>
-              </CardContent>
-            </Card>
+                <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500 mb-1 sm:mb-0" />
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
-                  <div className="text-center sm:text-left">
-                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Kayıp Üretim</p>
-                    <p className="text-xs sm:text-base lg:text-xl font-bold">
-                      {new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(istatistikler.toplamKayipUretim)}
-                      <span className="text-[10px] sm:text-xs"> kWh</span>
-                    </p>
-                  </div>
-                  <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 mb-1 sm:mb-0" />
+          <Card>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                <div className="text-center sm:text-left">
+                  <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Kayıp Üretim</p>
+                  <p className="text-xs sm:text-base lg:text-xl font-bold">
+                    {new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(filteredIstatistikler.toplamKayipUretim)}
+                    <span className="text-[10px] sm:text-xs"> kWh</span>
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+                <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 mb-1 sm:mb-0" />
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="col-span-2 sm:col-span-1">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col items-center sm:flex-row sm:justify-between">
-                  <div className="text-center sm:text-left">
-                    <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Kayıp Gelir</p>
-                    <p className="text-sm sm:text-lg lg:text-xl font-bold text-red-600">
-                      ₺{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(istatistikler.toplamKayipGelir)}
-                    </p>
-                  </div>
-                  <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 mb-1 sm:mb-0" />
+          <Card className="col-span-2 sm:col-span-1">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+                <div className="text-center sm:text-left">
+                  <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Kayıp Gelir</p>
+                  <p className="text-sm sm:text-lg lg:text-xl font-bold text-red-600">
+                    ₺{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(filteredIstatistikler.toplamKayipGelir)}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 text-red-600 mb-1 sm:mb-0" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Filtreler */}
