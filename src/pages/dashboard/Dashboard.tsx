@@ -33,6 +33,8 @@ import {
 } from 'lucide-react';
 // Removed unused import - SUBSCRIPTION_PLANS not used in this component
 import { useSubscription } from '../../hooks/useSubscription';
+import { collection, onSnapshot, where, query as fsQuery, Timestamp } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 const Dashboard: React.FC = () => {
   const { userProfile } = useAuth();
@@ -65,6 +67,11 @@ const Dashboard: React.FC = () => {
   const [liveNotifications, setLiveNotifications] = useState<Notification[]>([]);
   const [mapType, setMapType] = useState<'roadmap'|'satellite'|'terrain'|'hybrid'>('terrain');
   const [mapHeight, setMapHeight] = useState<number>(320);
+
+  // Gerçek zamanlı güncellemeler için yerel doküman listeleri
+  const [elektrikBakimDocs, setElektrikBakimDocs] = useState<any[]>([]);
+  const [mekanikBakimDocs, setMekanikBakimDocs] = useState<any[]>([]);
+  const [vardiyaDocs, setVardiyaDocs] = useState<any[]>([]);
 
   // Saha durum haritası: herhangi bir santrali arızalı ise 'ariza', aksi halde bakımda ise 'bakim', değilse 'normal'
   const sahaStatusMap = useMemo(() => {
@@ -99,6 +106,23 @@ const Dashboard: React.FC = () => {
       const now = new Date();
       const ayBaslangic = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
       const sonrakiAyBaslangic = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
+
+      // Güvenli tarih dönüştürücü (Timestamp | string | Date -> Date | null)
+      const toDateSafe = (input: any): Date | null => {
+        if (!input) return null;
+        try {
+          if (typeof input?.toDate === 'function') {
+            const d = input.toDate();
+            return isNaN(d.getTime()) ? null : d;
+          }
+          const d = new Date(input);
+          return isNaN(d.getTime()) ? null : d;
+        } catch {
+          return null;
+        }
+      };
+
+      const isInCurrentMonth = (d: Date | null) => !!d && d >= ayBaslangic && d < sonrakiAyBaslangic;
 
       // Paralel veri çekme (aylık aktiviteler için)
       let faultData: any, maintenanceStats: any, sahalarData: any[], santrallerData: any[], ekipData: any[], musteriData: any[], stokData: any[], vardiyaData: any[] = [];
@@ -138,22 +162,23 @@ const Dashboard: React.FC = () => {
         return sahaMatch || santralMatch;
       });
 
-      // Bu ayın bakımlarını filtrele
+      // Bu ayın bakımlarını filtrele (tarih yoksa olusturmaTarihi'ne düş)
       const elektrikBakimlarBuAy = elektrikBakimlar.filter((bakim: any) => {
-        const bakimTarihi = bakim.tarih?.toDate ? bakim.tarih.toDate() : new Date(bakim.tarih);
-        return bakimTarihi >= ayBaslangic && bakimTarihi < sonrakiAyBaslangic;
+        const bakimTarihi = toDateSafe(bakim.tarih) || toDateSafe(bakim.olusturmaTarihi);
+        return isInCurrentMonth(bakimTarihi);
       });
       const mekanikBakimlarBuAy = mekanikBakimlar.filter((bakim: any) => {
-        const bakimTarihi = bakim.tarih?.toDate ? bakim.tarih.toDate() : new Date(bakim.tarih);
-        return bakimTarihi >= ayBaslangic && bakimTarihi < sonrakiAyBaslangic;
+        const bakimTarihi = toDateSafe(bakim.tarih) || toDateSafe(bakim.olusturmaTarihi);
+        return isInCurrentMonth(bakimTarihi);
       });
       const yapilanIslerBuAy = yapilanIsler.filter((is: any) => {
-        const isTarihi = is.tarih?.toDate ? is.tarih.toDate() : new Date(is.tarih);
-        return isTarihi >= ayBaslangic && isTarihi < sonrakiAyBaslangic;
+        const isTarihi = toDateSafe(is.tarih) || toDateSafe(is.olusturmaTarihi);
+        return isInCurrentMonth(isTarihi);
       });
 
+      // Not: Dashboard'da "Bakımlar" yalnız elektrik+mekanik toplamıdır (yapılan işler dahil edilmez)
       maintenanceStats = {
-        toplamBakim: elektrikBakimlarBuAy.length + mekanikBakimlarBuAy.length + yapilanIslerBuAy.length,
+        toplamBakim: elektrikBakimlarBuAy.length + mekanikBakimlarBuAy.length,
         elektrikBakim: elektrikBakimlarBuAy.length,
         mekanikBakim: mekanikBakimlarBuAy.length,
         yapilanIs: yapilanIslerBuAy.length
@@ -173,15 +198,8 @@ const Dashboard: React.FC = () => {
       try {
         aylikVardiyaBildirimleri = (vardiyaData || []).filter((vardiya: any) => {
           if (!vardiya) return false;
-          // Bazı eski kayıtlarda 'tarih' alanı olmayabilir; olusturmaTarihi'ne düş
-          let vardiyaTarihi: Date | null = null;
-          if (vardiya.tarih) {
-            vardiyaTarihi = vardiya.tarih.toDate ? vardiya.tarih.toDate() : new Date(vardiya.tarih);
-          } else if (vardiya.olusturmaTarihi) {
-            vardiyaTarihi = vardiya.olusturmaTarihi.toDate ? vardiya.olusturmaTarihi.toDate() : new Date(vardiya.olusturmaTarihi);
-          }
-          if (!vardiyaTarihi || isNaN(vardiyaTarihi.getTime())) return false;
-          return vardiyaTarihi >= ayBaslangic && vardiyaTarihi < sonrakiAyBaslangic;
+          const vardiyaTarihi = toDateSafe(vardiya.tarih) || toDateSafe(vardiya.olusturmaTarihi);
+          return isInCurrentMonth(vardiyaTarihi);
         }).length;
       } catch (e) {
         console.error('Vardiya filtreleme hatası:', e);
@@ -205,8 +223,10 @@ const Dashboard: React.FC = () => {
       try {
         kritikStokUyarilari = (stokData || []).filter((stok: any) => {
           if (!stok) return false;
-          const mevcutStok = stok.mevcutStok || stok.miktar || 0;
-          const minimumStok = stok.minimumStok || stok.minimumStokSeviyesi || 0;
+          const mevcutStok = Number(stok.mevcutStok ?? stok.miktar ?? 0);
+          const minRaw = (stok.minimumStok ?? stok.minimumStokSeviyesi);
+          const minimumStok = minRaw === undefined || minRaw === null ? null : Number(minRaw);
+          if (minimumStok === null || !isFinite(minimumStok) || minimumStok <= 0) return false; // Minimum değeri olmayanları sayma
           return mevcutStok <= minimumStok;
         }).length;
         
@@ -216,8 +236,8 @@ const Dashboard: React.FC = () => {
           kritik: kritikStokUyarilari,
           ilkStok: stokData[0] ? {
             ad: stokData[0].malzemeAdi,
-            mevcut: stokData[0].mevcutStok || stokData[0].miktar,
-            minimum: stokData[0].minimumStok || stokData[0].minimumStokSeviyesi
+            mevcut: stokData[0].mevcutStok ?? stokData[0].miktar,
+            minimum: stokData[0].minimumStok ?? stokData[0].minimumStokSeviyesi
           } : 'YOK'
         });
       } catch (e) {
@@ -266,6 +286,136 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchDashboardData();
   }, [userProfile?.companyId]);
+
+  // Gerçek zamanlı abonelikler (Bakımlar ve Vardiya)
+  useEffect(() => {
+    if (!userProfile?.companyId) return;
+    const allowedSahalar = Array.isArray(userProfile.sahalar) ? (userProfile.sahalar as string[]) : [];
+    const allowedSantraller = Array.isArray(userProfile.santraller) ? (userProfile.santraller as string[]) : [];
+
+    const filterByRole = (items: any[]) => {
+      if (userProfile.rol === 'yonetici' || userProfile.rol === 'superadmin') return items;
+      return (items || []).filter((it: any) => {
+        const sahaOk = it.sahaId ? allowedSahalar.includes(it.sahaId) : false;
+        const santralOk = it.santralId ? allowedSantraller.includes(it.santralId) : false;
+        return sahaOk || santralOk;
+      });
+    };
+
+    const unsubs: Array<() => void> = [];
+
+    // Elektrik bakım
+    try {
+      const qElec = fsQuery(
+        collection(db, 'elektrikBakimlar'),
+        where('companyId', '==', userProfile.companyId)
+      );
+      unsubs.push(onSnapshot(qElec, (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setElektrikBakimDocs(filterByRole(list));
+      }));
+    } catch {}
+
+    // Mekanik bakım
+    try {
+      const qMek = fsQuery(
+        collection(db, 'mekanikBakimlar'),
+        where('companyId', '==', userProfile.companyId)
+      );
+      unsubs.push(onSnapshot(qMek, (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setMekanikBakimDocs(filterByRole(list));
+      }));
+    } catch {}
+
+    // Vardiya bildirimleri (tüm kayıtlar)
+    try {
+      const qVar = fsQuery(
+        collection(db, 'vardiyaBildirimleri'),
+        where('companyId', '==', userProfile.companyId)
+      );
+      unsubs.push(onSnapshot(qVar, (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const filtered = filterByRole(list);
+        setVardiyaDocs(filtered);
+        // Aylık sayacı burada da güncelle (fallback ve anında güncelleme)
+        try {
+          const now = new Date();
+          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+          const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
+          const toDateSafe = (input: any): Date | null => {
+            if (!input) return null;
+            try {
+              if (typeof input?.toDate === 'function') {
+                const d = input.toDate();
+                return isNaN(d.getTime()) ? null : d;
+              }
+              const d = new Date(input);
+              return isNaN(d.getTime()) ? null : d;
+            } catch { return null; }
+          };
+          const isInMonth = (d: Date | null) => !!d && d >= monthStart && d < nextMonthStart;
+          const monthCount = filtered.filter((v: any) => isInMonth(toDateSafe(v.tarih) || toDateSafe(v.olusturmaTarihi))).length;
+          setDashboardStats((prev) => ({ ...prev, aylikVardiya: monthCount }));
+        } catch {}
+      }));
+    } catch {}
+
+    // Vardiya bildirimleri (bu ay) - gerçek zamanlı sayaç
+    try {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
+      const qVarMonth = fsQuery(
+        collection(db, 'vardiyaBildirimleri'),
+        where('companyId', '==', userProfile.companyId),
+        where('tarih', '>=', Timestamp.fromDate(monthStart)),
+        where('tarih', '<', Timestamp.fromDate(nextMonthStart))
+      );
+      unsubs.push(onSnapshot(qVarMonth, (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const filtered = filterByRole(list);
+        setDashboardStats((prev) => ({ ...prev, aylikVardiya: filtered.length }));
+      }));
+    } catch {}
+
+    return () => {
+      unsubs.forEach((u) => u && u());
+    };
+  }, [userProfile?.companyId, userProfile?.rol, userProfile?.sahalar, userProfile?.santraller]);
+
+  // Aboneliklerden gelen dokümanlar değiştiğinde aylık sayaçları hesapla
+  useEffect(() => {
+    if (!userProfile?.companyId) return;
+    const now = new Date();
+    const ayBaslangic = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    const sonrakiAyBaslangic = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0);
+
+    const toDateSafe = (input: any): Date | null => {
+      if (!input) return null;
+      try {
+        if (typeof input?.toDate === 'function') {
+          const d = input.toDate();
+          return isNaN(d.getTime()) ? null : d;
+        }
+        const d = new Date(input);
+        return isNaN(d.getTime()) ? null : d;
+      } catch { return null; }
+    };
+    const isInCurrentMonth = (d: Date | null) => !!d && d >= ayBaslangic && d < sonrakiAyBaslangic;
+
+    const elecCount = (elektrikBakimDocs || []).filter((b: any) => isInCurrentMonth(toDateSafe(b.tarih) || toDateSafe(b.olusturmaTarihi))).length;
+    const mekCount  = (mekanikBakimDocs || []).filter((b: any) => isInCurrentMonth(toDateSafe(b.tarih) || toDateSafe(b.olusturmaTarihi))).length;
+    const maintTotal = elecCount + mekCount;
+    const vardiyaCount = (vardiyaDocs || []).filter((v: any) => isInCurrentMonth(toDateSafe(v.tarih) || toDateSafe(v.olusturmaTarihi))).length;
+
+    setDashboardStats((prev) => ({
+      ...prev,
+      aylikBakimlar: maintTotal,
+      buAyBakimSayisi: maintTotal,
+      aylikVardiya: vardiyaCount
+    }));
+  }, [elektrikBakimDocs, mekanikBakimDocs, vardiyaDocs, userProfile?.companyId]);
 
   // Canlı bildirim aboneliği (eski gösterim)
   useEffect(() => {
@@ -319,12 +469,6 @@ const Dashboard: React.FC = () => {
       color: 'blue' as const
     },
     {
-      title: 'Bu Ay Vardiya',
-      value: dashboardStats.aylikVardiya,
-      icon: 'power' as const,
-      color: 'green' as const
-    },
-    {
       title: 'Kritik Stok Uyarıları',
       value: dashboardStats.aktifStokUyarilari,
       icon: 'alert' as const,
@@ -372,7 +516,7 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* KPI Cards - Modern, Kompakt Tasarım */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
         {kpiData.map((kpi, index) => {
           const getIconBg = (color: string) => {
             switch(color) {
@@ -519,7 +663,7 @@ const Dashboard: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 <div className="rounded-lg border border-red-100 bg-red-50 p-2 md:p-3 hover:bg-red-100 transition-colors">
                   <div className="text-[10px] text-red-700 font-medium">Bildirilen Arızalar</div>
                   <div className="text-xl md:text-2xl font-bold text-red-900">{dashboardStats.aylikArizalar}</div>
@@ -527,10 +671,6 @@ const Dashboard: React.FC = () => {
                 <div className="rounded-lg border border-blue-100 bg-blue-50 p-2 md:p-3 hover:bg-blue-100 transition-colors">
                   <div className="text-[10px] text-blue-700 font-medium">Yapılan Bakımlar</div>
                   <div className="text-xl md:text-2xl font-bold text-blue-900">{dashboardStats.aylikBakimlar}</div>
-                </div>
-                <div className="rounded-lg border border-green-100 bg-green-50 p-2 md:p-3 hover:bg-green-100 transition-colors">
-                  <div className="text-[10px] text-green-700 font-medium">Vardiya Bildirimleri</div>
-                  <div className="text-xl md:text-2xl font-bold text-green-900">{dashboardStats.aylikVardiya}</div>
                 </div>
                 <div className="rounded-lg border border-amber-100 bg-amber-50 p-2 md:p-3 hover:bg-amber-100 transition-colors">
                   <div className="text-[10px] text-amber-700 font-medium">Kritik Stok Uyarıları</div>

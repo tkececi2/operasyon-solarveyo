@@ -573,7 +573,7 @@ const ElektrikKesintileri: React.FC = () => {
             return (
               <Card 
                 key={kesinti.id} 
-                className={`${devamEdiyor ? 'border-orange-500' : ''} ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
+                className={`relative ${devamEdiyor ? 'border-orange-500' : ''} ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
               >
                 {/* YENİ Badge */}
                 <NewBadge 
