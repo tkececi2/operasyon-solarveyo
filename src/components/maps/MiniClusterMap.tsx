@@ -321,32 +321,68 @@ export const MiniClusterMap: React.FC<{
           return marker;
         });
 
-        // Kümelendirme
+        // Modern Kümelendirme
         if (window.markerClusterer && window.markerClusterer.MarkerClusterer) {
           new window.markerClusterer.MarkerClusterer({ 
             map, 
             markers,
             renderer: {
               render: ({ count, position }: any) => {
-                const color = count > 10 ? '#dc2626' : count > 5 ? '#ea580c' : '#0284c7';
+                // Miktar bazlı renk ve gradient
+                const colors = count > 10 
+                  ? { primary: '#dc2626', secondary: '#991b1b', glow: '#fca5a5' }
+                  : count > 5
+                  ? { primary: '#ea580c', secondary: '#9a3412', glow: '#fdba74' }
+                  : { primary: '#0284c7', secondary: '#075985', glow: '#7dd3fc' };
+                
+                // Clean, minimal cluster tasarımı
+                const svg = `
+                  <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <!-- Glow shadow -->
+                      <filter id="clusterShadow">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                        <feOffset dx="0" dy="2" result="offsetblur"/>
+                        <feComponentTransfer>
+                          <feFuncA type="linear" slope="0.4"/>
+                        </feComponentTransfer>
+                        <feMerge>
+                          <feMergeNode/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                      
+                      <!-- Gradient -->
+                      <linearGradient id="grad${count}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:${colors.primary};stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:${colors.secondary};stop-opacity:1" />
+                      </linearGradient>
+                    </defs>
+                    
+                    <!-- Outer soft glow -->
+                    <circle cx="30" cy="30" r="26" fill="${colors.primary}" opacity="0.1"/>
+                    
+                    <!-- Main circle with gradient -->
+                    <circle cx="30" cy="30" r="22" fill="url(#grad${count})" 
+                            stroke="#ffffff" stroke-width="4" 
+                            filter="url(#clusterShadow)"/>
+                    
+                    <!-- Sayı - Bold ve Net -->
+                    <text x="30" y="37" text-anchor="middle" 
+                          font-size="18" font-weight="900" 
+                          fill="#ffffff" 
+                          style="paint-order: stroke; stroke: ${colors.secondary}; stroke-width: 3px; stroke-opacity: 0.3">
+                      ${count}
+                    </text>
+                  </svg>
+                `;
+                
                 return new window.google.maps.Marker({
                   position,
                   icon: {
-                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                      <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="25" cy="25" r="24" fill="${color}" opacity="0.2"/>
-                        <circle cx="25" cy="25" r="18" fill="${color}" stroke="#ffffff" stroke-width="3"/>
-                        <text x="25" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#ffffff">${count}</text>
-                      </svg>
-                    `)}`,
-                    scaledSize: new window.google.maps.Size(50, 50),
-                    anchor: new window.google.maps.Point(25, 25),
-                  },
-                  label: {
-                    text: '',
-                    color: 'white',
-                    fontSize: '14px',
-                    fontWeight: 'bold'
+                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+                    scaledSize: new window.google.maps.Size(60, 60),
+                    anchor: new window.google.maps.Point(30, 30),
                   },
                   zIndex: Number(window.google.maps.Marker.MAX_ZINDEX) + count,
                 });
