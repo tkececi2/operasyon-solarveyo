@@ -208,6 +208,9 @@ export const MiniClusterMap: React.FC<{
             const safeTitle = p.title ?? 'Saha';
             const safeSubtitle = p.subtitle ?? '';
             
+            // Glow rengi (hover border için)
+            const glowColor = getColorByStatus(p.status);
+            
             // Durum badge
             let statusBadge = '';
             if (p.status === 'ariza') {
