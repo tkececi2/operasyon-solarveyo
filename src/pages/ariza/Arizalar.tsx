@@ -856,8 +856,13 @@ const Arizalar: React.FC = () => {
 
   // Pull-to-refresh handler
   const handleRefresh = async () => {
-    await fetchArizalar(true, false);
-    await loadSahaOptions();
+    try {
+      await fetchArizalar(true, false);
+      await loadSahaOptions();
+    } catch (error) {
+      console.error('Yenileme hatası:', error);
+      // Sessizce devam et - kullanıcıya hata gösterme
+    }
   };
 
   return (

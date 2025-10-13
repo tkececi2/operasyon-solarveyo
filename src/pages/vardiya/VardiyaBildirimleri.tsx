@@ -280,7 +280,12 @@ const VardiyaBildirimleri: React.FC = () => {
 
   // Pull-to-refresh handler
   const handleRefresh = async () => {
-    await fetchData();
+    try {
+      await fetchData();
+    } catch (error) {
+      console.error('Yenileme hatası:', error);
+      // Sessizce devam et - kullanıcıya hata gösterme
+    }
   };
 
   return (

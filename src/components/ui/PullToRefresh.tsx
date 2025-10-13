@@ -122,7 +122,8 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
         try {
           await onRefresh();
         } catch (error) {
-          console.error('Refresh error:', error);
+          console.error('Pull-to-refresh error:', error);
+          // Hata durumunda bile göstergeyi kaldır
         }
 
         // Göstergeyi kaldır

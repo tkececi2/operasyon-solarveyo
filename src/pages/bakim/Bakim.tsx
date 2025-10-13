@@ -744,8 +744,13 @@ const Bakim: React.FC = () => {
 
   // Pull-to-refresh handler
   const handleRefresh = async () => {
-    await fetchMaintenanceData();
-    await loadData();
+    try {
+      await fetchMaintenanceData();
+      await loadData();
+    } catch (error) {
+      console.error('Yenileme hatası:', error);
+      // Sessizce devam et - kullanıcıya hata gösterme
+    }
   };
 
   return (

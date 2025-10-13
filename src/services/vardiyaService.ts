@@ -133,7 +133,7 @@ export const createVardiyaBildirimi = async (
         title: `${iconPrefix} ${vardiyaData.durum === 'acil' ? 'Acil ' : ''}Vardiya Bildirimi`,
         message: `${vardiyaData.sahaAdi} - ${vardiyaData.vardiyaTipi.toUpperCase()} vardiyası (${vardiyaData.vardiyaSaatleri.baslangic}-${vardiyaData.vardiyaSaatleri.bitis})`,
         type: vardiyaData.durum === 'acil' ? 'error' : (vardiyaData.durum === 'dikkat' ? 'warning' : 'info'),
-        actionUrl: '/vardiya-bildirimleri',
+        actionUrl: '/vardiya',
         metadata: {
           ...metadata,
           targetType: 'vardiya', // KRİTİK: Hedef tipi

@@ -198,8 +198,8 @@ const Bildirimler: React.FC = () => {
     }
     // Vardiya bildirimi
     else if (metadata.vardiyaId || metadata.targetType === 'vardiya') {
-      navigate('/vardiya-bildirimleri');
-      console.log('📍 Vardiya bildirimleri sayfasına yönlendirildi - vardiyaId:', metadata.vardiyaId);
+      navigate('/vardiya');
+      console.log('📍 Vardiya sayfasına yönlendirildi - vardiyaId:', metadata.vardiyaId);
     }
     // Stok bildirimi
     else if (metadata.stokId) {
