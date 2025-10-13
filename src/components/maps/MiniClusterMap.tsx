@@ -224,10 +224,18 @@ export const MiniClusterMap: React.FC<{
             
             const subtitle = safeSubtitle ? `<div style="color:#64748b;font-size:13px;margin-bottom:8px">${safeSubtitle}</div>` : '';
             
-            // Detayları zengin kartlar halinde göster
-            const list = (p.details && p.details.length > 0) ? 
+            // Detayları zengin kartlar halinde göster - Sadece dolu olanlar
+            const validDetails = (p.details || []).filter(d => 
+              d && d.label && d.value && 
+              d.value !== 'undefined' && 
+              d.value !== 'null' && 
+              d.value.trim() !== '' &&
+              !d.value.includes('undefined')
+            );
+            
+            const list = validDetails.length > 0 ? 
               `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
-                ${p.details.map(d => `
+                ${validDetails.map(d => `
                   <div style="background:linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);padding:10px;border-radius:8px;border:1px solid #bae6fd">
                     <div style="font-size:11px;color:#0369a1;font-weight:600;text-transform:uppercase;margin-bottom:4px">${d.label}</div>
                     <div style="font-size:15px;color:#0c4a6e;font-weight:700">${d.value}</div>
