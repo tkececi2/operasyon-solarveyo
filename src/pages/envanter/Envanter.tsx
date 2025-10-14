@@ -292,12 +292,23 @@ const EnvanterPage: React.FC = () => {
                   <div>
                     Garanti: {item.garantiBitis ? formatDate(item.garantiBitis.toDate()) : '-'}
                     {typeof remainingDays(item.garantiBitis) === 'number' && (
-                      <span className={`ml-2 text-[11px] px-2 py-0.5 rounded-full ${remainingDays(item.garantiBitis)! <= 30 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                        {remainingDays(item.garantiBitis)} gün kaldı
+                      <span className={`ml-2 text-[11px] px-2 py-0.5 rounded-full ${
+                        remainingDays(item.garantiBitis)! <= 0 
+                          ? 'bg-gray-100 text-gray-700' 
+                          : remainingDays(item.garantiBitis)! <= 30 
+                            ? 'bg-red-100 text-red-700' 
+                            : 'bg-green-100 text-green-700'
+                      }`}>
+                        {remainingDays(item.garantiBitis)! <= 0 ? 'Garantisi Bitti' : `${remainingDays(item.garantiBitis)} gün kaldı`}
                       </span>
                     )}
                   </div>
                 </div>
+                {item.notlar && (
+                  <div className="text-xs text-gray-600 pt-2 border-t mt-2">
+                    <span className="font-medium">Not:</span> {item.notlar}
+                  </div>
+                )}
                 {item.belgeUrl && (item.belgeUrl as any).length > 0 && (
                   <div className="text-xs text-blue-600 flex items-center gap-2 pt-1" onClick={(e)=>e.stopPropagation()}>
                     <FileText className="w-3.5 h-3.5"/>
@@ -353,7 +364,15 @@ const EnvanterPage: React.FC = () => {
                     <td className="px-4 py-3 text-sm">{item.santralId ? (santralMap[item.santralId]?.ad || '-') : '-'}</td>
                     <td className="px-4 py-3 text-sm">{item.kurulumTarihi ? formatDate(item.kurulumTarihi.toDate()) : '-'}</td>
                     <td className="px-4 py-3 text-sm">{item.garantiBitis ? formatDate(item.garantiBitis.toDate()) : '-'}</td>
-                    <td className="px-4 py-3 text-sm">{typeof remainingDays(item.garantiBitis) === 'number' ? `${remainingDays(item.garantiBitis)} gün` : '-'}</td>
+                    <td className="px-4 py-3 text-sm">
+                      {typeof remainingDays(item.garantiBitis) === 'number' 
+                        ? (remainingDays(item.garantiBitis)! <= 0 
+                            ? <span className="text-gray-600 font-medium">Garantisi Bitti</span>
+                            : <span className={remainingDays(item.garantiBitis)! <= 30 ? 'text-red-600 font-medium' : 'text-green-600'}>{remainingDays(item.garantiBitis)} gün</span>
+                          )
+                        : '-'
+                      }
+                    </td>
                     <td className="px-4 py-3 text-sm" onClick={(e)=>e.stopPropagation()}>
                       {item.belgeUrl && (item.belgeUrl as any).length>0 ? (
                         <a href={(item.belgeUrl as any)[0]} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline" onClick={(e)=>e.stopPropagation()}>
@@ -431,8 +450,23 @@ const EnvanterPage: React.FC = () => {
               <div><span className="text-gray-500">Santral:</span> {viewing.santralId ? (santralMap[viewing.santralId!]?.ad || '-') : '-'}</div>
               <div><span className="text-gray-500">Kurulum:</span> {viewing.kurulumTarihi ? formatDate((viewing.kurulumTarihi as any).toDate()) : '-'}</div>
               <div><span className="text-gray-500">Garanti Bitiş:</span> {viewing.garantiBitis ? formatDate((viewing.garantiBitis as any).toDate()) : '-'}</div>
-              <div><span className="text-gray-500">Garanti Kalan:</span> {typeof remainingDays(viewing.garantiBitis) === 'number' ? `${remainingDays(viewing.garantiBitis)} gün` : '-'}</div>
+              <div>
+                <span className="text-gray-500">Garanti Kalan:</span> {
+                  typeof remainingDays(viewing.garantiBitis) === 'number' 
+                    ? (remainingDays(viewing.garantiBitis)! <= 0 
+                        ? <span className="text-gray-600 font-medium">Garantisi Bitti</span>
+                        : <span className={remainingDays(viewing.garantiBitis)! <= 30 ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>{remainingDays(viewing.garantiBitis)} gün</span>
+                      )
+                    : '-'
+                }
+              </div>
             </div>
+            {viewing.notlar && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Notlar</h4>
+                <p className="text-sm text-gray-700">{viewing.notlar}</p>
+              </div>
+            )}
           </div>
         </Modal>
       )}

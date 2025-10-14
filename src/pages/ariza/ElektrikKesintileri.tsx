@@ -478,7 +478,7 @@ const ElektrikKesintileri: React.FC = () => {
             <CardContent className="p-3 sm:p-4">
               <div className="flex flex-col items-center sm:flex-row sm:justify-between">
                 <div className="text-center sm:text-left">
-                  <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Kayıp Gelir</p>
+                  <p className="text-[10px] sm:text-xs text-gray-600 mb-1">Tahmini Kayıp</p>
                   <p className="text-sm sm:text-lg lg:text-xl font-bold text-red-600">
                     ₺{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(filteredIstatistikler.toplamKayipGelir)}
                   </p>
@@ -684,7 +684,7 @@ const ElektrikKesintileri: React.FC = () => {
                     )}
                     {kesinti.kayilanGelir && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Kayıp Gelir:</span>
+                        <span className="text-gray-600">Tahmini Kayıp:</span>
                         <span className="font-medium text-red-600">
                           ₺{new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(kesinti.kayilanGelir)}
                         </span>
