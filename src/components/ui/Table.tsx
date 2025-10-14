@@ -302,10 +302,14 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
                     ${item.danger ? 'text-red-700 hover:bg-red-50' : 'text-gray-700 hover:bg-gray-100'}
                     ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}
                   `}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     if (!item.disabled) {
-                      item.onClick();
                       setIsOpen(false);
+                      // Dropdown'ı kapat ve sonra onClick'i çalıştır
+                      setTimeout(() => {
+                        item.onClick();
+                      }, 0);
                     }
                   }}
                   disabled={item.disabled}
