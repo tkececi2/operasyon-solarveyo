@@ -101,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Mobile menu button - iOS dahil göster */}
           <button
             onClick={onMenuClick}
-            className="lg:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="xl:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <Menu className="h-6 w-6" />
           </button>
@@ -109,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Desktop sidebar toggle */}
           <button
             onClick={onToggleSidebar}
-            className="hidden lg:flex p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="hidden xl:flex p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             {sidebarCollapsed ? (
               <ChevronRight className="h-5 w-5" />
@@ -118,9 +118,9 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
-          {/* Logo - Web mobilde göster, iOS'ta gizle */}
+          {/* Logo - Web mobilde/tablet göster, iOS'ta gizle */}
           {!isNative && (
-            <div className="flex items-center space-x-3 lg:hidden">
+            <div className="flex items-center space-x-3 xl:hidden">
               <Logo showSubtitle={false} />
             </div>
           )}

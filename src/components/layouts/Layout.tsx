@@ -61,8 +61,8 @@ export const Layout: React.FC = () => {
         onClose={() => setSidebarOpen(false)} 
       />
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block">
+      {/* Desktop sidebar - iPad'de gizli, sadece büyük ekranlarda */}
+      <div className="hidden xl:block">
         <Sidebar 
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
