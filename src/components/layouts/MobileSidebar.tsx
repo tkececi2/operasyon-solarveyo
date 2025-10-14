@@ -153,12 +153,12 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = ({ open, onClose }) =
     <>
       {/* Overlay */}
       <div 
-        className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden"
+        className="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 xl:hidden"
         onClick={onClose}
       />
 
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 flex flex-col w-64 bg-white border-r border-gray-200 z-50 lg:hidden">
+      <div className="fixed inset-y-0 left-0 flex flex-col w-64 bg-white border-r border-gray-200 z-50 xl:hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center space-x-3">
