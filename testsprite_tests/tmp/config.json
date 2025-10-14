@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:5173",
+  "loginUser": "tkececi@edeonenerji.com",
+  "loginPassword": "123456",
+  "executionArgs": {
+    "projectName": "operasyon-solarveyo",
+    "projectPath": "/Users/tolgakececi/Desktop/operasyon-solarveyo",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-1lZFpO4YtmS7XacUgQ5lwOxGB90kcPUuOnP-xbgf-vF-GX2RehdsNCO5ZnUs4DQlQ16S621ACl0enLoS--qbt1TMHjMA-qjOQjVyrKS6bGCx9Hpm3g8Cnpnh2yHgaRAkI0E"
+    }
+  },
+  "proxy": "http://a73f61de-125e-40a7-a25d-ad816c7f77c9:wvwzmZcdyDd6MgCSZxK2bCe3Zc3ch8sc@tun.testsprite.com:8080"
+}

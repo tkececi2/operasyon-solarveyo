@@ -1,0 +1,405 @@
+[
+  {
+    "id": "TC001",
+    "title": "Role-Based Authentication Success",
+    "description": "Verify that users can successfully log in with valid credentials for all defined roles including SuperAdmin, Manager, Engineer, Technician, Customer, and Guard with 2FA enabled.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Enter valid username/email and password for each user role"
+      },
+      {
+        "type": "action",
+        "description": "Complete 2FA verification step"
+      },
+      {
+        "type": "action",
+        "description": "Click login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify successful login and access to role-appropriate dashboard"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Role-Based Access Control Enforcement",
+    "description": "Verify that each user role can only access data and features permitted by their role and tenant isolation rules are enforced strictly.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as each user role"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access restricted pages, data records, or perform unauthorized actions"
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure access is denied and appropriate error messages are displayed"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access another tenant's data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify data isolation by denying cross-tenant data access"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Dashboard KPIs Load and Update Correctly",
+    "description": "Verify that the dashboard loads KPIs, production charts, and fault statistics for each role within 2 seconds and data is filtered correctly by tenant and role.",
+    "category": "performance",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Manager, Engineer, and Customer"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the main dashboard page"
+      },
+      {
+        "type": "assertion",
+        "description": "Validate that all KPIs and charts load within 2 seconds"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify displayed data corresponds only to the user's tenant and role permissions"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Fault Creation and Lifecycle Management",
+    "description": "Test full fault report lifecycle including creation (manual and automatic), status updates, assignment to technicians, photo uploads, resolution tracking, and closure with notification triggers.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Technician"
+      },
+      {
+        "type": "action",
+        "description": "Create a new fault report with site, plant, category, priority, description, and photos via mobile and dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify fault creation success and notification sent to Manager"
+      },
+      {
+        "type": "action",
+        "description": "Log in as Manager and assign fault to Technician"
+      },
+      {
+        "type": "action",
+        "description": "Log in as Technician, update fault status, add material usage and photos documenting progress"
+      },
+      {
+        "type": "action",
+        "description": "Close the fault and confirm notification is sent to Manager"
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure fault record lifecycle is completely tracked with correct status and attachments"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Maintenance Scheduling and Completion Tracking",
+    "description": "Verify scheduling, checklist completion, documentation upload, and status updates for electrical and mechanical maintenance tasks.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Manager or Engineer"
+      },
+      {
+        "type": "action",
+        "description": "Schedule a maintenance task with detailed checklist items for a plant"
+      },
+      {
+        "type": "action",
+        "description": "Assign the task to Technician"
+      },
+      {
+        "type": "action",
+        "description": "Log in as Technician, update checklist progress, and upload relevant documentation/photos"
+      },
+      {
+        "type": "action",
+        "description": "Complete task and update status to finished"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all maintenance data is accurately saved and notifications are sent as per workflow"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Power Plant Management Data Accuracy",
+    "description": "Test input, update, and display of power plant configurations including capacity, inverter and panel details, production data, and monthly reports with geographic associations.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Engineer"
+      },
+      {
+        "type": "action",
+        "description": "Create a new solar power plant with all required details"
+      },
+      {
+        "type": "action",
+        "description": "Input production data manually and validate against system"
+      },
+      {
+        "type": "action",
+        "description": "Generate monthly production and performance reports and check PDF and Excel exports"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify data accuracy, report correctness, and geographic map integration"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Inventory Control and Alert System",
+    "description": "Ensure stock movements are logged, minimum threshold alerts trigger at correct levels, and inventory links correctly with faults and maintenance records.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Manager or Technician"
+      },
+      {
+        "type": "action",
+        "description": "Record stock usage associated with a fault or maintenance task"
+      },
+      {
+        "type": "action",
+        "description": "Reduce inventory below minimum threshold"
+      },
+      {
+        "type": "assertion",
+        "description": "Check that minimum stock alerts are generated and visible to responsible roles"
+      },
+      {
+        "type": "action",
+        "description": "Review stock movement history for accuracy and completeness"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Multi-Device and Multi-Channel Notification System",
+    "description": "Verify that push, email, in-app, and WhatsApp notifications deliver reliably to devices based on user role, device type, and notification preferences.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger events such as fault creation, fault assignment, maintenance completion, and shift notifications"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify notifications are received on all subscribed devices and channels per user role"
+      },
+      {
+        "type": "action",
+        "description": "Test notification preference settings (enable/disable channels) and validate delivery accordingly"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Subscription Enforcement and Quota Limits",
+    "description": "Validate subscription limits by testing user, site, and storage quota enforcement for trial and paid plan tiers with proper messaging and restriction of over-limit actions.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as company admin with trial plan and attempt to add users, sites, and upload files exceeding quota limits"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify blocked actions with clear usage limit messages"
+      },
+      {
+        "type": "action",
+        "description": "Upgrade subscription plan and confirm that quotas are increased and previously blocked actions succeed"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Mobile App Offline Data Entry and Start Performance",
+    "description": "Ensure mobile app supports offline limited data entry for faults and maintenance and starts within 3 seconds on iOS devices using Capacitor.",
+    "category": "performance",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Launch mobile app on iOS"
+      },
+      {
+        "type": "assertion",
+        "description": "Check app launch time is under 3 seconds"
+      },
+      {
+        "type": "action",
+        "description": "Disable network connection"
+      },
+      {
+        "type": "action",
+        "description": "Create new fault and maintenance records"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify data is stored locally and syncs upon connection restoration"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "PDF and Excel Report Generation Validation",
+    "description": "Test generation of fault, maintenance, and production reports with correct data ranges and export to PDF and Excel formats reflecting selected filters.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Filter records on dashboard by date and other criteria"
+      },
+      {
+        "type": "action",
+        "description": "Export filtered data to PDF and Excel reports"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify reports accurately reflect selected data and formats without errors"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Data Privacy and Compliance Verification",
+    "description": "Ensure all personal data handling complies with KVKK and GDPR, audit logs record critical changes, and data deletion requests behave correctly.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create, update, and delete personal data as various user roles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify audit logs capture all critical data changes with timestamps and user information"
+      },
+      {
+        "type": "action",
+        "description": "Request data export and deletion for a customer per GDPR/KVKK rights"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm data export correctness and proper deletion or anonymization"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "UI Accessibility and Turkish Language Support",
+    "description": "Validate that the application UI meets WCAG 2.1 AA accessibility standards and fully supports the Turkish language across all screens and components.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate through all key pages and components"
+      },
+      {
+        "type": "assertion",
+        "description": "Run automated and manual accessibility checks to confirm WCAG 2.1 AA compliance"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all text, date formats, and UI elements are properly localized for Turkish language"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Shift Management and Guard Notification Workflow",
+    "description": "Verify shift reports submission by guards with event notes, photos, time tracking, and alerts via mobile interface and proper notifications to Supervisors.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Guard on mobile"
+      },
+      {
+        "type": "action",
+        "description": "Submit shift report including notes, photos, and time logs"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm report submission completes successfully"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify notifications are sent to Manager and Guard role devices"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "User Profile Management and Settings Update",
+    "description": "Test user ability to update profile information, change passwords, configure notification preferences, and personalize application settings including theme.",
+    "category": "functional",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as any user role"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to profile and settings pages"
+      },
+      {
+        "type": "action",
+        "description": "Update profile fields, change password, and toggle theme between dark and light modes"
+      },
+      {
+        "type": "action",
+        "description": "Modify notification preferences and save changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all changes are saved and reflected in the UI immediately"
+      }
+    ]
+  }
+]

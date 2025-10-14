@@ -6,9 +6,12 @@ const PrivacyScada: React.FC = () => (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">SCADA Gizlilik Politikası</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Gizlilik Politikası</h1>
           <p className="mt-4 text-lg text-gray-600">
             Verilerinizin güvenliği ve gizliliği bizim için önceliklidir
+          </p>
+          <p className="mt-2 text-sm text-gray-500">
+            SolarVeyo SCADA ve Mobil Operasyon Uygulamaları
           </p>
         </div>
 
@@ -46,17 +49,23 @@ const PrivacyScada: React.FC = () => (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-3">Veri Toplama ve Kullanım</h2>
                 <p className="text-gray-600 mb-4">
-                  SCADA sistemimiz aşağıdaki verileri toplar ve işler:
+                  SolarVeyo platformlarımız (SCADA ve Mobil Uygulama) aşağıdaki verileri toplar ve işler:
                 </p>
                 <ul className="space-y-3 text-gray-600">
                   <li>
-                    <strong>Operasyonel Veriler:</strong> İnverter verileri, üretim değerleri, alarm kayıtları
+                    <strong>Operasyonel Veriler:</strong> İnverter verileri, üretim değerleri, alarm kayıtları, arıza bildirimleri
                   </li>
                   <li>
                     <strong>Sistem Verileri:</strong> Performans metrikleri, sistem logları, hata kayıtları
                   </li>
                   <li>
-                    <strong>Kullanıcı Verileri:</strong> Giriş kayıtları, işlem geçmişi, tercihler
+                    <strong>Kullanıcı Verileri:</strong> Giriş kayıtları, işlem geçmişi, tercihler, profil bilgileri
+                  </li>
+                  <li>
+                    <strong>Mobil Uygulama:</strong> Konum verileri (sadece saha doğrulama için), kamera erişimi (arıza fotoğrafları), push notification tokenleri
+                  </li>
+                  <li>
+                    <strong>Dosya Depolama:</strong> Arıza fotoğrafları, rapor dokümanları, bakım kayıtları
                   </li>
                 </ul>
               </div>
@@ -140,7 +149,7 @@ const PrivacyScada: React.FC = () => (
         </div>
 
         <div className="mt-8 text-center text-sm text-gray-500">
-          Son güncelleme: Aralık 2024
+          Son güncelleme: Ekim 2025
         </div>
       </div>
     </div>

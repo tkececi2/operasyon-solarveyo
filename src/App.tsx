@@ -235,6 +235,16 @@ function App() {
               <Route path="/payment/mock-checkout" element={<MockCheckout />} />
               <Route path="/payment/papara" element={<PaparaPayment />} />
               
+              {/* Legal/Public Pages - ALWAYS PUBLIC (for App Store) */}
+              <Route element={<MarketingLayout />}>
+                <Route path="/privacy" element={<PrivacyScadaPage />} />
+                <Route path="/privacy-policy" element={<PrivacyScadaPage />} />
+                <Route path="/privacy/scada" element={<PrivacyScadaPage />} />
+                <Route path="/support" element={<SupportScadaPage />} />
+                <Route path="/support/scada" element={<SupportScadaPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+              </Route>
+              
               {/* Ana sayfa: Mobilde login, Web'de landing page */}
               <Route path="/" element={platform.isNative() ? <Navigate to="/dashboard" replace /> : <Home />} />
               
@@ -247,15 +257,10 @@ function App() {
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/scada" element={<ScadaPage />} />
-                  <Route path="/support/scada" element={<SupportScadaPage />} />
-                  <Route path="/privacy/scada" element={<PrivacyScadaPage />} />
-                  <Route path="/terms" element={<TermsPage />} />
                   <Route path="/contact/scada" element={<ContactScadaPage />} />
                   <Route path="/blog" element={<BlogPage />} />
                 </Route>
               )}
-              
-              {/* Legal Pages removed */}
               
               {/* Private Routes */}
               <Route

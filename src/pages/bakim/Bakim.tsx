@@ -267,10 +267,12 @@ const Bakim: React.FC = () => {
 
   // Detay modalını aç
   const handleViewDetails = (maintenance: any, type: string) => {
+    console.log('🔍 Bakım detayı açılıyor:', type, maintenance.id);
     // Kartta gösterilen kontrol etiketlerini aynen taşı
     // Eski ve yeni kayıt formatları için ham veriyi koruyoruz
     setSelectedMaintenance({ ...maintenance, type });
     setShowDetailModal(true);
+    console.log('✅ showDetailModal:', true, 'type:', type);
   };
 
   // Düzenleme modalını aç

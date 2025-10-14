@@ -6,9 +6,12 @@ const SupportScada: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center max-w-3xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">SCADA Destek Merkezi</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Destek Merkezi</h1>
           <p className="mt-4 text-lg text-gray-600">
             7/24 teknik destek, kurulum yardımı ve eğitim hizmetleri
+          </p>
+          <p className="mt-2 text-sm text-gray-500">
+            SolarVeyo SCADA ve Mobil Operasyon Uygulamaları
           </p>
         </div>
 
@@ -75,6 +78,26 @@ const SupportScada: React.FC = () => {
                 <li>• Yazılım güncellemeleri</li>
                 <li>• Yedekleme kontrolleri</li>
                 <li>• Sistem sağlık kontrolü</li>
+              </ul>
+            </div>
+
+            <div className="rounded-lg border bg-white p-6">
+              <h3 className="font-semibold text-gray-900 mb-3">Mobil Uygulama Desteği</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• iOS ve Android kurulum</li>
+                <li>• Push notification ayarları</li>
+                <li>• Arıza bildirimi sorunları</li>
+                <li>• Fotoğraf yükleme problemleri</li>
+              </ul>
+            </div>
+
+            <div className="rounded-lg border bg-white p-6">
+              <h3 className="font-semibold text-gray-900 mb-3">Hesap ve Abonelik</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Plan yükseltme/düşürme</li>
+                <li>• Fatura ve ödeme</li>
+                <li>• Kullanıcı yönetimi</li>
+                <li>• İptal işlemleri</li>
               </ul>
             </div>
           </div>

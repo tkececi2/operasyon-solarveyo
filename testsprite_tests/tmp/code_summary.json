@@ -1,0 +1,376 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "React 18",
+    "Vite",
+    "Firebase (Auth, Firestore, Storage, Cloud Functions)",
+    "TailwindCSS",
+    "React Router v7",
+    "Framer Motion",
+    "Recharts",
+    "Zod",
+    "React Hook Form",
+    "PostHog Analytics",
+    "Capacitor (iOS)",
+    "Lucide Icons",
+    "Tremor UI"
+  ],
+  "features": [
+    {
+      "name": "Authentication & Authorization",
+      "description": "Multi-role authentication system with Firebase Auth. Supports SuperAdmin, Yönetici, Mühendis, Tekniker, Müşteri, Bekçi roles with role-based access control and 2FA support.",
+      "files": [
+        "src/contexts/AuthContext.tsx",
+        "src/services/authService.ts",
+        "src/services/twoFactorService.ts",
+        "src/services/iosAuthService.ts",
+        "src/components/auth/TwoFactorSetup.tsx",
+        "src/components/auth/TwoFactorVerification.tsx",
+        "src/components/ProtectedRoute.tsx",
+        "src/components/PrivateRoute.tsx",
+        "src/pages/auth/Login.tsx",
+        "src/pages/auth/Register.tsx"
+      ]
+    },
+    {
+      "name": "Dashboard & Analytics",
+      "description": "Main dashboard with real-time KPIs, production charts, fault statistics, and company metrics with role-based data filtering.",
+      "files": [
+        "src/pages/dashboard/Dashboard.tsx",
+        "src/hooks/useDashboardMetrics.ts",
+        "src/services/analyticsService.ts",
+        "src/services/statisticsService.ts",
+        "src/components/charts/KPICards.tsx",
+        "src/components/charts/ProductionChart.tsx",
+        "src/components/charts/PerformanceChart.tsx",
+        "src/components/charts/FaultStatusChart.tsx",
+        "src/components/dashboard/RecentItemsWidget.tsx"
+      ]
+    },
+    {
+      "name": "Arıza (Fault) Management",
+      "description": "Comprehensive fault tracking system with status management, assignment, photos, and notifications. Supports company isolation and customer restrictions.",
+      "files": [
+        "src/pages/ariza/ArizaList.tsx",
+        "src/pages/ariza/ArizaDetail.tsx",
+        "src/services/arizaService.ts",
+        "src/components/forms/ArizaForm.tsx",
+        "src/components/ariza/FeedbackWidget.tsx",
+        "src/components/modals/ArizaModal.tsx"
+      ]
+    },
+    {
+      "name": "Bakım (Maintenance) Management",
+      "description": "Electrical and mechanical maintenance tracking with scheduled maintenance, completion status, and documentation.",
+      "files": [
+        "src/pages/bakim/Bakim.tsx",
+        "src/services/bakimService.ts",
+        "src/components/forms/BakimForm.tsx",
+        "src/components/modals/BakimModal.tsx"
+      ]
+    },
+    {
+      "name": "GES/Santral (Power Plant) Management",
+      "description": "Solar power plant management with capacity tracking, production data, monthly statistics, and customer assignments.",
+      "files": [
+        "src/pages/ges/GESList.tsx",
+        "src/pages/ges/GESDetail.tsx",
+        "src/services/santralService.ts",
+        "src/services/uretimService.ts",
+        "src/components/forms/SantralForm.tsx",
+        "src/components/modals/SantralModal.tsx"
+      ]
+    },
+    {
+      "name": "Saha (Site) Management",
+      "description": "Site/field management with Google Maps integration, customer assignments, and geographic tracking.",
+      "files": [
+        "src/pages/saha/SahaList.tsx",
+        "src/services/sahaService.ts",
+        "src/components/forms/SahaForm.tsx",
+        "src/components/saha/SahaDetailCard.tsx",
+        "src/components/maps/MapPicker.tsx",
+        "src/components/maps/MiniClusterMap.tsx"
+      ]
+    },
+    {
+      "name": "Ekip (Team) Management",
+      "description": "Team member management with role assignments, permissions, and company isolation.",
+      "files": [
+        "src/pages/ekip/EkipList.tsx",
+        "src/pages/ekip/EkipDetail.tsx",
+        "src/services/ekipService.ts",
+        "src/services/userService.ts",
+        "src/services/permissionService.ts"
+      ]
+    },
+    {
+      "name": "Stok (Inventory) Management",
+      "description": "Inventory tracking with stock movements, usage history, and minimum stock alerts.",
+      "files": [
+        "src/pages/stok/StokList.tsx",
+        "src/services/stokService.ts",
+        "src/components/modals/StokModal.tsx"
+      ]
+    },
+    {
+      "name": "Vardiya (Shift) Management",
+      "description": "Shift notification system for security guards and field personnel with time-based alerts.",
+      "files": [
+        "src/pages/vardiya/VardiyaList.tsx",
+        "src/services/vardiyaService.ts",
+        "src/components/forms/VardiyaForm.tsx",
+        "src/components/modals/VardiyaModal.tsx"
+      ]
+    },
+    {
+      "name": "Elektrik Kesinti (Power Outage) Tracking",
+      "description": "Power outage logging and management with duration tracking and impact analysis.",
+      "files": [
+        "src/services/elektrikKesintiService.ts",
+        "src/components/forms/ElektrikKesintiForm.tsx",
+        "src/components/modals/ElektrikKesintiModal.tsx"
+      ]
+    },
+    {
+      "name": "Müşteri (Customer) Management",
+      "description": "Customer profile management with site/plant assignments and access restrictions.",
+      "files": [
+        "src/services/musteriService.ts",
+        "src/components/forms/MusteriForm.tsx",
+        "src/components/modals/MusteriModal.tsx"
+      ]
+    },
+    {
+      "name": "Notification System",
+      "description": "Multi-device push notification system with Firebase Cloud Messaging, role-based notifications, and mobile support.",
+      "files": [
+        "src/contexts/NotificationContext.tsx",
+        "src/services/notificationService.ts",
+        "src/services/pushNotificationService.ts",
+        "src/services/segmentedNotificationService.ts",
+        "src/services/multiDeviceTokenService.ts",
+        "src/pages/bildirimler/Bildirimler.tsx"
+      ]
+    },
+    {
+      "name": "SaaS Subscription Management",
+      "description": "Multi-tenant subscription system with trial, starter, professional, and enterprise plans. Includes usage tracking and quota management.",
+      "files": [
+        "src/config/saas.config.ts",
+        "src/contexts/CompanyContext.tsx",
+        "src/hooks/useCompany.ts",
+        "src/hooks/useSubscription.ts",
+        "src/services/companyUsageService.ts",
+        "src/services/subscriptionRequestService.ts",
+        "src/services/subscriptionNotificationService.ts",
+        "src/pages/subscription/SubscriptionPage.tsx",
+        "src/components/subscription/SubscriptionStatus.tsx",
+        "src/domain/subscription/subscriptionService.ts"
+      ]
+    },
+    {
+      "name": "Storage & File Management",
+      "description": "Firebase Storage integration with file uploads, automatic cleanup, and storage quota tracking.",
+      "files": [
+        "src/services/storageService.ts",
+        "src/services/storageAnalyticsService.ts",
+        "src/services/fastStorageService.ts",
+        "src/services/autoStorageUpdateService.ts",
+        "src/services/recalculateStorageService.ts",
+        "src/pages/storage/StorageUsage.tsx"
+      ]
+    },
+    {
+      "name": "PDF & Excel Export",
+      "description": "Report generation system with PDF and Excel export capabilities for faults, maintenance, and production data.",
+      "files": [
+        "src/utils/exportHelpers.ts",
+        "src/utils/pdfHelpers.ts",
+        "src/utils/excelHelpers.ts",
+        "src/utils/arizaPdfGenerator.ts",
+        "src/utils/santralPdfGenerator.ts"
+      ]
+    },
+    {
+      "name": "SuperAdmin Panel",
+      "description": "System-wide administration for managing all companies, users, and system settings.",
+      "files": [
+        "src/pages/superadmin/SuperAdminDashboard.tsx",
+        "src/pages/superadmin/CompanyManagement.tsx",
+        "src/services/superAdminService.ts",
+        "src/services/companyDeletionService.ts"
+      ]
+    },
+    {
+      "name": "Admin Panel",
+      "description": "Company-level administration for managing users, settings, and company data.",
+      "files": [
+        "src/pages/admin/AdminPanel.tsx",
+        "src/pages/admin/BulkOperations.tsx",
+        "src/services/admin/companyStatsService.ts"
+      ]
+    },
+    {
+      "name": "Leave Management",
+      "description": "Employee leave request and approval system with balance tracking.",
+      "files": [
+        "src/services/leaveService.ts",
+        "src/services/leaveManagementService.ts",
+        "src/config/leave.config.ts",
+        "src/types/leave.types.ts",
+        "src/components/leave/"
+      ]
+    },
+    {
+      "name": "Weather Integration",
+      "description": "Weather data integration for solar production forecasting and analysis.",
+      "files": [
+        "src/services/weatherService.ts",
+        "src/components/weather/"
+      ]
+    },
+    {
+      "name": "Activity Feed & Audit Logs",
+      "description": "Real-time activity tracking and audit logging for all system operations.",
+      "files": [
+        "src/services/activityFeedService.ts",
+        "src/services/auditLogService.ts",
+        "src/components/activity/LiveActivityFeed.tsx"
+      ]
+    },
+    {
+      "name": "Theme System",
+      "description": "Dark/light theme system with persistent user preferences.",
+      "files": [
+        "src/contexts/ThemeContext.tsx",
+        "src/services/themeService.ts",
+        "src/styles/dark-mode.css",
+        "src/styles/dark-mode-complete.css"
+      ]
+    },
+    {
+      "name": "Mobile Responsive UI",
+      "description": "Capacitor-based iOS app with mobile-optimized components and touch interactions.",
+      "files": [
+        "src/components/layouts/MobileHeader.tsx",
+        "src/components/layouts/MobileSidebar.tsx",
+        "src/components/layouts/MobileMenu.tsx",
+        "src/components/layouts/BottomTabBar.tsx",
+        "src/hooks/usePullToRefresh.ts",
+        "src/styles/mobile.css",
+        "src/styles/ios.css",
+        "src/services/mobile/"
+      ]
+    },
+    {
+      "name": "Advanced Filtering & Pagination",
+      "description": "Dynamic filtering, sorting, and pagination system for large datasets.",
+      "files": [
+        "src/hooks/useAdvancedFilter.ts",
+        "src/hooks/usePagination.ts",
+        "src/hooks/useDebounce.ts",
+        "src/hooks/useOptimizedData.ts"
+      ]
+    },
+    {
+      "name": "Payment Integration",
+      "description": "Payment gateway integration with Iyzico for Turkish market.",
+      "files": [
+        "src/services/iyzicoService.ts",
+        "src/services/payment/paymentService.ts",
+        "src/pages/payment/"
+      ]
+    },
+    {
+      "name": "Feedback System",
+      "description": "User feedback collection and management system.",
+      "files": [
+        "src/services/feedbackService.ts"
+      ]
+    },
+    {
+      "name": "Badge System",
+      "description": "Gamification badges for user achievements.",
+      "files": [
+        "src/services/badgeService.ts"
+      ]
+    },
+    {
+      "name": "Real-time Data Sync",
+      "description": "Firebase real-time listeners for live data updates across all modules.",
+      "files": [
+        "src/services/realtimeService.ts"
+      ]
+    },
+    {
+      "name": "Caching System",
+      "description": "Client-side caching for improved performance and reduced Firebase reads.",
+      "files": [
+        "src/services/cacheService.ts"
+      ]
+    },
+    {
+      "name": "Analytics Tracking",
+      "description": "PostHog integration for user behavior analytics and feature tracking.",
+      "files": [
+        "src/lib/posthog.ts",
+        "src/lib/posthog-events.ts",
+        "src/components/analytics/PageTracker.tsx",
+        "src/pages/analytics/AnalyticsPage.tsx"
+      ]
+    },
+    {
+      "name": "Settings & Profile",
+      "description": "User profile management and application settings.",
+      "files": [
+        "src/pages/ProfileSettings.tsx",
+        "src/pages/settings/Settings.tsx",
+        "src/services/profileService.ts",
+        "src/components/settings/"
+      ]
+    },
+    {
+      "name": "Marketing & Landing Pages",
+      "description": "Public-facing marketing pages with feature showcases and pricing information.",
+      "files": [
+        "src/pages/landing/Landing.tsx",
+        "src/pages/marketing/",
+        "src/components/marketing/MarketingLayout.tsx",
+        "src/components/marketing/Footer.tsx"
+      ]
+    },
+    {
+      "name": "UI Component Library",
+      "description": "Reusable UI components including modals, buttons, cards, inputs, and more.",
+      "files": [
+        "src/components/ui/",
+        "src/components/modals/"
+      ]
+    },
+    {
+      "name": "Data Migration & Backup",
+      "description": "Database migration tools and backup services.",
+      "files": [
+        "src/services/migrationService.ts",
+        "src/services/backupService.ts"
+      ]
+    },
+    {
+      "name": "Email Integration",
+      "description": "Email notification service integration.",
+      "files": [
+        "src/services/emailService.ts"
+      ]
+    },
+    {
+      "name": "Envanter (Inventory) System",
+      "description": "Additional inventory tracking module.",
+      "files": [
+        "src/services/envanterService.ts",
+        "src/pages/envanter/EnvanterList.tsx"
+      ]
+    }
+  ]
+}
+

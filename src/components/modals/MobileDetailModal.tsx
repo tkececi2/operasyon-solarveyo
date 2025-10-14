@@ -4,6 +4,7 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { platform } from '../../utils/platform';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { createPortal } from 'react-dom';
 
 interface DetailItem {
   label: string;
@@ -47,6 +48,17 @@ export const MobileDetailModal: React.FC<MobileDetailModalProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // Body scroll kilidi (iOS sabitlenme ve görünüm sorunları için kritik)
+  useEffect(() => {
+    if (isOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && platform.isNative()) {
@@ -102,7 +114,7 @@ export const MobileDetailModal: React.FC<MobileDetailModalProps> = ({
     }
   };
 
-  return (
+  const modalContent = (
     <>
       {/* Backdrop */}
       <div 
@@ -295,4 +307,7 @@ export const MobileDetailModal: React.FC<MobileDetailModalProps> = ({
       )}
     </>
   );
+
+  // React Portal: iOS'ta fixed pozisyonlanan elemanların transformlu atalardan etkilenmemesi için önemli
+  return createPortal(modalContent, document.body);
 };
