@@ -548,21 +548,23 @@ const Sahalar: React.FC = () => {
                         <Eye className="h-4 w-4 mr-1" />
                         Görüntüle
                       </Button>
-                      <DropdownMenu
-                        items={[
-                          ...(canPerformAction('saha_duzenle') ? [{
-                            label: 'Düzenle',
-                            onClick: () => {setSelectedSaha(saha); setShowSahaModal(true);},
-                            icon: <Edit className="h-4 w-4" />
-                          }] : []),
-                          ...(canPerformAction('saha_sil') ? [{
-                            label: 'Sil',
-                            onClick: () => handleSahaAction(saha.id, 'delete'),
-                            icon: <Trash2 className="h-4 w-4" />,
-                            danger: true
-                          }] : [])
-                        ]}
-                      />
+                      {(canPerformAction('saha_duzenle') || canPerformAction('saha_sil')) && (
+                        <DropdownMenu
+                          items={[
+                            ...(canPerformAction('saha_duzenle') ? [{
+                              label: 'Düzenle',
+                              onClick: () => {setSelectedSaha(saha); setShowSahaModal(true);},
+                              icon: <Edit className="h-4 w-4" />
+                            }] : []),
+                            ...(canPerformAction('saha_sil') ? [{
+                              label: 'Sil',
+                              onClick: () => handleSahaAction(saha.id, 'delete'),
+                              icon: <Trash2 className="h-4 w-4" />,
+                              danger: true
+                            }] : [])
+                          ]}
+                        />
+                      )}
                     </div>
                   </CardContent>
                 </Card>

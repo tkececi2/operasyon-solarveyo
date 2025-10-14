@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Sun, MapPin, Zap, Calendar, TrendingUp, Users, Settings, Eye, Image, List, Grid as GridIcon, Layers, AlertCircle } from 'lucide-react';
-import { Button, Card, CardContent, CardHeader, CardTitle, Modal, LoadingSpinner } from '../../components/ui';
+import { Plus, Sun, MapPin, Zap, Calendar, TrendingUp, Users, Settings, Eye, Image, List, Grid as GridIcon, Layers, AlertCircle, Edit, Trash2 } from 'lucide-react';
+import { Button, Card, CardContent, CardHeader, CardTitle, Modal, LoadingSpinner, DropdownMenu } from '../../components/ui';
 import { ResponsiveDetailModal } from '../../components/modals/ResponsiveDetailModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { SantralForm } from '../../components/forms/SantralForm';
-import { getAllSantraller, getSantralIstatistikleri } from '../../services/santralService';
+import { getAllSantraller, getSantralIstatistikleri, deleteSantral } from '../../services/santralService';
 import toast from 'react-hot-toast';
 import { checkUsageLimit } from '../../domain/subscription/service';
 import SubscriptionLimitBanner from '../../components/subscription/SubscriptionLimitBanner';
@@ -116,6 +116,19 @@ const GesYonetimi: React.FC = () => {
   useEffect(() => {
     fetchSantraller();
   }, [userProfile?.companyId]);
+
+  const handleSantralDelete = async (santralId: string, santralAd: string) => {
+    if (window.confirm(`"${santralAd}" santralini silmek istediğinizden emin misiniz?`)) {
+      try {
+        await deleteSantral(santralId);
+        toast.success('Santral başarıyla silindi');
+        await fetchSantraller(); // Listeyi yenile
+      } catch (error) {
+        console.error('Santral silme hatası:', error);
+        toast.error('Santral silinemedi');
+      }
+    }
+  };
 
   const getDurumBadge = (durum: string) => {
     const badges = {
@@ -335,17 +348,25 @@ const GesYonetimi: React.FC = () => {
                       className="flex-1" 
                       onClick={() => { setSelectedSantral(santral); setShowDetailModal(true); }}
                     >
+                      <Eye className="h-4 w-4 mr-1" />
                       Detay
                     </Button>
-                    {canPerformAction('santral_duzenle') && (
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="flex-1" 
-                        onClick={() => { setSelectedSantral(santral); setShowCreateModal(true); }}
-                      >
-                        Düzenle
-                      </Button>
+                    {(canPerformAction('santral_duzenle') || canPerformAction('santral_sil')) && (
+                      <DropdownMenu
+                        items={[
+                          ...(canPerformAction('santral_duzenle') ? [{
+                            label: 'Düzenle',
+                            onClick: () => { setSelectedSantral(santral); setShowCreateModal(true); },
+                            icon: <Edit className="h-4 w-4" />
+                          }] : []),
+                          ...(canPerformAction('santral_sil') ? [{
+                            label: 'Sil',
+                            onClick: () => handleSantralDelete(santral.id, santral.ad),
+                            icon: <Trash2 className="h-4 w-4" />,
+                            danger: true
+                          }] : [])
+                        ]}
+                      />
                     )}
                   </div>
                 </div>
@@ -384,7 +405,10 @@ const GesYonetimi: React.FC = () => {
                   <div className="flex flex-col space-y-2 ml-6">
                     <Button size="sm" variant="secondary" leftIcon={<Eye className="h-4 w-4" />} onClick={() => { setSelectedSantral(santral); setShowDetailModal(true); }}>Detaylar</Button>
                     {canPerformAction('santral_duzenle') && (
-                      <Button size="sm" variant="ghost" leftIcon={<Settings className="h-4 w-4" />} onClick={() => { setSelectedSantral(santral); setShowCreateModal(true); }}>Düzenle</Button>
+                      <Button size="sm" variant="ghost" leftIcon={<Edit className="h-4 w-4" />} onClick={() => { setSelectedSantral(santral); setShowCreateModal(true); }}>Düzenle</Button>
+                    )}
+                    {canPerformAction('santral_sil') && (
+                      <Button size="sm" variant="ghost" leftIcon={<Trash2 className="h-4 w-4" />} onClick={() => handleSantralDelete(santral.id, santral.ad)} className="text-red-600 hover:text-red-700 hover:bg-red-50">Sil</Button>
                     )}
                   </div>
                 </div>
