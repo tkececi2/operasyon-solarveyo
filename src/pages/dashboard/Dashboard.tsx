@@ -515,7 +515,7 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Bu Ay Özeti - Program Özeti Stili */}
+      {/* Bu Ay Özeti - Sade Tasarım */}
       <Card className="h-full" padding="sm">
         <CardHeader className="mb-2 pb-2">
           <CardTitle className="text-sm md:text-base font-semibold">Bu Ay Özeti</CardTitle>
@@ -523,35 +523,35 @@ const Dashboard: React.FC = () => {
         <CardContent className="pt-0">
           <div className="grid grid-cols-3 gap-2">
             {/* Bu Ay Arızalar */}
-            <div className="flex flex-col items-center gap-2 p-2 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 transition-colors">
-              <div className="text-red-600">
-                <AlertTriangle className="h-5 w-5" />
+            <div className="flex items-start gap-2 p-2 rounded-lg border border-gray-200 hover:shadow-md transition-all">
+              <div className="text-red-600 flex-shrink-0">
+                <AlertTriangle className="h-6 w-6" />
               </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">{dashboardStats.aylikArizalar}</div>
-                <div className="text-[10px] text-gray-600">Bu Ay Arızalar</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xl font-bold text-gray-900">{dashboardStats.aylikArizalar}</div>
+                <div className="text-[10px] text-gray-500">Bu Ay Arızalar</div>
               </div>
             </div>
             
             {/* Bu Ay Bakımlar */}
-            <div className="flex flex-col items-center gap-2 p-2 rounded-lg bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors">
-              <div className="text-blue-600">
-                <Wrench className="h-5 w-5" />
+            <div className="flex items-start gap-2 p-2 rounded-lg border border-gray-200 hover:shadow-md transition-all">
+              <div className="text-blue-600 flex-shrink-0">
+                <Wrench className="h-6 w-6" />
               </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">{dashboardStats.aylikBakimlar}</div>
-                <div className="text-[10px] text-gray-600">Bu Ay Bakımlar</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xl font-bold text-gray-900">{dashboardStats.aylikBakimlar}</div>
+                <div className="text-[10px] text-gray-500">Bu Ay Bakımlar</div>
               </div>
             </div>
             
             {/* Kritik Stok Uyarıları */}
-            <div className="flex flex-col items-center gap-2 p-2 rounded-lg bg-amber-50 border border-amber-100 hover:bg-amber-100 transition-colors">
-              <div className="text-amber-600">
-                <AlertTriangle className="h-5 w-5" />
+            <div className="flex items-start gap-2 p-2 rounded-lg border border-gray-200 hover:shadow-md transition-all">
+              <div className="text-yellow-600 flex-shrink-0">
+                <AlertTriangle className="h-6 w-6" />
               </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">{dashboardStats.aktifStokUyarilari}</div>
-                <div className="text-[10px] text-gray-600">Kritik Stok</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xl font-bold text-gray-900">{dashboardStats.aktifStokUyarilari}</div>
+                <div className="text-[10px] text-gray-500">Kritik Stok</div>
               </div>
             </div>
           </div>
@@ -567,40 +567,40 @@ const Dashboard: React.FC = () => {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="grid grid-cols-2 gap-2">
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors">
-                <div className="text-blue-700">
-                  <Building2 className="h-5 w-5" />
+              <div className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 hover:shadow-md transition-all">
+                <div className="text-blue-600 flex-shrink-0">
+                  <Building2 className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-lg font-bold text-gray-900">{dashboardStats.toplamSahalar}</div>
-                  <div className="text-[10px] text-gray-600 truncate">Toplam Saha</div>
+                  <div className="text-[10px] text-gray-500 truncate">Toplam Saha</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-100 hover:bg-green-100 transition-colors">
-                <div className="text-green-700">
-                  <Sun className="h-5 w-5" />
+              <div className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 hover:shadow-md transition-all">
+                <div className="text-green-600 flex-shrink-0">
+                  <Sun className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-lg font-bold text-gray-900">{dashboardStats.toplamSantraller}</div>
-                  <div className="text-[10px] text-gray-600 truncate">Toplam Santral</div>
+                  <div className="text-[10px] text-gray-500 truncate">Toplam Santral</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-purple-50 border border-purple-100 hover:bg-purple-100 transition-colors">
-                <div className="text-purple-700">
-                  <Users className="h-5 w-5" />
+              <div className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 hover:shadow-md transition-all">
+                <div className="text-purple-600 flex-shrink-0">
+                  <Users className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-lg font-bold text-gray-900">{dashboardStats.toplamEkipUyeleri}</div>
-                  <div className="text-[10px] text-gray-600 truncate">Ekip Üyeleri</div>
+                  <div className="text-[10px] text-gray-500 truncate">Ekip Üyeleri</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-orange-50 border border-orange-100 hover:bg-orange-100 transition-colors">
-                <div className="text-orange-700">
-                  <Wrench className="h-5 w-5" />
+              <div className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 hover:shadow-md transition-all">
+                <div className="text-orange-600 flex-shrink-0">
+                  <Wrench className="h-6 w-6" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-lg font-bold text-gray-900">{dashboardStats.buAyBakimSayisi || 0}</div>
-                  <div className="text-[10px] text-gray-600 truncate">Bu Ay Bakımlar</div>
+                  <div className="text-[10px] text-gray-500 truncate">Bu Ay Bakımlar</div>
                 </div>
               </div>
             </div>
@@ -667,17 +667,26 @@ const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                <div className="rounded-lg border border-red-100 bg-red-50 p-2 md:p-3 hover:bg-red-100 transition-colors">
-                  <div className="text-[10px] text-red-700 font-medium">Bildirilen Arızalar</div>
-                  <div className="text-xl md:text-2xl font-bold text-red-900">{dashboardStats.aylikArizalar}</div>
+                <div className="flex items-start gap-2 rounded-lg border border-gray-200 p-2 md:p-3 hover:shadow-md transition-all">
+                  <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] text-gray-500 font-medium">Bildirilen Arızalar</div>
+                    <div className="text-xl md:text-2xl font-bold text-gray-900">{dashboardStats.aylikArizalar}</div>
+                  </div>
                 </div>
-                <div className="rounded-lg border border-blue-100 bg-blue-50 p-2 md:p-3 hover:bg-blue-100 transition-colors">
-                  <div className="text-[10px] text-blue-700 font-medium">Yapılan Bakımlar</div>
-                  <div className="text-xl md:text-2xl font-bold text-blue-900">{dashboardStats.aylikBakimlar}</div>
+                <div className="flex items-start gap-2 rounded-lg border border-gray-200 p-2 md:p-3 hover:shadow-md transition-all">
+                  <Wrench className="h-6 w-6 text-blue-600 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] text-gray-500 font-medium">Yapılan Bakımlar</div>
+                    <div className="text-xl md:text-2xl font-bold text-gray-900">{dashboardStats.aylikBakimlar}</div>
+                  </div>
                 </div>
-                <div className="rounded-lg border border-amber-100 bg-amber-50 p-2 md:p-3 hover:bg-amber-100 transition-colors">
-                  <div className="text-[10px] text-amber-700 font-medium">Kritik Stok Uyarıları</div>
-                  <div className="text-xl md:text-2xl font-bold text-amber-900">{dashboardStats.aktifStokUyarilari}</div>
+                <div className="flex items-start gap-2 rounded-lg border border-gray-200 p-2 md:p-3 hover:shadow-md transition-all">
+                  <AlertTriangle className="h-6 w-6 text-yellow-600 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] text-gray-500 font-medium">Kritik Stok Uyarıları</div>
+                    <div className="text-xl md:text-2xl font-bold text-gray-900">{dashboardStats.aktifStokUyarilari}</div>
+                  </div>
                 </div>
               </div>
             </CardContent>

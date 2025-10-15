@@ -25,80 +25,75 @@ const iconMap = {
 
 const colorMap = {
   blue: {
-    bg: 'bg-blue-50',
     icon: 'text-blue-600',
-    text: 'text-blue-900'
+    text: 'text-gray-900'
   },
   green: {
-    bg: 'bg-green-50',
     icon: 'text-green-600',
-    text: 'text-green-900'
+    text: 'text-gray-900'
   },
   yellow: {
-    bg: 'bg-yellow-50',
     icon: 'text-yellow-600',
-    text: 'text-yellow-900'
+    text: 'text-gray-900'
   },
   red: {
-    bg: 'bg-red-50',
     icon: 'text-red-600',
-    text: 'text-red-900'
+    text: 'text-gray-900'
   }
 };
 
 export const KPICards: React.FC<KPICardsProps> = ({ data }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {data.map((kpi, index) => {
         const Icon = iconMap[kpi.icon];
         const colors = colorMap[kpi.color];
         
         return (
-          <Card key={index} className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600 mb-1">
+          <Card key={index} className="p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-start gap-4">
+              {/* İkon - Sol tarafta */}
+              <div className="flex-shrink-0">
+                <Icon className={`w-8 h-8 ${colors.icon}`} />
+              </div>
+              
+              {/* İçerik - Sağ tarafta */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-500 mb-1">
                   {kpi.title}
                 </p>
-                <div className="flex items-baseline">
-                  <p className={`text-2xl font-semibold ${colors.text}`}>
+                <div className="flex items-baseline gap-1">
+                  <p className={`text-2xl font-bold ${colors.text}`}>
                     {typeof kpi.value === 'number' 
                       ? kpi.value.toLocaleString('tr-TR') 
                       : kpi.value
                     }
                   </p>
                   {kpi.unit && (
-                    <span className="ml-2 text-sm text-gray-500">
+                    <span className="text-xs text-gray-500 font-normal">
                       {kpi.unit}
                     </span>
                   )}
                 </div>
                 
                 {kpi.change !== undefined && kpi.change !== 0 && (
-                  <div className="flex items-center mt-2">
+                  <div className="flex items-center mt-1.5 gap-1">
                     {kpi.changeType === 'increase' ? (
-                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                      <TrendingUp className="w-3.5 h-3.5 text-green-500" />
                     ) : kpi.changeType === 'decrease' ? (
-                      <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
+                      <TrendingDown className="w-3.5 h-3.5 text-red-500" />
                     ) : null}
-                    <span className={`text-sm ${
+                    <span className={`text-xs font-medium ${
                       kpi.changeType === 'increase' 
                         ? 'text-green-600' 
                         : kpi.changeType === 'decrease'
                         ? 'text-red-600'
-                        : 'text-gray-600'
+                        : 'text-gray-500'
                     }`}>
                       {kpi.change > 0 ? '+' : ''}{kpi.change.toFixed(1)}%
                     </span>
-                    <span className="text-xs text-gray-500 ml-1">
-                      önceki döneme göre
-                    </span>
                   </div>
                 )}
-              </div>
-              
-              <div className={`p-3 rounded-lg ${colors.bg}`}>
-                <Icon className={`w-6 h-6 ${colors.icon}`} />
               </div>
             </div>
           </Card>
