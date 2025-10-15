@@ -308,190 +308,114 @@ const VardiyaBildirimleri: React.FC = () => {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="space-y-3 pb-20 md:pb-0">
-      {/* Modern Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-lg p-4 text-white">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-              <Shield className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">Vardiya Bildirimleri</h1>
-              <p className="text-sm text-blue-100">
-                {filteredBildirimler.length} bildirim • {sahalar.length} saha
-              </p>
-            </div>
+      <div className="space-y-4 pb-20 md:pb-0">
+      {/* Modern Header - Arızalar Tarzı */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-blue-500" />
+              VARDIYA BİLDİRİMLERİ
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
+              {filteredBildirimler.length} bildirim • {sahalar.length} saha
+            </p>
           </div>
+          {/* Desktop Butonlar */}
           {canPerformAction('vardiya_ekle') && (
-            <Button 
-              onClick={() => setShowCreateModal(true)}
-              className="bg-green-500 text-white hover:bg-green-600 shadow-lg font-bold border-2 border-green-400"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Yeni Vardiya
-            </Button>
+            <div className="hidden sm:flex gap-2">
+              <Button 
+                onClick={() => setShowCreateModal(true)}
+                className="bg-green-500 text-white hover:bg-green-600"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Yeni Vardiya
+              </Button>
+            </div>
+          )}
+          {/* Mobil Buton */}
+          {canPerformAction('vardiya_ekle') && (
+            <div className="flex sm:hidden">
+              <Button 
+                onClick={() => setShowCreateModal(true)}
+                size="sm"
+                className="bg-green-500 text-white hover:bg-green-600 px-3 py-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Yeni Vardiya
+              </Button>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Saha Tab'ları - Yatay Kaydırılabilir */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="flex items-center gap-2 p-2 border-b border-gray-200 overflow-x-auto scrollbar-thin">
-          {/* Tüm Sahalar Tab */}
-          <button
-            onClick={() => setSahaFilter('all')}
-            className={`
-              flex-shrink-0 px-4 py-2.5 rounded-lg font-medium transition-all text-sm
-              ${sahaFilter === 'all'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-              }
-            `}
-          >
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              <span>Tüm Sahalar</span>
-              <span className={`
-                px-1.5 py-0.5 rounded text-xs font-bold
-                ${sahaFilter === 'all' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'}
-              `}>
-                {vardiyaBildirimleri.length}
-              </span>
-            </div>
-          </button>
-
-          {/* Saha Tab'ları */}
-          {sahalar.map((saha) => {
-            const sahaInfo = sahaStats.find(s => s.sahaId === saha.id);
-            const isActive = sahaFilter === saha.id;
-            
-            return (
-              <button
-                key={saha.id}
-                onClick={() => setSahaFilter(saha.id)}
-                className={`
-                  flex-shrink-0 px-4 py-2.5 rounded-lg font-medium transition-all text-sm
-                  ${isActive
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                  }
-                `}
+      {/* Filtreler - Arızalar Tarzı */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            {/* Mobil: grid-cols-1, Tablet+: grid-cols-2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                value={sahaFilter}
+                onChange={(e) => setSahaFilter(e.target.value)}
               >
-                <div className="flex items-center gap-2">
-                  <span className="truncate max-w-[120px]">{saha.ad}</span>
-                  {sahaInfo && sahaInfo.toplam > 0 && (
-                    <div className="flex items-center gap-1">
-                      <span className={`
-                        px-1.5 py-0.5 rounded text-xs font-bold
-                        ${isActive ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'}
-                      `}>
-                        {sahaInfo.toplam}
-                      </span>
-                      {sahaInfo.acil > 0 && (
-                        <span className={`
-                          px-1.5 py-0.5 rounded text-xs font-bold
-                          ${isActive ? 'bg-red-500 text-white' : 'bg-red-100 text-red-700'}
-                          animate-pulse
-                        `}>
-                          🚨 {sahaInfo.acil}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                <option value="all">Tüm Sahalar</option>
+                {sahalar.map(s => (
+                  <option key={s.id} value={s.id}>{s.ad}</option>
+                ))}
+              </select>
 
-        {/* İkincil Filtreler */}
-        <div className="flex items-center gap-2 p-3 bg-gray-50 border-b border-gray-200 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-500" />
-            <span className="text-xs font-medium text-gray-600">Filtreler:</span>
-          </div>
-          
-          <select
-            className="px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">Tüm Durumlar</option>
-            <option value="normal">✓ Normal</option>
-            <option value="dikkat">⚠️ Dikkat</option>
-            <option value="acil">🚨 Acil</option>
-          </select>
-          
-          <select
-            className="px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-            value={shiftTypeFilter}
-            onChange={(e) => setShiftTypeFilter(e.target.value)}
-          >
-            <option value="all">Tüm Vardiyalar</option>
-            <option value="sabah">☀️ Sabah</option>
-            <option value="ogle">🌤️ Öğle</option>
-            <option value="aksam">🌆 Akşam</option>
-            <option value="gece">🌙 Gece</option>
-          </select>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">Tüm Durumlar</option>
+                <option value="normal">✓ Normal</option>
+                <option value="dikkat">⚠️ Dikkat</option>
+                <option value="acil">🚨 Acil</option>
+              </select>
+            </div>
 
-          {/* Görünüm Seçimi */}
-          <div className="flex bg-white border border-gray-300 rounded-lg overflow-hidden ml-2">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                viewMode === 'grid' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              title="Grid Görünümü"
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode('timeline')}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors border-x border-gray-300 ${
-                viewMode === 'timeline' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              title="Timeline Akış"
-            >
-              <List className="h-3.5 w-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                viewMode === 'map' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              title="Harita Görünümü"
-            >
-              <MapPin className="h-3.5 w-3.5" />
-            </button>
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                value={shiftTypeFilter}
+                onChange={(e) => setShiftTypeFilter(e.target.value)}
+              >
+                <option value="all">Tüm Vardiyalar</option>
+                <option value="sabah">☀️ Sabah</option>
+                <option value="ogle">🌤️ Öğle</option>
+                <option value="aksam">🌆 Akşam</option>
+                <option value="gece">🌙 Gece</option>
+              </select>
 
-          {/* İstatistikler */}
-          <div className="flex items-center gap-1.5 ml-auto">
-            {stats.normal > 0 && (
-              <span className="px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-bold">
-                ✓ {stats.normal}
-              </span>
-            )}
-            {stats.dikkat > 0 && (
-              <span className="px-2 py-1 rounded bg-yellow-100 text-yellow-700 text-xs font-bold">
-                ⚠️ {stats.dikkat}
-              </span>
-            )}
-            {stats.acil > 0 && (
-              <span className="px-2 py-1 rounded bg-red-100 text-red-700 text-xs font-bold animate-pulse">
-                🚨 {stats.acil}
-              </span>
-            )}
+              {/* Görünüm Seçimi */}
+              <div className="inline-flex rounded-md overflow-hidden border h-10">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`px-3 py-2 text-sm ${viewMode === 'grid' ? 'bg-gray-100 font-medium' : ''}`}
+                >
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode('timeline')}
+                  className={`px-3 py-2 text-sm ${viewMode === 'timeline' ? 'bg-gray-100 font-medium' : ''}`}
+                >
+                  Liste
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={`px-3 py-2 text-sm ${viewMode === 'map' ? 'bg-gray-100 font-medium' : ''}`}
+                >
+                  Harita
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
         
         {filteredBildirimler.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12">
@@ -517,201 +441,66 @@ const VardiyaBildirimleri: React.FC = () => {
             </div>
           </div>
         ) : viewMode === 'grid' ? (
-          // Gün bazlı kart görünümü
-          <div className="space-y-4">
-            {(() => {
-              const groups: Record<string, VardiyaBildirimi[]> = {};
-              filteredBildirimler.forEach((v) => {
-                const jsd = toJsDate((v as any).tarih);
-                if (!jsd) return;
-                const key = `${jsd.getFullYear()}-${String(jsd.getMonth()+1).padStart(2,'0')}-${String(jsd.getDate()).padStart(2,'0')}`;
-                if (!groups[key]) groups[key] = [];
-                groups[key].push(v);
-              });
-
-              const dayKeys = Object.keys(groups).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-              const order: Record<string, number> = { sabah: 1, ogle: 2, aksam: 3, gece: 4 };
-
-              return dayKeys.map((day) => {
-                const list = groups[day].slice().sort((a, b) => (order[a.vardiyaTipi] || 99) - (order[b.vardiyaTipi] || 99));
-                const dt = new Date(`${day}T12:00:00`);
-                const header = dt.toLocaleDateString('tr-TR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-
-                return (
-                  <div key={day}>
-                    {/* Minimal Tarih Başlığı */}
-                    <div className="flex items-center gap-2 mb-3 px-2 py-1.5 bg-gray-100 rounded-lg w-fit">
-                      <Calendar className="h-3.5 w-3.5 text-gray-600" />
-                      <span className="text-xs font-bold text-gray-700">{header}</span>
-                      <span className="text-[10px] text-gray-500">• {list.length} vardiya</span>
-                    </div>
-                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
-                      {list.map((bildirim) => {
-                        const isNew = isNewItem(bildirim.tarih);
-                        const timeAgo = isNew ? getTimeAgo(bildirim.tarih) : '';
-                        const securityScore = getSecurityScore(bildirim);
-                        const jsd = toJsDate((bildirim as any).tarih);
-                        const timeStr = jsd ? jsd.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '';
-                        
-                        return (
-              <div
-                key={bildirim.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={(e)=>onCardClick(e, bildirim)}
-                          onKeyDown={(e)=>{ if(e.key==='Enter'){ setSelectedVardiya(bildirim); setShowDetailModal(true);} }}
-                          className={`
-                            cursor-pointer bg-white rounded-lg shadow-sm hover:shadow-md 
-                            transition-all duration-200 overflow-hidden border
-                            ${isNew ? 'border-blue-400 ring-1 ring-blue-100' : 'border-gray-200'}
-                            hover:scale-[1.02]
-                          `}
-              >
-                {/* Durum Indicator - Üst */}
-                <div className={`h-1 ${
-                  bildirim.durum === 'acil' ? 'bg-red-500' :
-                  bildirim.durum === 'dikkat' ? 'bg-yellow-500' : 'bg-green-500'
-                }`} />
-
-                <div className="p-2.5">
-                  {/* Vardiya Tipi Header - Temiz İkon */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-2xl ${
-                        bildirim.vardiyaTipi === 'sabah' ? 'animate-spin animate-glow' :
-                        bildirim.vardiyaTipi === 'ogle' ? 'animate-float animate-glow' :
-                        bildirim.vardiyaTipi === 'aksam' ? 'animate-pulse' :
-                        'animate-pulse'
-                      }`} style={{
-                        animationDuration: bildirim.vardiyaTipi === 'sabah' ? '10s' : bildirim.vardiyaTipi === 'ogle' ? '3s' : '2s'
-                      }}>
-                        {bildirim.vardiyaTipi === 'sabah' ? '☀️' :
-                         bildirim.vardiyaTipi === 'ogle' ? '🌤️' :
-                         bildirim.vardiyaTipi === 'aksam' ? '🌇' : '🌙'}
-                      </span>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">
-                          {getVardiyaLabel(bildirim.vardiyaTipi)}
-                        </p>
-                        <p className="text-[9px] text-gray-500">
-                          {bildirim.vardiyaSaatleri?.baslangic}-{bildirim.vardiyaSaatleri?.bitis}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Durum Badge */}
-                    <div className={`
-                      px-2 py-0.5 rounded text-[10px] font-bold
-                      ${bildirim.durum === 'acil' ? 'bg-red-500 text-white animate-pulse' :
-                        bildirim.durum === 'dikkat' ? 'bg-yellow-500 text-white' :
-                        'bg-green-500 text-white'
-                      }
-                    `}>
-                      {bildirim.durum === 'acil' ? '🚨' : bildirim.durum === 'dikkat' ? '⚠️' : '✓'}
-                    </div>
-                  </div>
-
-                  {/* Kompakt Bilgiler */}
-                  <div className="space-y-1.5">
-                    {/* Bekçi */}
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0">
-                        {bildirim.olusturanFotoUrl && !brokenImages.has(bildirim.olusturanId) ? (
-                          <img 
-                            src={bildirim.olusturanFotoUrl}
-                            alt={bildirim.olusturanAdi}
-                            className="w-full h-full object-cover rounded-full"
-                            onError={() => setBrokenImages(prev => new Set(prev).add(bildirim.olusturanId))}
-                          />
-                        ) : (
-                          <User className="h-2.5 w-2.5 text-white" />
-                        )}
-                      </div>
-                      <span className="text-[10px] font-semibold text-gray-900 truncate flex-1">{bildirim.olusturanAdi}</span>
-                    </div>
-
-                    {/* Saha */}
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 rounded">
-                      <Building2 className="h-3 w-3 text-blue-600 flex-shrink-0" />
-                      <span className="text-[10px] font-medium text-gray-900 truncate flex-1">{bildirim.sahaAdi}</span>
-                    </div>
-
-                    {/* Harita */}
-                    {(bildirim as any).konum && (
-                      <div className="rounded overflow-hidden border border-gray-300">
-                                        <MiniLocationMap 
-                                          lat={(bildirim as any).konum.lat}
-                                          lng={(bildirim as any).konum.lng}
-                                          status={bildirim.durum === 'acil' ? 'ariza' : bildirim.durum === 'dikkat' ? 'bakim' : 'normal'}
-                                          variant="guard"
-                                          shiftType={bildirim.vardiyaTipi as any}
-                                          mapType="satellite"
-                                          height={60}
-                        />
-                      </div>
-                    )}
-
-                    {/* Fotoğraflar */}
-                    {bildirim.fotograflar && bildirim.fotograflar.length > 0 && (
-                      <div className="flex gap-0.5">
-                        {bildirim.fotograflar.slice(0, 2).map((foto, idx) => (
-                          <div key={idx} className="w-10 h-10 rounded overflow-hidden border border-gray-300">
-                            <img 
-                              src={foto} 
-                              alt={`${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
+          // Basit Kart Görünümü - Arızalar Gibi
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredBildirimler.map((bildirim) => {
+              const isNew = isNewItem(bildirim.tarih);
+              const jsd = toJsDate((bildirim as any).tarih);
+              
+              return (
+                <Card
+                  key={bildirim.id}
+                  className={`cursor-pointer transition-all duration-200 ${isNew ? 'ring-2 ring-blue-400' : ''}`}
+                  onClick={() => { setSelectedVardiya(bildirim); setShowDetailModal(true); }}
+                >
+                  <CardContent className="p-3 space-y-2">
+                    {/* Header: Vardiya Tipi + Durum */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">
+                          {bildirim.vardiyaTipi === 'sabah' ? '☀️' :
+                           bildirim.vardiyaTipi === 'ogle' ? '🌤️' :
+                           bildirim.vardiyaTipi === 'aksam' ? '🌇' : '🌙'}
+                        </span>
+                        <div>
+                          <div className="font-semibold text-gray-900">{getVardiyaLabel(bildirim.vardiyaTipi)}</div>
+                          <div className="text-xs text-gray-500">
+                            {bildirim.vardiyaSaatleri?.baslangic}-{bildirim.vardiyaSaatleri?.bitis}
                           </div>
-                        ))}
-                        {bildirim.fotograflar.length > 2 && (
-                          <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-[8px] font-bold text-gray-700">
-                            +{bildirim.fotograflar.length - 2}
-                          </div>
-                        )}
+                        </div>
                       </div>
-                    )}
+                      <StatusBadge status={bildirim.durum} />
+                    </div>
 
-                    {/* Güvenlik Kontrolleri */}
-                    {bildirim.guvenlikKontrolleri && (
-                      <div className="flex gap-1 flex-wrap">
-                        {bildirim.guvenlikKontrolleri.aydinlatmaKontrol && (
-                          <span className="text-xs" title="Aydınlatma">💡</span>
-                        )}
-                        {bildirim.guvenlikKontrolleri.telOrguKontrol && (
-                          <span className="text-xs" title="Tel Örgü/Çit">🏗️</span>
-                        )}
-                        {bildirim.guvenlikKontrolleri.kameraKontrol && (
-                          <span className="text-xs" title="Kamera">📹</span>
-                        )}
-                        {bildirim.guvenlikKontrolleri.girisKontrol && (
-                          <span className="text-xs" title="Giriş Kontrol">🚪</span>
-                        )}
+                    {/* Bilgiler */}
+                    <div className="space-y-1 text-xs text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <User className="w-3.5 h-3.5" />
+                        <span className="truncate">{bildirim.olusturanAdi}</span>
                       </div>
-                    )}
+                      <div className="flex items-center gap-1">
+                        <Building2 className="w-3.5 h-3.5" />
+                        <span className="truncate">{bildirim.sahaAdi}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{jsd ? formatDate(jsd) : '-'}</span>
+                      </div>
+                    </div>
 
-                    {/* Yapılan İşler */}
-                    {bildirim.yapılanIsler && bildirim.yapılanIsler.length > 0 && (
-                      <div className="text-[9px] text-gray-600">
-                        <span className="font-semibold">✓</span> {bildirim.yapılanIsler.length} iş yapıldı
-                      </div>
-                    )}
-
-                    {/* Notlar */}
-                    {bildirim.aciklama && (
-                      <div className="text-[9px] text-gray-600 italic line-clamp-1">
-                        📝 {bildirim.aciklama}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+                    {/* Alt: İşler & Fotoğraflar */}
+                    <div className="flex items-center justify-between text-xs">
+                      {bildirim.yapılanIsler && bildirim.yapılanIsler.length > 0 && (
+                        <span className="text-green-600 font-semibold">✓ {bildirim.yapılanIsler.length} iş</span>
+                      )}
+                      {bildirim.fotograflar && bildirim.fotograflar.length > 0 && (
+                        <span className="text-gray-500">📷 {bildirim.fotograflar.length}</span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               );
             })}
-                    </div>
-                  </div>
-                );
-              });
-            })()}
           </div>
         ) : viewMode === 'timeline' ? (
           // Saha + Vardiya Tipi Gruplu Görünüm
@@ -757,41 +546,41 @@ const VardiyaBildirimleri: React.FC = () => {
                   };
 
                   return (
-                    <div key={sahaKey} className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
-                      {/* Saha Başlığı - Belirgin */}
-                      <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-gray-300">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <div key={sahaKey} className="bg-gray-50 rounded-xl p-3 sm:p-4 border-2 border-gray-200">
+                      {/* Saha Başlığı */}
+                      <div className="flex items-center justify-between mb-3 pb-3 border-b-2 border-gray-300">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
                             <Building2 className="h-5 w-5 text-white" />
                           </div>
-                          <div>
-                            <h3 className="text-base font-black text-gray-900">{sahaAdi}</h3>
-                            <p className="text-xs text-gray-600">{sahaVardiyalar.length} vardiya bildirimi</p>
+                          <div className="min-w-0">
+                            <h3 className="text-base font-black text-gray-900 truncate">{sahaAdi}</h3>
+                            <p className="text-xs text-gray-600">{sahaVardiyalar.length} vardiya</p>
                           </div>
                         </div>
                         
-                        {/* Saha İstatistikleri */}
-                        <div className="flex gap-2">
+                        {/* İstatistikler */}
+                        <div className="flex gap-2 flex-shrink-0">
                           {sahaStats.normal > 0 && (
-                            <span className="px-2.5 py-1 rounded-lg bg-green-500 text-white text-xs font-bold">
+                            <span className="px-2 py-1 rounded-lg bg-green-500 text-white text-xs font-bold">
                               {sahaStats.normal}
                             </span>
                           )}
                           {sahaStats.dikkat > 0 && (
-                            <span className="px-2.5 py-1 rounded-lg bg-yellow-500 text-white text-xs font-bold">
+                            <span className="px-2 py-1 rounded-lg bg-yellow-500 text-white text-xs font-bold">
                               {sahaStats.dikkat}
                             </span>
                           )}
                           {sahaStats.acil > 0 && (
-                            <span className="px-2.5 py-1 rounded-lg bg-red-500 text-white text-xs font-bold animate-pulse">
+                            <span className="px-2 py-1 rounded-lg bg-red-500 text-white text-xs font-bold animate-pulse">
                               {sahaStats.acil}
                             </span>
                           )}
                         </div>
                       </div>
 
-                      {/* Vardiya Tipi Grupları - Yan Yana Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3">
+                      {/* Vardiya Grupları */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                         {vardiyaTipKeys.map((vardiyaTip) => {
                           const vardiyalar = vardiyaTipGroups[vardiyaTip];
                           const vardiyaLabel = getVardiyaLabel(vardiyaTip);
@@ -805,9 +594,9 @@ const VardiyaBildirimleri: React.FC = () => {
 
                           return (
                             <div key={vardiyaTip} className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden">
-                              {/* Vardiya Tipi Başlığı - Temiz */}
+                              {/* Vardiya Başlık */}
                               <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-200">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
                                   <span className={`text-2xl ${
                                     vardiyaTip === 'sabah' ? 'animate-spin animate-glow' :
                                     vardiyaTip === 'ogle' ? 'animate-float animate-glow' :
@@ -1002,16 +791,16 @@ const VardiyaBildirimleri: React.FC = () => {
               
               return (
                 <div className="space-y-4">
-                  {/* Harita Kontrol Paneli - Kompakt */}
-                  <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-gradient-to-br from-red-500 to-pink-500 rounded-lg">
-                          <MapPin className="h-4 w-4 text-white" />
+                  {/* Harita Kontrol Paneli - Kompakt - Mobil Uyumlu */}
+                  <div className="bg-white rounded-lg shadow-sm p-2 md:p-3 border border-gray-200">
+                    <div className="flex items-center justify-between flex-wrap gap-1.5 md:gap-2">
+                      <div className="flex items-center gap-1.5 md:gap-2">
+                        <div className="p-1 md:p-1.5 bg-gradient-to-br from-red-500 to-pink-500 rounded-lg">
+                          <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-sm font-bold text-gray-900">Harita Görünümü</h3>
-                          <p className="text-xs text-gray-600">{filteredCoords.length} konum</p>
+                          <h3 className="text-xs md:text-sm font-bold text-gray-900">Harita Görünümü</h3>
+                          <p className="text-[10px] md:text-xs text-gray-600">{filteredCoords.length} konum</p>
                         </div>
                       </div>
                       
@@ -1096,16 +885,16 @@ const VardiyaBildirimleri: React.FC = () => {
                     );
                   })()}
 
-                  {/* Lokasyon Listesi - Kompakt */}
+                  {/* Lokasyon Listesi - Kompakt - Mobil Uyumlu */}
                   <div>
-                    <div className="bg-gray-50 rounded-lg p-2 mb-2 border border-gray-200">
-                      <h3 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
-                        <Building2 className="h-3.5 w-3.5 text-blue-600" />
+                    <div className="bg-gray-50 rounded-lg p-1.5 md:p-2 mb-2 border border-gray-200">
+                      <h3 className="text-[10px] md:text-xs font-bold text-gray-900 flex items-center gap-1 md:gap-1.5">
+                        <Building2 className="h-3 w-3 md:h-3.5 md:w-3.5 text-blue-600" />
                         Vardiya Lokasyonları ({filteredCoords.length})
                       </h3>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                       {filteredCoords.map((v, idx) => {
                         const isNew = isNewItem(v.tarih);
                         const jsd = toJsDate((v as any).tarih);

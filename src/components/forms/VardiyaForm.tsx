@@ -397,29 +397,29 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Adım Göstergesi */}
-      <div className="mb-8">
+    <div className="space-y-4 md:space-y-6">
+      {/* Adım Göstergesi - Mobil Uyumlu */}
+      <div className="mb-6 md:mb-8">
         <div className="flex items-center justify-between">
           {[1, 2, 3, 4].map((step) => (
             <div key={step} className="flex-1 flex items-center">
               <div
                 className={`
-                  w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all
+                  w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-semibold transition-all text-sm md:text-base
                   ${currentStep === step 
-                    ? 'bg-blue-600 text-white ring-4 ring-blue-100' 
+                    ? 'bg-blue-600 text-white ring-2 md:ring-4 ring-blue-100' 
                     : currentStep > step 
                       ? 'bg-green-500 text-white' 
                       : 'bg-gray-200 text-gray-600'
                   }
                 `}
               >
-                {currentStep > step ? <Check className="h-5 w-5" /> : step}
+                {currentStep > step ? <Check className="h-4 w-4 md:h-5 md:w-5" /> : step}
               </div>
               {step < 4 && (
-                <div className="flex-1 mx-2">
+                <div className="flex-1 mx-1 md:mx-2">
                   <div 
-                    className={`h-1 transition-all ${
+                    className={`h-0.5 md:h-1 transition-all ${
                       currentStep > step ? 'bg-green-500' : 'bg-gray-200'
                     }`}
                   />
@@ -428,19 +428,19 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
             </div>
           ))}
         </div>
-        <div className="flex justify-between mt-2 px-2">
-          <span className="text-xs text-gray-600">Konum</span>
-          <span className="text-xs text-gray-600">Personel</span>
-          <span className="text-xs text-gray-600">Detaylar</span>
-          <span className="text-xs text-gray-600">Özet</span>
+        <div className="flex justify-between mt-1.5 md:mt-2 px-1 md:px-2">
+          <span className="text-[9px] md:text-xs text-gray-600">Konum</span>
+          <span className="text-[9px] md:text-xs text-gray-600">Personel</span>
+          <span className="text-[9px] md:text-xs text-gray-600">Detaylar</span>
+          <span className="text-[9px] md:text-xs text-gray-600">Özet</span>
         </div>
       </div>
 
-      {/* ADIM 1: Konum ve Zaman */}
+      {/* ADIM 1: Konum ve Zaman - Mobil Uyumlu */}
       {currentStep === 1 && (
-        <div className="space-y-6 animate-fadeIn">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-            <Building2 className="h-5 w-5 mr-2 text-blue-600" />
+        <div className="space-y-4 md:space-y-6 animate-fadeIn">
+          <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center">
+            <Building2 className="h-4 w-4 md:h-5 md:w-5 mr-2 text-blue-600" />
             Konum ve Zaman Bilgileri
           </h3>
           
@@ -569,11 +569,11 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
         </div>
       )}
 
-      {/* ADIM 2: Personel Seçimi */}
+      {/* ADIM 2: Personel Seçimi - Mobil Uyumlu */}
       {currentStep === 2 && (
-        <div className="space-y-6 animate-fadeIn">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-            <Users className="h-5 w-5 mr-2 text-blue-600" />
+        <div className="space-y-4 md:space-y-6 animate-fadeIn">
+          <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center">
+            <Users className="h-4 w-4 md:h-5 md:w-5 mr-2 text-blue-600" />
             Vardiya Personeli
           </h3>
           
@@ -615,18 +615,18 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
         </div>
       )}
 
-      {/* ADIM 3: Detaylar */}
+      {/* ADIM 3: Detaylar - Mobil Uyumlu */}
       {currentStep === 3 && (
-        <div className="space-y-6 animate-fadeIn">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-            <FileText className="h-5 w-5 mr-2 text-blue-600" />
+        <div className="space-y-4 md:space-y-6 animate-fadeIn">
+          <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center">
+            <FileText className="h-4 w-4 md:h-5 md:w-5 mr-2 text-blue-600" />
             Vardiya Detayları
           </h3>
 
           {/* Güvenlik Kontrolleri */}
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Güvenlik Kontrolleri</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2 md:mb-3">Güvenlik Kontrolleri</h4>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
               {[
                 { key: 'kameraKontrol', label: 'Kamera Sistemleri', icon: Camera },
                 { key: 'telOrguKontrol', label: 'Tel Örgü/Çit', icon: Shield },
@@ -635,10 +635,10 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
               ].map(item => (
                 <label 
                   key={item.key} 
-                  className="flex flex-col items-center p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                  className="flex flex-col items-center p-2.5 md:p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                 >
-                  <item.icon className="h-8 w-8 text-gray-400 mb-2" />
-                  <span className="text-sm text-center mb-2">{item.label}</span>
+                  <item.icon className="h-6 w-6 md:h-8 md:w-8 text-gray-400 mb-1.5 md:mb-2" />
+                  <span className="text-xs md:text-sm text-center mb-1.5 md:mb-2">{item.label}</span>
                   <input
                     type="checkbox"
                     checked={(formData.guvenlikKontrolleri as any)[item.key] || false}
@@ -706,10 +706,10 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
             />
           </div>
 
-          {/* Fotoğraf Yükleme */}
+          {/* Fotoğraf Yükleme - Mobil Uyumlu */}
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Fotoğraflar</h4>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+            <h4 className="text-sm font-medium text-gray-700 mb-2 md:mb-3">Fotoğraflar</h4>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-6">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -720,22 +720,23 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
               />
               
               <div className="text-center">
-                <Camera className="mx-auto h-12 w-12 text-gray-400" />
+                <Camera className="mx-auto h-10 w-10 md:h-12 md:w-12 text-gray-400" />
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
-                  className="mt-2"
+                  className="mt-2 text-sm"
+                  size="sm"
                 >
                   Fotoğraf Seç
                 </Button>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-[10px] md:text-xs text-gray-500 mt-2">
                   Maksimum 10 fotoğraf yükleyebilirsiniz
                 </p>
               </div>
               
               {(selectedFiles.length > 0 || uploadedImages.length > 0) && (
-                <div className="mt-4 grid grid-cols-3 md:grid-cols-5 gap-2">
+                <div className="mt-3 md:mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                   {[...uploadedImages, ...selectedFiles].map((item, index) => (
                     <div key={index} className="relative group">
                       {typeof item === 'string' ? (
@@ -773,33 +774,33 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
         </div>
       )}
 
-      {/* ADIM 4: Özet */}
+      {/* ADIM 4: Özet - Mobil Uyumlu */}
       {currentStep === 4 && (
-        <div className="space-y-6 animate-fadeIn">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-            <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+        <div className="space-y-4 md:space-y-6 animate-fadeIn">
+          <h3 className="text-base md:text-lg font-semibold text-gray-900 flex items-center">
+            <CheckCircle className="h-4 w-4 md:h-5 md:w-5 mr-2 text-green-600" />
             Vardiya Özeti
           </h3>
 
-          <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-gray-50 rounded-lg p-4 md:p-6 space-y-3 md:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div>
-                <p className="text-sm text-gray-600">Saha</p>
-                <p className="font-medium">{sahalar.find(s => s.id === formData.sahaId)?.ad || '-'}</p>
+                <p className="text-xs md:text-sm text-gray-600">Saha</p>
+                <p className="text-sm md:text-base font-medium">{sahalar.find(s => s.id === formData.sahaId)?.ad || '-'}</p>
               </div>
               {formData.santralId && (
                 <div>
-                  <p className="text-sm text-gray-600">Santral</p>
-                  <p className="font-medium">{filteredSantraller.find(s => s.id === formData.santralId)?.ad || '-'}</p>
+                  <p className="text-xs md:text-sm text-gray-600">Santral</p>
+                  <p className="text-sm md:text-base font-medium">{filteredSantraller.find(s => s.id === formData.santralId)?.ad || '-'}</p>
                 </div>
               )}
               <div>
-                <p className="text-sm text-gray-600">Tarih</p>
-                <p className="font-medium">{new Date(formData.tarih).toLocaleDateString('tr-TR')}</p>
+                <p className="text-xs md:text-sm text-gray-600">Tarih</p>
+                <p className="text-sm md:text-base font-medium">{new Date(formData.tarih).toLocaleDateString('tr-TR')}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Vardiya</p>
-                <p className="font-medium">
+                <p className="text-xs md:text-sm text-gray-600">Vardiya</p>
+                <p className="text-sm md:text-base font-medium">
                   {formData.vardiyaTipi === 'sabah' && 'Sabah (08:00-16:00)'}
                   {formData.vardiyaTipi === 'ogle' && 'Öğle (12:00-20:00)'}
                   {formData.vardiyaTipi === 'aksam' && 'Akşam (16:00-00:00)'}
@@ -807,8 +808,8 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Durum</p>
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                <p className="text-xs md:text-sm text-gray-600">Durum</p>
+                <span className={`inline-flex px-2 py-1 text-[10px] md:text-xs font-semibold rounded-full ${
                   formData.durum === 'normal' ? 'bg-green-100 text-green-800' :
                   formData.durum === 'dikkat' ? 'bg-yellow-100 text-yellow-800' :
                   'bg-red-100 text-red-800'
@@ -820,12 +821,12 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
             </div>
 
             <div>
-              <p className="text-sm text-gray-600 mb-2">Personeller ({formData.personeller.length})</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="text-xs md:text-sm text-gray-600 mb-2">Personeller ({formData.personeller.length})</p>
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
                 {formData.personeller.map(p => (
                   <span 
                     key={p.id} 
-                    className={`px-3 py-1 rounded-full text-sm ${
+                    className={`px-2.5 md:px-3 py-1 rounded-full text-xs md:text-sm ${
                       p.id === userProfile?.id 
                         ? 'bg-blue-600 text-white' 
                         : 'bg-blue-100 text-blue-800'
@@ -840,10 +841,10 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
 
             {formData.yapılanIsler.length > 0 && (
               <div>
-                <p className="text-sm text-gray-600 mb-2">Yapılan İşler ({formData.yapılanIsler.length})</p>
+                <p className="text-xs md:text-sm text-gray-600 mb-2">Yapılan İşler ({formData.yapılanIsler.length})</p>
                 <ul className="list-disc list-inside space-y-1">
                   {formData.yapılanIsler.map((is, index) => (
-                    <li key={index} className="text-sm">{is}</li>
+                    <li key={index} className="text-xs md:text-sm">{is}</li>
                   ))}
                 </ul>
               </div>
@@ -851,14 +852,14 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
 
             {formData.aciklama && (
               <div>
-                <p className="text-sm text-gray-600 mb-2">Notlar</p>
-                <p className="text-sm">{formData.aciklama}</p>
+                <p className="text-xs md:text-sm text-gray-600 mb-2">Notlar</p>
+                <p className="text-xs md:text-sm">{formData.aciklama}</p>
               </div>
             )}
 
             {(selectedFiles.length > 0 || uploadedImages.length > 0) && (
               <div>
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-xs md:text-sm text-gray-600 mb-2">
                   Fotoğraflar ({selectedFiles.length + uploadedImages.length})
                 </p>
               </div>
@@ -867,8 +868,8 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
         </div>
       )}
 
-      {/* Navigasyon Butonları */}
-      <div className="flex justify-between pt-6 border-t">
+      {/* Navigasyon Butonları - Mobil Uyumlu */}
+      <div className="flex justify-between pt-4 md:pt-6 border-t gap-2 md:gap-0">
         <div>
           {currentStep > 1 && (
             <Button
@@ -876,19 +877,23 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
               variant="outline"
               onClick={prevStep}
               disabled={isLoading}
+              className="text-xs md:text-sm px-3 md:px-4"
+              size="sm"
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Geri
+              <ChevronLeft className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1" />
+              <span className="hidden sm:inline">Geri</span>
             </Button>
           )}
         </div>
         
-        <div className="flex space-x-3">
+        <div className="flex space-x-2 md:space-x-3">
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
             disabled={isLoading}
+            className="text-xs md:text-sm px-3 md:px-4"
+            size="sm"
           >
             İptal
           </Button>
@@ -898,9 +903,11 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
               type="button"
               onClick={nextStep}
               disabled={!canProceed()}
+              className="text-xs md:text-sm px-3 md:px-4"
+              size="sm"
             >
-              İleri
-              <ChevronRight className="h-4 w-4 ml-1" />
+              <span className="hidden sm:inline">İleri</span>
+              <ChevronRight className="h-3.5 w-3.5 md:h-4 md:w-4 sm:ml-1" />
             </Button>
           ) : (
             <Button
@@ -908,15 +915,17 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
               onClick={handleSubmit}
               disabled={isLoading || isUploading}
               variant="primary"
+              className="text-xs md:text-sm px-3 md:px-4"
+              size="sm"
             >
               {isLoading ? (
                 <>
                   <LoadingSpinner size="sm" />
-                  <span className="ml-2">Kaydediliyor...</span>
+                  <span className="ml-1.5 md:ml-2">Kaydediliyor...</span>
                 </>
               ) : (
                 <>
-                  <Check className="h-4 w-4 mr-1" />
+                  <Check className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1" />
                   {editData ? 'Güncelle' : 'Oluştur'}
                 </>
               )}
