@@ -11,30 +11,16 @@ const ThemeSettings: React.FC = () => {
     {
       value: 'light' as const,
       label: 'Açık Tema',
-      description: 'Gündüz kullanımı için aydınlık tema',
+      description: 'Sistem genelinde zorunlu tema',
       icon: Sun,
       preview: 'bg-white border-gray-200'
-    },
-    {
-      value: 'dark' as const,
-      label: 'Koyu Tema',
-      description: 'Göz yorgunluğunu azaltan karanlık tema',
-      icon: Moon,
-      preview: 'bg-gray-900 border-gray-700'
-    },
-    {
-      value: 'system' as const,
-      label: 'Sistem Teması',
-      description: 'İşletim sistemi ayarına göre otomatik',
-      icon: Monitor,
-      preview: 'bg-gradient-to-r from-white to-gray-900'
     }
   ];
 
-  const handleThemeChange = async (newTheme: 'light' | 'dark' | 'system') => {
+  const handleThemeChange = async (_newTheme: 'light' | 'dark' | 'system') => {
     try {
-      await setTheme(newTheme);
-      toast.success(`Tema değiştirildi: ${themes.find(t => t.value === newTheme)?.label}`);
+      await setTheme('light');
+      toast.success('Tema: Açık (kilitli)');
     } catch (error) {
       toast.error('Tema değiştirilemedi');
     }
@@ -61,7 +47,7 @@ const ThemeSettings: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
           {themes.map(({ value, label, description, icon: Icon, preview }) => (
             <button
               key={value}
@@ -117,19 +103,17 @@ const ThemeSettings: React.FC = () => {
         </div>
 
         {/* Bilgi Notu */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
             </div>
-            <div className="text-sm text-blue-800 dark:text-blue-200">
+            <div className="text-sm text-blue-800">
               <p className="font-medium mb-1">Kişisel Tercih</p>
               <p>
-                Bu tema ayarı sadece sizin hesabınız için kaydedilir. 
-                Diğer kullanıcılar kendi tema tercihlerini seçebilir.
-                Farklı cihazlarda giriş yaptığınızda tema tercihiniz otomatik olarak yüklenir.
+                Koyu tema geçici olarak devre dışı. Sistem açık tema ile çalışır.
               </p>
             </div>
           </div>

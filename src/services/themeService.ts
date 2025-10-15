@@ -70,34 +70,10 @@ export async function getUserThemePreference(userId: string): Promise<ThemePrefe
  * Tema uygula
  */
 export function applyTheme(theme: ThemePreference): void {
-  // Önce forceDarkMode'u kaldır
-  const isDarkForced = localStorage.getItem('forceDarkMode') === 'true';
-  if (isDarkForced) {
-    localStorage.removeItem('forceDarkMode');
-  }
-
-  let actualTheme: 'light' | 'dark';
-  
-  if (theme === 'system') {
-    // Sistem temasını kontrol et
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    actualTheme = mediaQuery.matches ? 'dark' : 'light';
-  } else {
-    actualTheme = theme;
-  }
-
-  // HTML ve body'ye class ekle/kaldır
-  if (actualTheme === 'dark') {
-    document.documentElement.classList.add('dark');
-    document.documentElement.style.colorScheme = 'dark';
-    document.body.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-    document.documentElement.style.colorScheme = 'light';
-    document.body.classList.remove('dark');
-  }
-
-  console.log(`🎨 Tema uygulandı: ${theme} (${actualTheme})`);
+  // Koyu tema KAPALI: Her zaman açık temayı uygula ve tüm dark classlarını kaldır
+  document.documentElement.classList.remove('dark');
+  document.documentElement.style.colorScheme = 'light';
+  document.body.classList.remove('dark');
 }
 
 /**

@@ -23,92 +23,49 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { userProfile } = useAuth();
-  const [theme, setThemeState] = useState<Theme>('system');
+  const [theme, setThemeState] = useState<Theme>('light');
   const [loading, setLoading] = useState(true);
 
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
 
   // Kullanıcı değiştiğinde tema tercihini yükle
   useEffect(() => {
-    const loadUserTheme = async () => {
-      if (userProfile?.uid) {
-        setLoading(true);
-        try {
-          const userTheme = await getUserThemePreference(userProfile.uid);
-          setThemeState(userTheme);
-          applyTheme(userTheme);
-          
-          // Actual theme'i güncelle
-          if (userTheme === 'system') {
-            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            setActualTheme(isDark ? 'dark' : 'light');
-          } else {
-            setActualTheme(userTheme as 'light' | 'dark');
-          }
-        } catch (error) {
-          console.error('Tema yükleme hatası:', error);
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        // Kullanıcı yoksa varsayılan tema
-        setThemeState('system');
-        applyTheme('system');
-        setLoading(false);
-      }
-    };
-
-    loadUserTheme();
+    // Koyu tema kapalı: her zaman açık temayı uygula
+    applyTheme('light');
+    setThemeState('light');
+    setActualTheme('light');
+    setLoading(false);
   }, [userProfile?.uid]);
 
   // Tema değiştiğinde uygula
   useEffect(() => {
-    if (!loading && theme) {
-      applyTheme(theme);
-      
-      // Actual theme'i güncelle
-      if (theme === 'system') {
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setActualTheme(isDark ? 'dark' : 'light');
-      } else {
-        setActualTheme(theme as 'light' | 'dark');
-      }
+    if (!loading) {
+      applyTheme('light');
+      setActualTheme('light');
     }
   }, [theme, loading]);
 
   // Sistem teması değişikliklerini dinle
   useEffect(() => {
-    if (theme === 'system') {
-      const cleanup = watchSystemThemeChanges((isDark) => {
-        setActualTheme(isDark ? 'dark' : 'light');
-        applyTheme('system');
-      });
-      
-      return cleanup;
-    }
+    // Sistem değişikliklerini dinlemeye gerek yok
   }, [theme]);
 
-  const setTheme = async (newTheme: Theme) => {
+  const setTheme = async (_newTheme: Theme) => {
+    // Tema kilitli: her zaman light uygula
+    setThemeState('light');
     if (userProfile?.uid) {
       try {
-        // Firebase'e kaydet
-        await saveUserThemePreference(userProfile.uid, newTheme);
-        setThemeState(newTheme);
-        applyTheme(newTheme);
-      } catch (error) {
-        console.error('Tema kaydetme hatası:', error);
-      }
+        await saveUserThemePreference(userProfile.uid, 'light');
+      } catch {}
     } else {
-      // Kullanıcı yoksa sadece local'e kaydet
-      setThemeState(newTheme);
-      localStorage.setItem('theme', newTheme);
-      applyTheme(newTheme);
+      localStorage.setItem('theme', 'light');
     }
+    applyTheme('light');
   };
 
   const toggleTheme = () => {
-    const newTheme = actualTheme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
+    // Kapalı
+    setTheme('light');
   };
 
   return (
