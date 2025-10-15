@@ -418,7 +418,7 @@ const Bakim: React.FC = () => {
     return (
     <Card 
       key={bakim.id} 
-      className={`transition-all duration-200 overflow-hidden cursor-pointer ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
+      className={`relative transition-all duration-200 overflow-hidden cursor-pointer ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
       onClick={() => handleViewDetails(bakim, type)}
     >
       {/* YENİ Badge */}
@@ -758,43 +758,47 @@ const Bakim: React.FC = () => {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div className="space-y-6 pb-20 md:pb-0">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Bakım Yönetimi</h1>
-          <p className="text-gray-600">Bakım ve yapılan iş kayıtlarını yönetin</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Masaüstü: metinli butonlar */}
-          <Button 
-            variant="secondary"
-            onClick={exportPDF}
-            className="hidden sm:inline-flex"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Rapor İndir
-          </Button>
-          <Button 
-            variant="secondary"
-            onClick={exportExcel}
-            className="hidden sm:inline-flex"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Excel İndir
-          </Button>
-          {activeTab === 'yapilanisler'
-            ? (canPerformAction('bakim_ekle') && (
-                <Button className="hidden sm:inline-flex" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowYapilanIsModal(true)}>
-                  Yeni İş Raporu
-                </Button>
-              ))
-            : (canPerformAction('bakim_ekle') && (
-                <Button className="hidden sm:inline-flex" leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowBakimModal(true)}>
-                  Yeni Bakım Kaydı
-                </Button>
-              ))}
-
-          {/* Mobil: ikon butonlar (Arızalar sayfası ile aynı yaklaşım) */}
+      {/* Başlık ve Butonlar */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Wrench className="w-6 h-6 sm:w-7 sm:h-7 text-blue-500" />
+              Bakım Yönetimi
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">Bakım ve yapılan iş kayıtlarını yönetin</p>
+          </div>
+          {/* Desktop metinli butonlar */}
+          <div className="hidden sm:flex gap-2" data-pdf-exclude="true">
+            <Button 
+              variant="secondary"
+              onClick={exportPDF}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Rapor İndir
+            </Button>
+            <Button 
+              variant="secondary"
+              onClick={exportExcel}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Excel İndir
+            </Button>
+            {activeTab === 'yapilanisler'
+              ? (canPerformAction('bakim_ekle') && (
+                  <Button onClick={() => setShowYapilanIsModal(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Yeni İş Raporu
+                  </Button>
+                ))
+              : (canPerformAction('bakim_ekle') && (
+                  <Button onClick={() => setShowBakimModal(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Yeni Bakım Kaydı
+                  </Button>
+                ))}
+          </div>
+          {/* Mobil ikon butonlar */}
           <div className="flex sm:hidden items-center gap-2" data-pdf-exclude="true">
             <Button variant="secondary" size="sm" className="px-2 py-1 text-xs" onClick={exportPDF} title="Rapor indir">
               <Download className="w-4 h-4" />

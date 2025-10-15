@@ -37,12 +37,14 @@ interface VardiyaFormProps {
   onSuccess: () => void;
   onCancel: () => void;
   editData?: any;
+  initialDate?: string; // YYYY-MM-DD formatında tarih
 }
 
 export const VardiyaForm: React.FC<VardiyaFormProps> = ({ 
   onSuccess, 
   onCancel,
-  editData 
+  editData,
+  initialDate
 }) => {
   const { userProfile } = useAuth();
   const { company } = useCompany();
@@ -63,7 +65,7 @@ export const VardiyaForm: React.FC<VardiyaFormProps> = ({
   const [formData, setFormData] = useState({
     sahaId: '',
     santralId: '',
-    tarih: new Date().toISOString().split('T')[0],
+    tarih: initialDate || new Date().toISOString().split('T')[0],
     vardiyaTipi: 'sabah' as 'sabah' | 'ogle' | 'aksam' | 'gece',
     vardiyaSaatleri: {
       baslangic: '08:00',

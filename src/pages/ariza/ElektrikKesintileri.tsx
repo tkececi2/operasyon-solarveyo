@@ -609,7 +609,7 @@ const ElektrikKesintileri: React.FC = () => {
                   show={isNew} 
                   position="absolute"
                   timeAgo={timeAgo}
-                  className="z-10"
+                  className="z-20"
                 />
                 
                 <CardContent className="p-4 space-y-3">

@@ -868,35 +868,46 @@ const Arizalar: React.FC = () => {
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div className="space-y-6 pb-20 md:pb-0">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">ARIZALAR</h1>
-          <p className="text-gray-600">
-            {isLoading ? 'Yükleniyor...' : 
-             hasMore ? `${arizalar.length} arıza gösteriliyor (daha fazla var)` : 
-             `Toplam ${arizalar.length} arıza`}
-            {hasFilters && ' (filtrelenmiş)'}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="hidden md:flex rounded-md overflow-hidden border">
-            <button className={`px-3 py-2 text-sm ${viewMode==='list'?'bg-gray-100 font-medium':''}`} onClick={()=>setViewMode('list')}>Liste</button>
-            <button className={`px-3 py-2 text-sm ${viewMode==='cards'?'bg-gray-100 font-medium':''}`} onClick={()=>setViewMode('cards')}>Kart</button>
+      {/* Başlık ve Butonlar */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <AlertCircle className="w-6 h-6 sm:w-7 sm:h-7 text-red-500" />
+              ARIZALAR
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
+              {isLoading ? 'Yükleniyor...' : 
+               hasMore ? `${arizalar.length} arıza gösteriliyor (daha fazla var)` : 
+               `Toplam ${arizalar.length} arıza`}
+              {hasFilters && ' (filtrelenmiş)'}
+            </p>
           </div>
-          {canPerformAction('ariza_ekle') && (
-            <Button
-            className="hidden sm:inline-flex"
-            onClick={() => {
-              setSelectedAriza(null);
-              setShowCreateModal(true);
-            }}
-            leftIcon={<Plus className="w-4 h-4" />}
-          >
-            Yeni Arıza
-          </Button>
-          )}
-          {/* Mobil ikonlar ve görünüm seçici */}
+          {/* Desktop metinli butonlar */}
+          <div className="hidden sm:flex gap-2" data-pdf-exclude="true">
+            <div className="flex rounded-md overflow-hidden border">
+              <button className={`px-3 py-2 text-sm ${viewMode==='list'?'bg-gray-100 font-medium':''}`} onClick={()=>setViewMode('list')}>Liste</button>
+              <button className={`px-3 py-2 text-sm ${viewMode==='cards'?'bg-gray-100 font-medium':''}`} onClick={()=>setViewMode('cards')}>Kart</button>
+            </div>
+            <Button variant="secondary" onClick={handleExportPdf}>
+              <Download className="w-4 h-4 mr-2" />
+              Rapor İndir
+            </Button>
+            <Button variant="secondary" onClick={handleExportExcel}>
+              <FileText className="w-4 h-4 mr-2" />
+              Excel İndir
+            </Button>
+            {canPerformAction('ariza_ekle') && (
+              <Button onClick={() => {
+                setSelectedAriza(null);
+                setShowCreateModal(true);
+              }}>
+                <Plus className="w-4 h-4 mr-2" />
+                Yeni Arıza
+              </Button>
+            )}
+          </div>
+          {/* Mobil ikon butonlar */}
           <div className="flex sm:hidden items-center gap-2" data-pdf-exclude="true">
             <Button variant="secondary" size="sm" className="px-2 py-1 text-xs" onClick={handleExportPdf} title="Rapor indir">
               <Download className="w-4 h-4" />
@@ -1144,7 +1155,7 @@ const Arizalar: React.FC = () => {
             return (
             <Card 
               key={ariza.id}
-              className={`cursor-pointer transition-all duration-200 ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
+              className={`relative cursor-pointer transition-all duration-200 ${getNewItemClasses(isNew)} ${getNewItemHoverClasses(isNew)}`}
               onClick={() => handleViewDetail(ariza)}
             >
               {/* YENİ Badge */}
@@ -1152,6 +1163,7 @@ const Arizalar: React.FC = () => {
                 show={isNew} 
                 position="absolute"
                 timeAgo={timeAgo}
+                className="z-20"
               />
               
               <div className="relative">

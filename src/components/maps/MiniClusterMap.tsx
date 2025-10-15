@@ -10,6 +10,7 @@ type Point = {
   status?: 'normal' | 'bakim' | 'ariza';
   url?: string;
   details?: Array<{ label: string; value: string }>;
+  shiftType?: 'sabah' | 'ogle' | 'aksam' | 'gece';
 };
 
 declare global {
@@ -52,8 +53,9 @@ const waitForGoogleMaps = () => {
 export const MiniClusterMap: React.FC<{ 
   points: Point[]; 
   mapType?: 'roadmap' | 'satellite' | 'terrain' | 'hybrid'; 
-  height?: number 
-}> = ({ points, mapType = 'terrain', height = 260 }) => {
+  height?: number; 
+  variant?: 'ges' | 'guard';
+}> = ({ points, mapType = 'satellite', height = 260, variant = 'ges' }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -185,6 +187,55 @@ export const MiniClusterMap: React.FC<{
           };
         };
 
+        // Bekçi Marker (rozet + başlık + shift badge)
+        const createGuardMarker = (
+          status?: 'normal' | 'bakim' | 'ariza',
+          shiftType?: 'sabah' | 'ogle' | 'aksam' | 'gece'
+        ) => {
+          const colors = status === 'ariza'
+            ? { base: '#dc2626', dark: '#991b1b', glow: '#fecaca' }
+            : status === 'bakim'
+            ? { base: '#f59e0b', dark: '#92400e', glow: '#fde68a' }
+            : { base: '#10b981', dark: '#065f46', glow: '#a7f3d0' };
+
+          const shiftIcon =
+            shiftType === 'sabah' ? '🌅' :
+            shiftType === 'ogle' ? '☀️' :
+            shiftType === 'aksam' ? '🌆' :
+            shiftType === 'gece' ? '🌙' : '✓';
+
+          const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="56" height="56" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <!-- Pin gövdesi -->
+  <g filter="url(#glow)">
+    <path d="M28 4c10 0 18 7.6 18 17 0 12.5-13.5 23-18 31C23.5 44 10 33.5 10 21 10 11.6 18 4 28 4z" fill="${colors.base}" stroke="#ffffff" stroke-width="3"/>
+  </g>
+  <!-- Bekçi rozeti -->
+  <g transform="translate(14,12)">
+    <circle cx="14" cy="14" r="12" fill="#0ea5e9" stroke="#0369a1" stroke-width="2"/>
+    <!-- Şapka -->
+    <path d="M4 12h20l-3-6H7l-3 6z" fill="#1e3a8a"/>
+    <!-- Gözlük -->
+    <rect x="8" y="16" width="6" height="3" rx="1.5" fill="#111827"/>
+    <rect x="14" y="16" width="6" height="3" rx="1.5" fill="#111827"/>
+    <rect x="8" y="17.5" width="12" height="1" fill="#111827"/>
+  </g>
+  <!-- Shift/Status bubble -->
+  <circle cx="42" cy="10" r="8" fill="${colors.dark}" stroke="#ffffff" stroke-width="2.5"/>
+  <text x="42" y="13" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">${shiftIcon}</text>
+</svg>`;
+
+          const url = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+          return {
+            url,
+            scaledSize: new window.google.maps.Size(56, 56),
+            anchor: new window.google.maps.Point(28, 52),
+          };
+        };
+
         const infoWindow = new window.google.maps.InfoWindow();
 
         const bounds = new window.google.maps.LatLngBounds();
@@ -199,7 +250,7 @@ export const MiniClusterMap: React.FC<{
           const marker = new window.google.maps.Marker({
             position,
             title: p.title,
-            icon: createGESBuildingMarker(p.status),
+            icon: variant === 'guard' ? createGuardMarker(p.status, p.shiftType) : createGESBuildingMarker(p.status),
             optimized: false,
             animation: window.google.maps.Animation.DROP, // Yumuşak iniş animasyonu
           });

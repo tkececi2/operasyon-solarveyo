@@ -40,27 +40,27 @@ export const NewBadge: React.FC<NewBadgeProps> = ({
     ? 'animate-pulse'
     : '';
 
-  const sizeClasses = compact
-    ? 'px-2 py-0.5 text-xs'
-    : 'px-2.5 py-1 text-xs';
-
   return (
-    <div className={`${baseClasses} ${className}`}>
+    <div className={`${baseClasses} ${className} group`}>
+      {/* Küçük simge - sadece Sparkles ikonu */}
       <div className={`
-        ${sizeClasses}
+        w-6 h-6 rounded-full
         bg-gradient-to-r from-blue-500 to-indigo-600 
-        text-white font-semibold rounded-full 
-        shadow-lg shadow-blue-500/50
-        flex items-center gap-1
+        text-white
+        shadow-md
+        flex items-center justify-center
         ${animationClasses}
-        transform transition-transform duration-200
-        hover:scale-105
+        transition-all duration-200
+        cursor-pointer
+        hover:w-auto hover:px-2 hover:gap-1
       `}>
-        <Sparkles className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
-        <span>YENİ</span>
+        <Sparkles className="h-3 w-3 flex-shrink-0" />
+        {/* Hover'da metin görünür */}
+        <span className="hidden group-hover:inline text-[10px] font-semibold whitespace-nowrap">YENİ</span>
       </div>
-      {timeAgo && !compact && (
-        <div className="text-[10px] text-blue-600 font-medium text-center mt-0.5 bg-white/90 rounded px-1 py-0.5">
+      {/* Zaman bilgisi - hover'da göster */}
+      {timeAgo && (
+        <div className="hidden group-hover:block absolute top-8 right-0 text-[9px] text-blue-600 font-medium bg-white rounded px-1.5 py-0.5 shadow-sm whitespace-nowrap">
           {timeAgo}
         </div>
       )}
