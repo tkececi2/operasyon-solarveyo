@@ -159,7 +159,7 @@ export const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({
       // Sadece son 48 saat içindeki yeni kayıtları göster
       const newItems = allItems.filter(item => isNewItem(item.date));
 
-      setRecentItems(newItems.slice(0, 10)); // En fazla 10 kayıt göster
+      setRecentItems(newItems.slice(0, 3)); // En fazla 3 kayıt göster
     } catch (error) {
       console.error('Son eklenenler yüklenemedi:', error);
       toast.error('Son eklenenler yüklenemedi');
@@ -183,7 +183,7 @@ export const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({
     const config = statusMap[status] || { label: status, variant: 'bg-gray-100 text-gray-700' };
     
     return (
-      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${config.variant}`}>
+      <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-medium ${config.variant}`}>
         {config.label}
       </span>
     );
@@ -234,7 +234,7 @@ export const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <div className="space-y-2 max-h-72 overflow-y-auto scrollbar-thin">
           {recentItems.map((item) => {
             const timeAgo = getTimeAgo(item.date);
             
@@ -242,10 +242,10 @@ export const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({
               <div
                 key={`${item.type}-${item.id}`}
                 onClick={() => handleItemClick(item)}
-                className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer group"
+                className="flex items-start gap-2.5 p-2.5 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer group"
               >
                 {/* Icon */}
-                <div className={`p-2 rounded-lg bg-gray-50 ${item.color} group-hover:scale-110 transition-transform`}>
+                <div className={`p-1.5 rounded-lg bg-gray-50 ${item.color} group-hover:scale-105 transition-transform flex-shrink-0`}>
                   {item.icon}
                 </div>
 
@@ -253,24 +253,24 @@ export const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-gray-900 truncate">
+                      <p className="font-medium text-xs text-gray-900 truncate">
                         {item.title}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-[10px] text-gray-500 truncate">
                         {item.subtitle}
                       </p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
+                    <ChevronRight className="h-3.5 w-3.5 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
                   </div>
 
-                  <div className="flex items-center gap-2 mt-2">
-                    {item.status && getStatusBadge(item.status)}
+                  <div className="flex items-center gap-1.5 mt-1.5">
                     {timeAgo && (
-                      <span className="text-xs text-gray-500 flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
+                      <span className="text-[10px] text-gray-500 flex items-center gap-0.5">
+                        <Clock className="h-2.5 w-2.5" />
                         {timeAgo}
                       </span>
                     )}
+                    {item.status && getStatusBadge(item.status)}
                   </div>
                 </div>
               </div>
