@@ -102,20 +102,20 @@ const Hero: React.FC<{ onOpenVideo?: () => void }> = ({ onOpenVideo }) => {
               whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
               variants={reveal}
-              className="mt-5 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100"
+              className="mt-5 text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 leading-tight"
             >
-              <span className="bg-gradient-to-r from-gray-900 via-blue-700 to-sky-600 bg-clip-text text-transparent">GES Operasyonlarınızı</span> dijitalleştirin
-              <span className="block mt-2 text-xl md:text-2xl font-semibold text-gray-800/80">Saha bazlı fiyatlandırma ile EPC ve O&M ekipleri için</span>
+              <span className="block bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent">Güneş Enerjisi</span>
+              <span className="block mt-1">Operasyonlarında</span>
+              <span className="block mt-1 text-gray-700">Tam Kontrol</span>
             </motion.h1>
             <motion.p
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
               variants={reveal}
-              className="mt-4 text-gray-700 dark:text-gray-300 text-base md:text-lg leading-relaxed"
+              className="mt-6 text-gray-600 dark:text-gray-300 text-lg md:text-xl leading-relaxed max-w-2xl"
             >
-              Solar sektörü için tasarlanmış uçtan uca platform: arıza, bakım, üretim ve ekip yönetimi tek yerde. 
-              Saha başına şeffaf fiyat, müşteriye şeffaf raporlama ve kurumsal güvenlik bir arada.
+              Gerçek zamanlı izleme, akıllı arıza yönetimi ve otomatik raporlama ile güneş enerjisi santrallerinizi en verimli şekilde yönetin.
             </motion.p>
             <motion.div
               initial="hidden"
@@ -144,15 +144,24 @@ const Hero: React.FC<{ onOpenVideo?: () => void }> = ({ onOpenVideo }) => {
               </button>
             </motion.div>
             <style>{`@keyframes shine { 100% { transform: translateX(260%); } }`}</style>
-            <div className="mt-6 flex items-center gap-6 text-xs text-gray-600">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-600" /> Şeffaf müşteri raporları
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <CheckCircle className="w-3 h-3 text-white" />
+                </div>
+                <span className="font-medium">7/24 İzleme</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-600" /> Vardiya kontrol ve denetim
+              <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <CheckCircle className="w-3 h-3 text-white" />
+                </div>
+                <span className="font-medium">Anlık Bildirimler</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-emerald-600" /> Arıza çözüm süresinde azalma
+              <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <CheckCircle className="w-3 h-3 text-white" />
+                </div>
+                <span className="font-medium">Detaylı Raporlar</span>
               </div>
             </div>
           </div>
@@ -190,39 +199,89 @@ const Hero: React.FC<{ onOpenVideo?: () => void }> = ({ onOpenVideo }) => {
 };
 
 const SectorFit: React.FC = () => (
-  <section className="py-12 md:py-16 bg-white">
+  <section className="py-16 md:py-24 bg-white">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="rounded-xl border bg-gradient-to-br from-blue-50 to-white p-6">
-          <div className="text-xs font-medium text-blue-700">Kimin İçin?</div>
-          <h3 className="mt-2 text-lg font-semibold text-gray-900">EPC / O&M Şirketleri</h3>
-          <p className="mt-2 text-sm text-gray-600">Saha sayınız arttıkça ölçeklenen ve saha bazlı fiyatlandırılan operasyon yazılımı.</p>
-        </div>
-        <div className="rounded-xl border bg-gradient-to-br from-emerald-50 to-white p-6">
-          <div className="text-xs font-medium text-emerald-700">Değer</div>
-          <h3 className="mt-2 text-lg font-semibold text-gray-900">ROI odaklı</h3>
-          <ul className="mt-2 space-y-2 text-sm text-gray-700">
-            <li className="flex gap-2"><CheckCircle className="w-4 h-4 text-emerald-600"/> MTTR’da %20–35 azalma</li>
-            <li className="flex gap-2"><CheckCircle className="w-4 h-4 text-emerald-600"/> Müşteri memnuniyetinde artış</li>
-            <li className="flex gap-2"><CheckCircle className="w-4 h-4 text-emerald-600"/> Şeffaf süreç ve denetim izi</li>
-          </ul>
-        </div>
-        <div className="rounded-xl border bg-gradient-to-br from-purple-50 to-white p-6">
-          <div className="text-xs font-medium text-purple-700">Fiyatlandırma</div>
-          <h3 className="mt-2 text-lg font-semibold text-gray-900">Saha Bazlı</h3>
-          <p className="mt-2 text-sm text-gray-600">Küçükten büyüğe tüm portföyler için adil, ölçeklenebilir ve şeffaf model.</p>
-          <div className="mt-4 flex gap-3">
-            <Link to="/pricing" className="rounded-md bg-primary-600 text-white px-4 py-2 text-sm font-medium hover:bg-primary-700">Fiyatları Gör</Link>
-            <a 
-              href="https://api.whatsapp.com/send?phone=905318984145&text=Merhaba%2C%20SolarVeyo%20hakk%C4%B1nda%20demo%20talep%20etmek%20istiyorum" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="rounded-md border border-primary-200 text-primary-700 px-4 py-2 text-sm font-medium hover:bg-primary-50"
-            >
-              Demo Talep Et
-            </a>
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Neden SolarVeyo?</h2>
+        <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          Güneş enerjisi sektörüne özel tasarlanmış, kanıtlanmış çözümler
+        </p>
+      </div>
+      <div className="grid md:grid-cols-3 gap-8">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={reveal} className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
+          <div className="relative rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-sky-500 flex items-center justify-center mb-4">
+              <Zap className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900">Gerçek Zamanlı İzleme</h3>
+            <p className="mt-3 text-gray-600">Tüm santrallerinizi tek ekrandan izleyin. Anlık performans ve arıza bildirimleri.</p>
+            <ul className="mt-4 space-y-2">
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span>7/24 canlı durum takibi</span>
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span>Otomatik uyarı sistemi</span>
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span>Mobil uygulama desteği</span>
+              </li>
+            </ul>
           </div>
-        </div>
+        </motion.div>
+        
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
+          <div className="relative rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center mb-4">
+              <BarChart3 className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900">Akıllı Analiz</h3>
+            <p className="mt-3 text-gray-600">Detaylı raporlar ve performans analiziyle verimliliğinizi artırın.</p>
+            <ul className="mt-4 space-y-2">
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span>Otomatik raporlama</span>
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span>KPI takibi</span>
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span>Tahmine dayalı bakım</span>
+              </li>
+            </ul>
+          </div>
+        </motion.div>
+        
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
+          <div className="relative rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4">
+              <ShieldCheck className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900">Kurumsal Güvenlik</h3>
+            <p className="mt-3 text-gray-600">Verileriniz en üst düzey güvenlik standartlarıyla korunur.</p>
+            <ul className="mt-4 space-y-2">
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span>Rol tabanlı erişim</span>
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span>SSL/TLS şifreleme</span>
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-700">
+                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                <span>KVKK uyumlu</span>
+              </li>
+            </ul>
+          </div>
+        </motion.div>
       </div>
     </div>
   </section>
@@ -474,28 +533,33 @@ const Stats: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
   return (
-    <section className="py-12 bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-6">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={reveal} className="rounded-xl border bg-white p-6 text-center">
-            <div className="mx-auto w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center"><ShieldCheck className="w-5 h-5" /></div>
-            <div className="mt-2 text-3xl font-extrabold text-gray-900">{uptime.toFixed(1)}%</div>
-            <div className="mt-1 text-sm text-gray-500">Sistem Uptime</div>
+    <section className="py-20 md:py-28 bg-gradient-to-br from-blue-600 via-sky-500 to-emerald-500 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">Güvenilir Performans</h2>
+          <p className="mt-4 text-lg text-white/90">Binlerce santral operatörü tarafından tercih ediliyor</p>
+        </div>
+        <div className="grid md:grid-cols-4 gap-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={reveal} className="text-center">
+            <div className="text-5xl md:text-6xl font-extrabold text-white">{uptime.toFixed(1)}%</div>
+            <div className="mt-2 text-lg text-white/90 font-medium">Sistem Uptime</div>
+            <div className="mt-1 text-sm text-white/70">7/24 kesintisiz hizmet</div>
           </motion.div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="rounded-xl border bg-white p-6 text-center">
-            <div className="mx-auto w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center"><Wrench className="w-5 h-5" /></div>
-            <div className="mt-2 text-3xl font-extrabold text-gray-900">-{Math.round(mttr)}%</div>
-            <div className="mt-1 text-sm text-gray-500">MTTR (çözüm süresi)</div>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="text-center">
+            <div className="text-5xl md:text-6xl font-extrabold text-white">-{Math.round(mttr)}%</div>
+            <div className="mt-2 text-lg text-white/90 font-medium">Daha Hızlı Çözüm</div>
+            <div className="mt-1 text-sm text-white/70">Arıza çözüm süresinde azalma</div>
           </motion.div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="rounded-xl border bg-white p-6 text-center">
-            <div className="mx-auto w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><Star className="w-5 h-5" /></div>
-            <div className="mt-2 text-3xl font-extrabold text-gray-900">{satisfaction.toFixed(1)}/5</div>
-            <div className="mt-1 text-sm text-gray-500">Memnuniyet</div>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="text-center">
+            <div className="text-5xl md:text-6xl font-extrabold text-white">{satisfaction.toFixed(1)}<span className="text-3xl">/5</span></div>
+            <div className="mt-2 text-lg text-white/90 font-medium">Müşteri Memnuniyeti</div>
+            <div className="mt-1 text-sm text-white/70">Binlerce kullanıcı değerlendirmesi</div>
           </motion.div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="rounded-xl border bg-white p-6 text-center">
-            <div className="mx-auto w-10 h-10 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center"><Bell className="w-5 h-5" /></div>
-            <div className="mt-2 text-3xl font-extrabold text-gray-900">{alerts.toFixed(1)}%</div>
-            <div className="mt-1 text-sm text-gray-500">Anlık Bildirim Teslimi</div>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="text-center">
+            <div className="text-5xl md:text-6xl font-extrabold text-white">{alerts.toFixed(1)}%</div>
+            <div className="mt-2 text-lg text-white/90 font-medium">Anlık Bildirim</div>
+            <div className="mt-1 text-sm text-white/70">Gerçek zamanlı uyarı sistemi</div>
           </motion.div>
         </div>
       </div>
