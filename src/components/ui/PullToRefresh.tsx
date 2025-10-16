@@ -41,7 +41,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
 
     const handleTouchMove = (e: TouchEvent) => {
       if (!isDragging.current || isRefreshing) return;
-      
+
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
       if (scrollTop > 0) {
         isDragging.current = false;
@@ -56,11 +56,11 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
         // Aşağı çekiliyor - iOS gibi resistance effect
         const resistance = 0.5; // Direnç faktörü (0.5 = yarı hızda)
         const distance = Math.min(diff * resistance, refreshThreshold * 1.5);
-        
+
         setPullDistance(distance);
-        
-        // Scroll'u engelle
-        if (diff > 10) {
+
+        // Scroll'u engelle - sadece event cancelable ise
+        if (diff > 10 && e.cancelable) {
           e.preventDefault();
         }
       }

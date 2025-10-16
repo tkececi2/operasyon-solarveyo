@@ -18,7 +18,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-export type FeedbackTargetType = 'ariza' | 'bakim';
+export type FeedbackTargetType = 'ariza' | 'bakim' | 'envanter';
 
 export interface Feedback {
   id: string;

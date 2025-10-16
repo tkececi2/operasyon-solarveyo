@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Package, Search, Download, FileText, MapPin, Building2, Edit, Trash2, List as ListIcon, Grid3X3, Sun, Zap, Gauge, Boxes, Filter, Plus } from 'lucide-react';
+import { Package, Search, Download, FileText, MapPin, Building2, Edit, Trash2, List as ListIcon, Grid3X3, Sun, Zap, Gauge, Boxes, Filter, Plus, MessageCircle, Heart, Send } from 'lucide-react';
 import { Button, Card, CardContent, Input, Select, LoadingSpinner, Modal, Badge } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { envanterService } from '../../services/envanterService';
@@ -16,6 +16,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Timestamp } from 'firebase/firestore';
 import { uploadFile } from '../../services/storageService';
+import { getFeedbackForTarget, upsertFeedbackForTarget, getUserFeedbackMap, toggleLike, getUserLikesForFeedbacks, type Feedback, deleteFeedback } from '../../services/feedbackService';
 
 const kategoriOptions = [
   { value: 'all', label: 'Tüm Kategoriler' },
@@ -48,6 +49,12 @@ const EnvanterPage: React.FC = () => {
   const [viewing, setViewing] = useState<Envanter | null>(null);
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const canManage = (userProfile?.rol || '') !== 'musteri';
+
+  // Yorum state'leri
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [myLikesMap, setMyLikesMap] = useState<Record<string, boolean>>({});
+  const [commentText, setCommentText] = useState<string>('');
+  const [commentBusy, setCommentBusy] = useState<boolean>(false);
 
   const load = async () => {
     if (!userProfile?.companyId) return;
@@ -192,6 +199,95 @@ const EnvanterPage: React.FC = () => {
       toast.error('Excel indirilemedi');
     }
   };
+
+  // Yorumları yükle
+  const loadFeedbacks = async (envanterItem: Envanter) => {
+    if (!userProfile?.companyId) return;
+    try {
+      const fbs = await getFeedbackForTarget(userProfile.companyId, 'envanter', envanterItem.id);
+      setFeedbacks(fbs);
+      if (fbs.length > 0) {
+        const likesMap = await getUserLikesForFeedbacks(fbs.map(f => f.id), userProfile.id);
+        setMyLikesMap(likesMap);
+      }
+    } catch (e) {
+      console.error('Yorumlar yüklenemedi:', e);
+    }
+  };
+
+  // Yorum gönder
+  const handleSendComment = async () => {
+    if (!userProfile || !viewing) return;
+    const text = commentText.trim();
+    if (!text) {
+      toast.error('Lütfen bir yorum yazın');
+      return;
+    }
+    try {
+      setCommentBusy(true);
+      await upsertFeedbackForTarget({
+        companyId: userProfile.companyId,
+        userId: userProfile.id,
+        userAd: userProfile.ad,
+        targetType: 'envanter',
+        targetId: viewing.id,
+        sahaId: viewing.sahaId,
+        santralId: viewing.santralId,
+        data: { comment: text }
+      });
+      setCommentText('');
+      await loadFeedbacks(viewing);
+      toast.success('Yorumunuz kaydedildi');
+    } catch (e) {
+      console.error(e);
+      toast.error('Yorum gönderilemedi');
+    } finally {
+      setCommentBusy(false);
+    }
+  };
+
+  // Beğeni toggle
+  const handleToggleLike = async (feedbackId: string) => {
+    if (!userProfile) return;
+    try {
+      await toggleLike(feedbackId, userProfile.id);
+      setMyLikesMap(prev => ({ ...prev, [feedbackId]: !prev[feedbackId] }));
+      setFeedbacks(prev => prev.map(f =>
+        f.id === feedbackId
+          ? { ...f, likeCount: f.likeCount + (myLikesMap[feedbackId] ? -1 : 1) }
+          : f
+      ));
+    } catch (e) {
+      console.error(e);
+      toast.error('İşlem başarısız');
+    }
+  };
+
+  // Yorum sil
+  const handleDeleteComment = async (feedbackId: string) => {
+    if (!confirm('Bu yorumu silmek istiyor musunuz?')) return;
+    try {
+      await deleteFeedback(feedbackId);
+      setFeedbacks(prev => prev.filter(f => f.id !== feedbackId));
+      toast.success('Yorum silindi');
+    } catch (e) {
+      console.error(e);
+      toast.error('Yorum silinemedi');
+    }
+  };
+
+  // Viewing değiştiğinde yorumları yükle
+  useEffect(() => {
+    if (viewing) {
+      loadFeedbacks(viewing);
+      setCommentText('');
+    } else {
+      setFeedbacks([]);
+      setMyLikesMap({});
+      setCommentText('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewing]);
 
   if (loading) {
     return (
@@ -452,8 +548,8 @@ const EnvanterPage: React.FC = () => {
               <div><span className="text-gray-500">Garanti Bitiş:</span> {viewing.garantiBitis ? formatDate((viewing.garantiBitis as any).toDate()) : '-'}</div>
               <div>
                 <span className="text-gray-500">Garanti Kalan:</span> {
-                  typeof remainingDays(viewing.garantiBitis) === 'number' 
-                    ? (remainingDays(viewing.garantiBitis)! <= 0 
+                  typeof remainingDays(viewing.garantiBitis) === 'number'
+                    ? (remainingDays(viewing.garantiBitis)! <= 0
                         ? <span className="text-gray-600 font-medium">Garantisi Bitti</span>
                         : <span className={remainingDays(viewing.garantiBitis)! <= 30 ? 'text-red-600 font-medium' : 'text-green-600 font-medium'}>{remainingDays(viewing.garantiBitis)} gün</span>
                       )
@@ -467,6 +563,91 @@ const EnvanterPage: React.FC = () => {
                 <p className="text-sm text-gray-700">{viewing.notlar}</p>
               </div>
             )}
+
+            {/* Yorum Bölümü */}
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <MessageCircle className="w-4 h-4" />
+                Yorumlar ({feedbacks.length})
+              </h3>
+
+              {/* Yorum Yap */}
+              <div className="mb-4">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    placeholder="Yorumunuzu yazın..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendComment();
+                      }
+                    }}
+                    disabled={commentBusy}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={handleSendComment}
+                    disabled={commentBusy || !commentText.trim()}
+                    size="sm"
+                    className="w-full sm:w-auto"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Gönder
+                  </Button>
+                </div>
+              </div>
+
+              {/* Yorumlar Listesi */}
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {feedbacks.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">Henüz yorum yapılmamış.</p>
+                ) : (
+                  feedbacks.map((fb) => (
+                    <div key={fb.id} className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium text-gray-900">{fb.userAd || 'Anonim'}</span>
+                            <span className="text-xs text-gray-500">
+                              {fb.createdAt?.toDate ? new Date(fb.createdAt.toDate()).toLocaleDateString('tr-TR', {
+                                day: '2-digit',
+                                month: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              }) : '-'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{fb.comment}</p>
+                        </div>
+                        {userProfile?.id === fb.userId && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteComment(fb.id)}
+                            className="text-red-600 hover:text-red-700 ml-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 mt-2">
+                        <button
+                          onClick={() => handleToggleLike(fb.id)}
+                          className={`flex items-center gap-1 text-sm ${
+                            myLikesMap[fb.id] ? 'text-red-600' : 'text-gray-500 hover:text-red-600'
+                          } transition-colors`}
+                        >
+                          <Heart className={`w-4 h-4 ${myLikesMap[fb.id] ? 'fill-current' : ''}`} />
+                          <span>{fb.likeCount || 0}</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </Modal>
       )}
