@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Package, Search, Download, FileText, Building2, Edit, Trash2, List as ListIcon, Grid3X3, Sun, Zap, Gauge, Boxes, Filter, Plus, MessageCircle, Heart, Send } from 'lucide-react';
+import { Package, Search, Download, FileText, Building2, Edit, Trash2, List as ListIcon, Grid3X3, Sun, Zap, Gauge, Boxes, Filter, Plus, MessageCircle, Heart, Send, ChevronDown } from 'lucide-react';
 import { Button, Card, CardContent, Input, Select, LoadingSpinner, Modal, Badge } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { envanterService } from '../../services/envanterService';
@@ -455,15 +455,33 @@ const EnvanterPage: React.FC = () => {
             ))}
           </div>
 
-          {/* Daha Fazla Yükle Butonu - Daha Görünür */}
+          {/* Daha Fazla Yükle Butonu - Temaya Uygun */}
           {hasMore && (
-            <div className="flex flex-col items-center gap-3 mt-8 mb-6 p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-              <p className="text-sm text-gray-600">
-                Daha fazla envanter var. <span className="font-semibold text-gray-900">{filtered.length - displayLimit}</span> kayıt gösterilemiyor.
-              </p>
-              <Button onClick={loadMore} variant="primary" size="lg" className="px-16 py-4 text-base font-semibold">
-                📦 Daha Fazla Yükle ({filtered.length - displayLimit} kaldı)
-              </Button>
+            <div className="mt-6 mb-4">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={loadMore}>
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                      <ChevronDown className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 mb-1">
+                        Daha fazla envanter yükle
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        <span className="font-semibold text-green-600">{filtered.length - displayLimit}</span> kayıt daha mevcut
+                      </p>
+                    </div>
+                    <button
+                      onClick={loadMore}
+                      className="px-8 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      <Package className="w-4 h-4" />
+                      Daha Fazla Göster
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </>
@@ -551,13 +569,31 @@ const EnvanterPage: React.FC = () => {
 
           {/* Daha Fazla Yükle Butonu - Liste Görünümü */}
           {hasMore && (
-            <div className="flex flex-col items-center gap-3 mt-8 mb-6 p-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-              <p className="text-sm text-gray-600">
-                Daha fazla envanter var. <span className="font-semibold text-gray-900">{filtered.length - displayLimit}</span> kayıt gösterilemiyor.
-              </p>
-              <Button onClick={loadMore} variant="primary" size="lg" className="px-16 py-4 text-base font-semibold">
-                📦 Daha Fazla Yükle ({filtered.length - displayLimit} kaldı)
-              </Button>
+            <div className="mt-6 mb-4">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={loadMore}>
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                      <ChevronDown className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 mb-1">
+                        Daha fazla envanter yükle
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        <span className="font-semibold text-green-600">{filtered.length - displayLimit}</span> kayıt daha mevcut
+                      </p>
+                    </div>
+                    <button
+                      onClick={loadMore}
+                      className="px-8 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      <Package className="w-4 h-4" />
+                      Daha Fazla Göster
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </>
