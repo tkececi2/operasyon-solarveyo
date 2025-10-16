@@ -383,7 +383,7 @@ const EnvanterPage: React.FC = () => {
       {/* List */}
       {viewMode==='cards' ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
             {displayedItems.map(item => (
               <Card key={item.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={()=>setViewing(item)}>
                 {/* Minimal Preview */}
@@ -427,12 +427,16 @@ const EnvanterPage: React.FC = () => {
 
                   {/* İşlemler */}
                   {canManage && (
-                    <div className="flex justify-end gap-1 pt-1 border-t" data-pdf-exclude="true" onClick={(e)=>e.stopPropagation()}>
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={()=>setEditing(item)}><Edit className="w-3.5 h-3.5"/></Button>
-                      <Button size="sm" variant="ghost" className="text-red-600 h-7 w-7 p-0" onClick={async()=>{
+                    <div className="flex justify-end gap-2 pt-2 border-t" data-pdf-exclude="true" onClick={(e)=>e.stopPropagation()}>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={()=>setEditing(item)}>
+                        <Edit className="w-4 h-4"/>
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-red-600 h-8 w-8 p-0" onClick={async()=>{
                         if (!confirm('Bu envanteri silmek istiyor musunuz?')) return;
                         try { await envanterService.deleteEnvanter(item.id); toast.success('Silindi'); load(); } catch { toast.error('Silinemedi'); }
-                      }}><Trash2 className="w-3.5 h-3.5"/></Button>
+                      }}>
+                        <Trash2 className="w-4 h-4"/>
+                      </Button>
                     </div>
                   )}
                 </CardContent>
@@ -443,7 +447,7 @@ const EnvanterPage: React.FC = () => {
           {/* Daha Fazla Yükle Butonu */}
           {hasMore && (
             <div className="flex justify-center mt-6">
-              <Button onClick={loadMore} variant="secondary" className="px-8">
+              <Button onClick={loadMore} variant="secondary" size="lg" className="px-12 py-3">
                 Daha Fazla Yükle ({filtered.length - displayLimit} kaldı)
               </Button>
             </div>
@@ -511,11 +515,11 @@ const EnvanterPage: React.FC = () => {
                       </td>
                       {canManage && (
                         <td className="px-3 py-2">
-                          <div className="flex gap-1" onClick={(e)=>e.stopPropagation()}>
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={()=>setEditing(item)}>
+                          <div className="flex gap-2" onClick={(e)=>e.stopPropagation()}>
+                            <Button size="sm" variant="ghost" className="h-9 w-9 p-0" onClick={()=>setEditing(item)}>
                               <Edit className="w-4 h-4"/>
                             </Button>
-                            <Button size="sm" variant="ghost" className="text-red-600 h-8 w-8 p-0" onClick={async()=>{
+                            <Button size="sm" variant="ghost" className="text-red-600 h-9 w-9 p-0" onClick={async()=>{
                               if (!confirm('Bu envanteri silmek istiyor musunuz?')) return;
                               try { await envanterService.deleteEnvanter(item.id); toast.success('Silindi'); load(); } catch { toast.error('Silinemedi'); }
                             }}>
@@ -534,7 +538,7 @@ const EnvanterPage: React.FC = () => {
           {/* Daha Fazla Yükle Butonu - Liste Görünümü */}
           {hasMore && (
             <div className="flex justify-center mt-6">
-              <Button onClick={loadMore} variant="secondary" className="px-8">
+              <Button onClick={loadMore} variant="secondary" size="lg" className="px-12 py-3">
                 Daha Fazla Yükle ({filtered.length - displayLimit} kaldı)
               </Button>
             </div>
