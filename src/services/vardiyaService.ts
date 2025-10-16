@@ -84,6 +84,19 @@ export interface VardiyaBildirimi {
     topraklama: boolean;
     notlar?: string;
   };
+  yorumlar?: {
+    id: string;
+    userId: string;
+    userAdi: string;
+    userRol: string;
+    yorum: string;
+    tarih: Timestamp;
+  }[];
+  reactions?: {
+    tamam: string[]; // userId array - Onaylandı
+    tamamlandi: string[]; // userId array - İş tamamlandı
+  };
+  aciklama?: string; // Genel notlar
   olusturmaTarihi: Timestamp;
   guncellenmeTarihi: Timestamp;
 }
@@ -320,6 +333,81 @@ export const getVardiyaBySaha = async (sahaId: string): Promise<VardiyaBildirimi
   } catch (error) {
     console.error('Saha vardiyaları getirme hatası:', error);
     return [];
+  }
+};
+
+// Vardiyaya yorum ekle
+export const addVardiyaYorum = async (
+  vardiyaId: string,
+  userId: string,
+  userAdi: string,
+  userRol: string,
+  yorum: string
+): Promise<void> => {
+  try {
+    const vardiyaRef = doc(db, 'vardiyaBildirimleri', vardiyaId);
+    const vardiyaDoc = await getDoc(vardiyaRef);
+    
+    if (!vardiyaDoc.exists()) {
+      throw new Error('Vardiya bildirimi bulunamadı');
+    }
+    
+    const currentYorumlar = vardiyaDoc.data().yorumlar || [];
+    const newYorum = {
+      id: `${Date.now()}_${userId}`,
+      userId,
+      userAdi,
+      userRol,
+      yorum,
+      tarih: Timestamp.fromDate(new Date()) // serverTimestamp yerine normal Timestamp
+    };
+    
+    await updateDoc(vardiyaRef, {
+      yorumlar: [...currentYorumlar, newYorum],
+      guncellenmeTarihi: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Yorum ekleme hatası:', error);
+    throw new Error('Yorum eklenemedi');
+  }
+};
+
+// Vardiyaya reaction ekle/çıkar
+export const toggleVardiyaReaction = async (
+  vardiyaId: string,
+  userId: string,
+  reactionType: 'tamam' | 'tamamlandi'
+): Promise<void> => {
+  try {
+    const vardiyaRef = doc(db, 'vardiyaBildirimleri', vardiyaId);
+    const vardiyaDoc = await getDoc(vardiyaRef);
+    
+    if (!vardiyaDoc.exists()) {
+      throw new Error('Vardiya bildirimi bulunamadı');
+    }
+    
+    const currentReactions = vardiyaDoc.data().reactions || { tamam: [], tamamlandi: [] };
+    const reactionArray = currentReactions[reactionType] || [];
+    
+    // Kullanıcı zaten beğenmiş mi?
+    const userIndex = reactionArray.indexOf(userId);
+    let newReactionArray;
+    
+    if (userIndex > -1) {
+      // Beğeniyi kaldır
+      newReactionArray = reactionArray.filter((id: string) => id !== userId);
+    } else {
+      // Beğeni ekle
+      newReactionArray = [...reactionArray, userId];
+    }
+    
+    await updateDoc(vardiyaRef, {
+      [`reactions.${reactionType}`]: newReactionArray,
+      guncellenmeTarihi: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Reaction güncelleme hatası:', error);
+    throw new Error('Reaction güncellenemedi');
   }
 };
 
