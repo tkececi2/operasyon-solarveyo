@@ -70,11 +70,13 @@ const EnvanterPage: React.FC = () => {
         sahaId: sahaId === 'all' ? undefined : sahaId,
         santralId: santralFilter === 'all' ? undefined : santralFilter,
         searchTerm,
+        pageSize: 1000, // Tüm kayıtları çek (maksimum)
         userRole: userProfile.rol,
         userSahalar: userProfile.sahalar as any,
         userSantraller: userProfile.santraller as any,
       });
       setItems(res.items);
+      setDisplayLimit(20); // Sayfa yüklendiğinde ilk 20'yi göster
     } catch (e) {
       console.error(e);
       toast.error('Envanter yüklenemedi');
