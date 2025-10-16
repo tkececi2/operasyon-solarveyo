@@ -102,13 +102,62 @@ const StokKontrol: React.FC = () => {
       
       // Müşteri izolasyonu: sadece atanan saha/santrallerin stokları
       let visibleStoklar = stokData;
-      if (['musteri', 'tekniker', 'muhendis', 'bekci'].includes(userProfile?.rol || '')) {
+
+      console.log('🔍 Stok Filtreleme Debug:', {
+        rol: userProfile?.rol,
+        toplamStok: stokData.length,
+        sahalar: userProfile?.sahalar,
+        santraller: userProfile?.santraller
+      });
+
+      if (userProfile?.rol === 'musteri') {
+        // Müşteriler SADECE atandıkları saha/santralleri görsün, Genel Depo GÖRMESİN
+        const allowedSahalar = (userProfile.sahalar as string[]) || [];
+        const allowedSantraller = userProfile.santraller || [];
+
+        console.log('👤 Müşteri filtresi uygulanıyor:', {
+          allowedSahalar,
+          allowedSantraller
+        });
+
+        visibleStoklar = stokData.filter(s => {
+          // Genel depo kontrolü: sahaId ve santralId yoksa müşteri görmesin
+          const sahaIdEmpty = !s.sahaId || s.sahaId.trim() === '';
+          const santralIdEmpty = !s.santralId || s.santralId.trim() === '';
+
+          if (sahaIdEmpty && santralIdEmpty) {
+            console.log('❌ Genel Depo - Müşteri görmemeli:', s.malzemeAdi, {
+              sahaId: `"${s.sahaId}"`,
+              santralId: `"${s.santralId}"`
+            });
+            return false;
+          }
+          const sahaMatch = s.sahaId ? allowedSahalar.includes(s.sahaId) : false;
+          const santralMatch = s.santralId ? allowedSantraller.includes(s.santralId) : false;
+          const result = sahaMatch || santralMatch;
+          console.log(`${result ? '✅' : '❌'} ${s.malzemeAdi}:`, {
+            sahaId: `"${s.sahaId}"`,
+            santralId: `"${s.santralId}"`,
+            sahaIdEmpty,
+            santralIdEmpty,
+            sahaMatch,
+            santralMatch
+          });
+          return result;
+        });
+
+        console.log('📊 Müşteri için görünür stok sayısı:', visibleStoklar.length);
+      } else if (['tekniker', 'muhendis', 'bekci'].includes(userProfile?.rol || '')) {
+        // Tekniker, Mühendis, Bekçi -> Genel Depo + atandıkları sahalar
         const allowedSahalar = (userProfile.sahalar as string[]) || [];
         const allowedSantraller = userProfile.santraller || [];
         visibleStoklar = stokData.filter(s => {
+          // Genel depo herkese açık (sahaId/santralId yoksa)
+          if (!s.sahaId && !s.santralId) {
+            return true;
+          }
           const sahaMatch = s.sahaId ? allowedSahalar.includes(s.sahaId) : false;
           const santralMatch = s.santralId ? allowedSantraller.includes(s.santralId) : false;
-          // Eğer stok bir sahaya/santrale bağlı değilse müşteri görmesin
           return sahaMatch || santralMatch;
         });
       }
@@ -349,7 +398,8 @@ const StokKontrol: React.FC = () => {
 
   // Saha ve santral isimlerini getir
   const getSahaName = (sahaId?: string): string => {
-    if (!sahaId) return 'Genel Depo';
+    // Boş string veya undefined/null kontrolü
+    if (!sahaId || sahaId.trim() === '') return 'Genel Depo';
     const saha = sahalar.find(s => s.id === sahaId);
     return saha?.ad || 'Bilinmeyen Saha';
   };
@@ -637,7 +687,8 @@ const StokKontrol: React.FC = () => {
             <Select
               options={[
                 { value: 'all', label: 'Tüm Sahalar' },
-                { value: '', label: 'Genel Depo' },
+                // Müşteriler Genel Depo'yu görmesin
+                ...(userProfile?.rol !== 'musteri' ? [{ value: '', label: 'Genel Depo' }] : []),
                 ...sahalar.map(s => ({ value: s.id, label: s.ad }))
               ]}
               value={sahaFilter}
@@ -987,7 +1038,8 @@ const StokKontrol: React.FC = () => {
             <Select
               label="Saha"
               options={[
-                { value: '', label: 'Genel Depo (Saha Yok)' },
+                // Müşteriler Genel Depo'yu görmesin
+                ...(userProfile?.rol !== 'musteri' ? [{ value: '', label: 'Genel Depo (Saha Yok)' }] : []),
                 ...sahalar.map(s => ({ value: s.id, label: s.ad }))
               ]}
               value={formData.sahaId}
@@ -1211,7 +1263,8 @@ const StokKontrol: React.FC = () => {
             <Select
               label="Saha"
               options={[
-                { value: '', label: 'Genel Depo (Saha Yok)' },
+                // Müşteriler Genel Depo'yu görmesin
+                ...(userProfile?.rol !== 'musteri' ? [{ value: '', label: 'Genel Depo (Saha Yok)' }] : []),
                 ...sahalar.map(s => ({ value: s.id, label: s.ad }))
               ]}
               value={formData.sahaId}
