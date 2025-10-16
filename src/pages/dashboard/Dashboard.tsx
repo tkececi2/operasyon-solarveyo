@@ -19,17 +19,18 @@ import { getAllSantraller } from '../../services/santralService';
 import { getAllStoklar } from '../../services/stokService';
 import { checkSubscriptionStatus, getLastNotificationDate } from '../../services/subscriptionNotificationService';
 import toast from 'react-hot-toast';
-import { 
-  Sun, 
-  AlertTriangle, 
-  Wrench, 
-  Users, 
+import {
+  Sun,
+  AlertTriangle,
+  Wrench,
+  Users,
   TrendingUp,
   Battery,
   ArrowUpRight,
   ArrowDownRight,
   Activity,
-  Building2
+  Building2,
+  Map
 } from 'lucide-react';
 // Removed unused import - SUBSCRIPTION_PLANS not used in this component
 import { useSubscription } from '../../hooks/useSubscription';
@@ -707,7 +708,10 @@ const Dashboard: React.FC = () => {
       {/* Operasyon Haritası - Tam genişlik */}
       <Card padding="sm">
         <CardHeader className="mb-2 pb-2">
-          <CardTitle className="text-sm md:text-base font-semibold">Operasyon Haritası (Mini)</CardTitle>
+          <CardTitle className="text-sm md:text-base font-semibold flex items-center gap-2">
+            <Map className="w-5 h-5 text-blue-600" />
+            Operasyon Haritası (Mini)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
