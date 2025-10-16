@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Package, Search, Download, FileText, MapPin, Building2, Edit, Trash2, List as ListIcon, Grid3X3, Sun, Zap, Gauge, Boxes, Filter, Plus, MessageCircle, Heart, Send } from 'lucide-react';
+import { Package, Search, Download, FileText, Building2, Edit, Trash2, List as ListIcon, Grid3X3, Sun, Zap, Gauge, Boxes, Filter, Plus, MessageCircle, Heart, Send } from 'lucide-react';
 import { Button, Card, CardContent, Input, Select, LoadingSpinner, Modal, Badge } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { envanterService } from '../../services/envanterService';
@@ -49,6 +49,10 @@ const EnvanterPage: React.FC = () => {
   const [viewing, setViewing] = useState<Envanter | null>(null);
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const canManage = (userProfile?.rol || '') !== 'musteri';
+
+  // Pagination state'leri
+  const [displayLimit, setDisplayLimit] = useState<number>(20);
+  const ITEMS_PER_PAGE = 20;
 
   // Yorum state'leri
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -114,6 +118,17 @@ const EnvanterPage: React.FC = () => {
       (!term || (i.marka || '').toLowerCase().includes(term) || (i.model || '').toLowerCase().includes(term) || (i.seriNo || '').toLowerCase().includes(term))
     );
   }, [items, searchTerm]);
+
+  // Gösterilecek itemlar (pagination ile)
+  const displayedItems = useMemo(() => {
+    return filtered.slice(0, displayLimit);
+  }, [filtered, displayLimit]);
+
+  const hasMore = filtered.length > displayLimit;
+
+  const loadMore = () => {
+    setDisplayLimit(prev => prev + ITEMS_PER_PAGE);
+  };
 
   const remainingDays = (ts?: any) => {
     try {
@@ -359,141 +374,172 @@ const EnvanterPage: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* İstatistik */}
+      <div className="text-sm text-gray-600 mb-2">
+        Toplam <span className="font-semibold text-gray-900">{filtered.length}</span> envanter •
+        Gösterilen: <span className="font-semibold text-gray-900">{displayedItems.length}</span>
+      </div>
+
       {/* List */}
       {viewMode==='cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map(item => (
-            <Card key={item.id} className="cursor-pointer" onClick={()=>setViewing(item)}>
-              {/* Preview */}
-              {item.fotoUrl && item.fotoUrl.length>0 && (
-                <div className="h-32 w-full bg-gray-100 overflow-hidden">
-                  <img src={item.fotoUrl[0]} alt="preview" className="w-full h-full object-cover" />
-                </div>
-              )}
-              <CardContent className="p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="font-semibold text-gray-900">{(item.marka || '-') + ' ' + (item.model || '')}</div>
-                  <KategoriBadge cat={item.kategori as any} />
-                </div>
-                <div className="text-sm text-gray-600">Seri No: {item.seriNo || '-'}</div>
-                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                  <div className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5"/>{sahaOptions.find(s=>s.value===item.sahaId)?.label || '-'}</div>
-                  <div className="flex items-center gap-1"><Sun className="w-3.5 h-3.5"/>{item.santralId ? (santralMap[item.santralId]?.ad || '-') : '-'}</div>
-                </div>
-                {item.konum && (
-                  <div className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-3.5 h-3.5"/>{item.konum}</div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {displayedItems.map(item => (
+              <Card key={item.id} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={()=>setViewing(item)}>
+                {/* Minimal Preview */}
+                {item.fotoUrl && item.fotoUrl.length>0 && (
+                  <div className="h-24 w-full bg-gray-100 overflow-hidden">
+                    <img src={item.fotoUrl[0]} alt="preview" className="w-full h-full object-cover" />
+                  </div>
                 )}
-                <div className="flex items-center justify-between text-xs text-gray-500 pt-1">
-                  <div>Kurulum: {item.kurulumTarihi ? formatDate(item.kurulumTarihi.toDate()) : '-'}</div>
-                  <div>
-                    Garanti: {item.garantiBitis ? formatDate(item.garantiBitis.toDate()) : '-'}
-                    {typeof remainingDays(item.garantiBitis) === 'number' && (
-                      <span className={`ml-2 text-[11px] px-2 py-0.5 rounded-full ${
-                        remainingDays(item.garantiBitis)! <= 0 
-                          ? 'bg-gray-100 text-gray-700' 
-                          : remainingDays(item.garantiBitis)! <= 30 
-                            ? 'bg-red-100 text-red-700' 
+                <CardContent className="p-3 space-y-1.5">
+                  {/* Başlık ve Kategori */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="font-semibold text-sm text-gray-900 truncate flex-1">{(item.marka || '-') + ' ' + (item.model || '')}</div>
+                    <KategoriBadge cat={item.kategori as any} />
+                  </div>
+
+                  {/* Seri No */}
+                  <div className="text-xs text-gray-500">#{item.seriNo || '-'}</div>
+
+                  {/* Lokasyon */}
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      <Building2 className="w-3 h-3 flex-shrink-0"/>
+                      <span className="truncate">{sahaOptions.find(s=>s.value===item.sahaId)?.label || '-'}</span>
+                    </div>
+                  </div>
+
+                  {/* Garanti Durumu - Minimal */}
+                  {typeof remainingDays(item.garantiBitis) === 'number' && (
+                    <div className="pt-1">
+                      <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                        remainingDays(item.garantiBitis)! <= 0
+                          ? 'bg-gray-100 text-gray-700'
+                          : remainingDays(item.garantiBitis)! <= 30
+                            ? 'bg-red-100 text-red-700'
                             : 'bg-green-100 text-green-700'
                       }`}>
-                        {remainingDays(item.garantiBitis)! <= 0 ? 'Garantisi Bitti' : `${remainingDays(item.garantiBitis)} gün kaldı`}
+                        {remainingDays(item.garantiBitis)! <= 0 ? '⚠️ Garanti Bitti' : `✓ ${remainingDays(item.garantiBitis)} gün`}
                       </span>
-                    )}
-                  </div>
-                </div>
-                {item.notlar && (
-                  <div className="text-xs text-gray-600 pt-2 border-t mt-2">
-                    <span className="font-medium">Not:</span> {item.notlar}
-                  </div>
-                )}
-                {item.belgeUrl && (item.belgeUrl as any).length > 0 && (
-                  <div className="text-xs text-blue-600 flex items-center gap-2 pt-1" onClick={(e)=>e.stopPropagation()}>
-                    <FileText className="w-3.5 h-3.5"/>
-                    <a href={(item.belgeUrl as any)[0]} target="_blank" rel="noreferrer" className="hover:underline">Dokümanları aç ({(item.belgeUrl as any).length})</a>
-                  </div>
-                )}
-                {canManage && (
-                  <div className="flex justify-end gap-2 pt-2" data-pdf-exclude="true" onClick={(e)=>e.stopPropagation()}>
-                    <Button size="sm" variant="ghost" onClick={()=>setEditing(item)}><Edit className="w-4 h-4"/></Button>
-                    <Button size="sm" variant="ghost" className="text-red-600" onClick={async()=>{
-                      if (!confirm('Bu envanteri silmek istiyor musunuz?')) return;
-                      try { await envanterService.deleteEnvanter(item.id); toast.success('Silindi'); load(); } catch { toast.error('Silinemedi'); }
-                    }}><Trash2 className="w-4 h-4"/></Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Foto</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Marka / Model</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Seri No</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Saha</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Santral</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kurulum</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Garanti Bitiş</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kalan Gün</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doküman</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filtered.map(item => (
-                  <tr key={item.id} className="hover:bg-gray-50 cursor-pointer" onClick={()=>setViewing(item)}>
-                    <td className="px-4 py-3">
-                      {item.fotoUrl && item.fotoUrl.length>0 ? (
-                        <img src={item.fotoUrl[0]} alt="prev" className="w-10 h-10 rounded object-cover" />
-                      ) : (
-                        <div className="w-10 h-10 bg-gray-100 rounded" />
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm">{item.kategori}</td>
-                    <td className="px-4 py-3 text-sm">{(item.marka || '-') + ' ' + (item.model || '')}</td>
-                    <td className="px-4 py-3 text-sm">{item.seriNo || '-'}</td>
-                    <td className="px-4 py-3 text-sm">{sahaOptions.find(s=>s.value===item.sahaId)?.label || '-'}</td>
-                    <td className="px-4 py-3 text-sm">{item.santralId ? (santralMap[item.santralId]?.ad || '-') : '-'}</td>
-                    <td className="px-4 py-3 text-sm">{item.kurulumTarihi ? formatDate(item.kurulumTarihi.toDate()) : '-'}</td>
-                    <td className="px-4 py-3 text-sm">{item.garantiBitis ? formatDate(item.garantiBitis.toDate()) : '-'}</td>
-                    <td className="px-4 py-3 text-sm">
-                      {typeof remainingDays(item.garantiBitis) === 'number' 
-                        ? (remainingDays(item.garantiBitis)! <= 0 
-                            ? <span className="text-gray-600 font-medium">Garantisi Bitti</span>
-                            : <span className={remainingDays(item.garantiBitis)! <= 30 ? 'text-red-600 font-medium' : 'text-green-600'}>{remainingDays(item.garantiBitis)} gün</span>
-                          )
-                        : '-'
-                      }
-                    </td>
-                    <td className="px-4 py-3 text-sm" onClick={(e)=>e.stopPropagation()}>
-                      {item.belgeUrl && (item.belgeUrl as any).length>0 ? (
-                        <a href={(item.belgeUrl as any)[0]} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-blue-600 hover:underline" onClick={(e)=>e.stopPropagation()}>
-                          <FileText className="w-4 h-4"/> {(item.belgeUrl as any).length} adet
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {canManage ? (
-                        <div className="flex gap-2" onClick={(e)=>e.stopPropagation()}>
-                          <Button size="sm" variant="ghost" onClick={()=>setEditing(item)}><Edit className="w-4 h-4"/></Button>
-                          <Button size="sm" variant="ghost" className="text-red-600" onClick={async()=>{ if (!confirm('Bu envanteri silmek istiyor musunuz?')) return; try { await envanterService.deleteEnvanter(item.id); toast.success('Silindi'); load(); } catch { toast.error('Silinemedi'); } }}><Trash2 className="w-4 h-4"/></Button>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  )}
+
+                  {/* İşlemler */}
+                  {canManage && (
+                    <div className="flex justify-end gap-1 pt-1 border-t" data-pdf-exclude="true" onClick={(e)=>e.stopPropagation()}>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={()=>setEditing(item)}><Edit className="w-3.5 h-3.5"/></Button>
+                      <Button size="sm" variant="ghost" className="text-red-600 h-7 w-7 p-0" onClick={async()=>{
+                        if (!confirm('Bu envanteri silmek istiyor musunuz?')) return;
+                        try { await envanterService.deleteEnvanter(item.id); toast.success('Silindi'); load(); } catch { toast.error('Silinemedi'); }
+                      }}><Trash2 className="w-3.5 h-3.5"/></Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </Card>
+
+          {/* Daha Fazla Yükle Butonu */}
+          {hasMore && (
+            <div className="flex justify-center mt-6">
+              <Button onClick={loadMore} variant="secondary" className="px-8">
+                Daha Fazla Yükle ({filtered.length - displayLimit} kaldı)
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <Card>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Envanter</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Saha</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Garanti</th>
+                    {canManage && <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">İşlem</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {displayedItems.map(item => (
+                    <tr key={item.id} className="hover:bg-gray-50 cursor-pointer transition-colors" onClick={()=>setViewing(item)}>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-3">
+                          {item.fotoUrl && item.fotoUrl.length>0 ? (
+                            <img src={item.fotoUrl[0]} alt="prev" className="w-12 h-12 rounded object-cover flex-shrink-0" />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
+                              <Package className="w-5 h-5 text-gray-400" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-sm text-gray-900 truncate">
+                              {(item.marka || '-') + ' ' + (item.model || '')}
+                            </div>
+                            <div className="text-xs text-gray-500">#{item.seriNo || '-'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <KategoriBadge cat={item.kategori as any} />
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="text-sm text-gray-900">
+                          {sahaOptions.find(s=>s.value===item.sahaId)?.label || '-'}
+                        </div>
+                        {item.santralId && (
+                          <div className="text-xs text-gray-500">{santralMap[item.santralId]?.ad || '-'}</div>
+                        )}
+                      </td>
+                      <td className="px-3 py-2">
+                        {typeof remainingDays(item.garantiBitis) === 'number' ? (
+                          <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium ${
+                            remainingDays(item.garantiBitis)! <= 0
+                              ? 'bg-gray-100 text-gray-700'
+                              : remainingDays(item.garantiBitis)! <= 30
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-green-100 text-green-700'
+                          }`}>
+                            {remainingDays(item.garantiBitis)! <= 0 ? '⚠️ Bitti' : `✓ ${remainingDays(item.garantiBitis)} gün`}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </td>
+                      {canManage && (
+                        <td className="px-3 py-2">
+                          <div className="flex gap-1" onClick={(e)=>e.stopPropagation()}>
+                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={()=>setEditing(item)}>
+                              <Edit className="w-4 h-4"/>
+                            </Button>
+                            <Button size="sm" variant="ghost" className="text-red-600 h-8 w-8 p-0" onClick={async()=>{
+                              if (!confirm('Bu envanteri silmek istiyor musunuz?')) return;
+                              try { await envanterService.deleteEnvanter(item.id); toast.success('Silindi'); load(); } catch { toast.error('Silinemedi'); }
+                            }}>
+                              <Trash2 className="w-4 h-4"/>
+                            </Button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Daha Fazla Yükle Butonu - Liste Görünümü */}
+          {hasMore && (
+            <div className="flex justify-center mt-6">
+              <Button onClick={loadMore} variant="secondary" className="px-8">
+                Daha Fazla Yükle ({filtered.length - displayLimit} kaldı)
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Create Modal */}
