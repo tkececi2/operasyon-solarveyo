@@ -322,15 +322,15 @@ service cloud.firestore {
         (sameCompany(request.resource.data.companyId) && (canWrite() || isBekci()))
       );
       allow update: if isAuthenticated() && (
-        isSuperAdmin() || 
+        isSuperAdmin() ||
         (sameCompany(resource.data.companyId) && (
-          isYonetici() || isMuhendis() ||
+          isYonetici() || isMuhendis() || isMusteri() || isTekniker() ||
           // Bekçi sadece kendi vardiyasını düzenleyebilir
           (isBekci() && resource.data.bekciId == request.auth.uid)
         ))
       );
       allow delete: if isAuthenticated() && (
-        isSuperAdmin() || 
+        isSuperAdmin() ||
         (sameCompany(resource.data.companyId) && (
           isYonetici() || isMuhendis() || isTekniker() ||
           // Bekçi sadece kendi oluşturduğu vardiyayı silebilir

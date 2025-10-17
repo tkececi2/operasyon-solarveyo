@@ -80,6 +80,7 @@ const VardiyaBildirimleri: React.FC = () => {
   // Yorum ve Reaction state - Her kart için ayrı
   const [yorumInputs, setYorumInputs] = useState<Record<string, string>>({});
   const [isAddingYorum, setIsAddingYorum] = useState<string | null>(null); // Hangi kart için yorum ekleniyor
+  const [expandedSahalar, setExpandedSahalar] = useState<Set<string>>(new Set());
 
   // Verileri Firebase'den getir
   const fetchData = async () => {
@@ -238,10 +239,32 @@ const VardiyaBildirimleri: React.FC = () => {
         userProfile.rol,
         yorum.trim()
       );
+      
+      // State'i direkt güncelle - sayfayı yenileme
+      setVardiyaBildirimleri(prev => prev.map(v => {
+        if (v.id === vardiyaId) {
+          return {
+            ...v,
+            yorumlar: [
+              ...(v.yorumlar || []),
+              {
+                id: `${Date.now()}-${Math.random()}`,
+                kullaniciId: userProfile.id,
+                kullaniciAdi: userProfile.ad,
+                rol: userProfile.rol,
+                metin: yorum.trim(),
+                tarih: new Date(),
+                begeniSayisi: 0
+              }
+            ]
+          };
+        }
+        return v;
+      }));
+      
       // Bu kart için input'u temizle
       setYorumInputs(prev => ({...prev, [vardiyaId]: ''}));
       toast.success('Yorum eklendi');
-      fetchData(); // Verileri yenile
     } catch (error) {
       console.error('Yorum ekleme hatası:', error);
       toast.error('Yorum eklenemedi');
@@ -250,13 +273,33 @@ const VardiyaBildirimleri: React.FC = () => {
     }
   };
 
-  // Reaction toggle
+  // Reaction toggle - sayfayı yenileme yapma, state'i direkt güncelle
   const handleToggleReaction = async (vardiyaId: string, reactionType: 'tamam' | 'tamamlandi') => {
     if (!userProfile) return;
     
     try {
       await toggleVardiyaReaction(vardiyaId, userProfile.id, reactionType);
-      fetchData(); // Verileri yenile
+      
+      // State'i direkt güncelle
+      setVardiyaBildirimleri(prev => prev.map(v => {
+        if (v.id === vardiyaId) {
+          const reactions = v.reactions || {};
+          const currentCount = reactions[reactionType] || 0;
+          const hasReacted = (v.myReactions || []).includes(reactionType);
+          
+          return {
+            ...v,
+            reactions: {
+              ...reactions,
+              [reactionType]: hasReacted ? currentCount - 1 : currentCount + 1
+            },
+            myReactions: hasReacted 
+              ? (v.myReactions || []).filter(r => r !== reactionType)
+              : [...(v.myReactions || []), reactionType]
+          };
+        }
+        return v;
+      }));
     } catch (error) {
       console.error('Reaction hatası:', error);
       toast.error('İşlem başarısız');
@@ -879,6 +922,10 @@ const VardiyaBildirimleri: React.FC = () => {
                         <div className="flex gap-1">
                           <input
                             type="text"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="off"
+                            spellCheck={false}
                             value={yorumInputs[bildirim.id!] || ''}
                             onChange={(e) => {
                               e.stopPropagation();
@@ -891,7 +938,8 @@ const VardiyaBildirimleri: React.FC = () => {
                               }
                             }}
                             placeholder="Yorum yaz..."
-                            className="flex-1 px-1.5 py-1 text-[9px] sm:text-[10px] border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                            className="flex-1 px-1.5 py-1 text-[9px] sm:text-[10px] border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                            style={{ fontSize: '16px', WebkitUserSelect: 'text' }}
                             disabled={isAddingYorum === bildirim.id}
                           />
                           <button
@@ -1235,6 +1283,10 @@ const VardiyaBildirimleri: React.FC = () => {
                                               <div className="flex gap-0.5">
                                                 <input
                                                   type="text"
+                                                  autoComplete="off"
+                                                  autoCorrect="off"
+                                                  autoCapitalize="off"
+                                                  spellCheck={false}
                                                   value={yorumInputs[v.id!] || ''}
                                                   onChange={(e) => {
                                                     e.stopPropagation();
@@ -1247,7 +1299,8 @@ const VardiyaBildirimleri: React.FC = () => {
                                                     }
                                                   }}
                                                   placeholder="Yorum yaz..."
-                                                  className="flex-1 px-1 py-0.5 text-[8px] sm:text-[9px] border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                                  className="flex-1 px-1 py-0.5 text-[8px] sm:text-[9px] border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                                  style={{ fontSize: '16px', WebkitUserSelect: 'text' }}
                                                   disabled={isAddingYorum === v.id}
                                                 />
                                                 <button
@@ -1802,6 +1855,10 @@ const VardiyaBildirimleri: React.FC = () => {
                   <div className="flex gap-2">
                     <input
                       type="text"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck={false}
                       value={yorumInputs[selectedVardiya.id!] || ''}
                       onChange={(e) => setYorumInputs(prev => ({...prev, [selectedVardiya.id!]: e.target.value}))}
                       onKeyPress={(e) => {
@@ -1810,7 +1867,8 @@ const VardiyaBildirimleri: React.FC = () => {
                         }
                       }}
                       placeholder="Yorum yazın..."
-                      className="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                      style={{ fontSize: '16px', WebkitUserSelect: 'text' }}
                       disabled={isAddingYorum === selectedVardiya.id}
                     />
                     <Button

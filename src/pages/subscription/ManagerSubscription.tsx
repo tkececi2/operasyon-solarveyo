@@ -25,6 +25,8 @@ import { getCompanyStatistics } from '../../services/statisticsService';
 import { recalculateStorageForCompany } from '../../services/recalculateStorageService';
 import { getStorageMetrics } from '../../services/storageService';
 import { toast } from 'react-hot-toast';
+import { platform } from '../../utils/platform';
+import { Smartphone, Globe } from 'lucide-react';
 
 // SubscriptionPlan interface
 interface SubscriptionPlan {
@@ -81,6 +83,9 @@ const ManagerSubscription: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [effectiveStorageLimitMB, setEffectiveStorageLimitMB] = useState<number | null>(null);
+  
+  // iOS platform kontrolü
+  const isIOS = platform.isIOS();
 
   useEffect(() => {
     loadData();
@@ -650,6 +655,40 @@ const ManagerSubscription: React.FC = () => {
           </CardContent>
         </Card>
       ) : (
+        <>
+        {/* iOS Bilgilendirme Mesajı */}
+        {isIOS && (
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="bg-blue-100 dark:bg-blue-900/40 p-3 rounded-full">
+                  <Smartphone className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    iOS Uygulama Bilgilendirmesi
+                  </h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
+                    Apple Store politikaları gereği, abonelik satın alma işlemleri iOS uygulamasında yapılamamaktadır. 
+                    Abonelik yönetimi için lütfen web panelimizi kullanın.
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+                    <Globe className="h-4 w-4" />
+                    <a 
+                      href="https://solarveyo.com" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="font-medium underline hover:no-underline"
+                    >
+                      Web Paneline Git →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
         <div id="plans" className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans.map((plan) => {
           const isCurrentPlan = plan.id === currentPlanId;
@@ -688,31 +727,45 @@ const ManagerSubscription: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  {isCurrentPlan ? (
+                  {isIOS ? (
                     <Button
-                      onClick={() => handleUpgrade(plan)}
                       className="w-full"
                       variant="secondary"
+                      disabled
+                      title="iOS'ta satın alma yapılamaz. Web panelini kullanın."
                     >
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Aboneliği Yenile
-                    </Button>
-                  ) : isUpgrade ? (
-                    <Button
-                      onClick={() => handleUpgrade(plan)}
-                      className="w-full"
-                    >
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                      Yükselt
+                      <Smartphone className="h-4 w-4 mr-2" />
+                      Web Panelini Kullanın
                     </Button>
                   ) : (
-                    <Button
-                      onClick={() => handleUpgrade(plan)}
-                      className="w-full"
-                      variant="ghost"
-                    >
-                      Seç
-                    </Button>
+                    <>
+                      {isCurrentPlan ? (
+                        <Button
+                          onClick={() => handleUpgrade(plan)}
+                          className="w-full"
+                          variant="secondary"
+                        >
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Aboneliği Yenile
+                        </Button>
+                      ) : isUpgrade ? (
+                        <Button
+                          onClick={() => handleUpgrade(plan)}
+                          className="w-full"
+                        >
+                          <ArrowRight className="h-4 w-4 mr-2" />
+                          Yükselt
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => handleUpgrade(plan)}
+                          className="w-full"
+                          variant="ghost"
+                        >
+                          Seç
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               </CardContent>
@@ -720,10 +773,11 @@ const ManagerSubscription: React.FC = () => {
           );
         })}
         </div>
+        </>
       )}
 
-      {/* Yükseltme Talep Modalı (Banka Havalesi) */}
-      {selectedPlan && company && (
+      {/* Yükseltme Talep Modalı (Banka Havalesi) - iOS'ta gösterme */}
+      {!isIOS && selectedPlan && company && (
         <UpgradeRequestModal
           isOpen={showRequestModal}
           onClose={() => setShowRequestModal(false)}

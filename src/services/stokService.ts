@@ -236,11 +236,29 @@ export const getAllStoklar = async (
       stoklar.push({ id: doc.id, ...doc.data() } as StokItem);
     });
 
-    // Rol bazlı görünürlük: musteri/tekniker/muhendis/bekci -> yalnız atanan saha/santral
-    if (userRole === 'musteri' || userRole === 'tekniker' || userRole === 'muhendis' || userRole === 'bekci') {
+    // Rol bazlı görünürlük
+    if (userRole === 'musteri') {
+      // Müşteriler SADECE atandıkları saha/santralleri görsün, Genel Depo GÖRMESİN
       const allowedSahalar = Array.isArray(userSahalar) ? userSahalar : [];
       const allowedSantraller = Array.isArray(userSantraller) ? userSantraller : [];
       stoklar = stoklar.filter(s => {
+        // Genel depo kontrolü: sahaId ve santralId yoksa müşteri görmesin
+        if (!s.sahaId && !s.santralId) {
+          return false;
+        }
+        const sahaMatch = s.sahaId ? allowedSahalar.includes(s.sahaId) : false;
+        const santralMatch = s.santralId ? allowedSantraller.includes(s.santralId) : false;
+        return sahaMatch || santralMatch;
+      });
+    } else if (userRole === 'tekniker' || userRole === 'muhendis' || userRole === 'bekci') {
+      // Tekniker, Mühendis, Bekçi -> Genel Depo + atandıkları sahalar
+      const allowedSahalar = Array.isArray(userSahalar) ? userSahalar : [];
+      const allowedSantraller = Array.isArray(userSantraller) ? userSantraller : [];
+      stoklar = stoklar.filter(s => {
+        // Genel depo herkese açık (sahaId/santralId yoksa)
+        if (!s.sahaId && !s.santralId) {
+          return true;
+        }
         const sahaMatch = s.sahaId ? allowedSahalar.includes(s.sahaId) : false;
         const santralMatch = s.santralId ? allowedSantraller.includes(s.santralId) : false;
         return sahaMatch || santralMatch;

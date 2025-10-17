@@ -15,7 +15,8 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
-  Bell
+  Bell,
+  AlertTriangle
 } from 'lucide-react';
 import { Card, CardHeader, CardContent, Alert, AlertDescription, Badge } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,9 +35,12 @@ import { doc, updateDoc, deleteField } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 // PushNotificationService removed - OneSignal migration
 import { Capacitor } from '@capacitor/core';
+import { deleteUserAccount, canDeleteAccount } from '@/services/accountDeletionService';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileSettings: React.FC = () => {
-  const { currentUser, userProfile: authUserProfile } = useAuth();
+  const { currentUser, userProfile: authUserProfile, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserType | null>(null);
@@ -60,6 +64,9 @@ const ProfileSettings: React.FC = () => {
   });
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -286,6 +293,48 @@ const ProfileSettings: React.FC = () => {
       bekci: 'Bekçi'
     };
     return names[rol as keyof typeof names] || rol;
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!currentUser || !userProfile) {
+      toast.error('Kullanıcı bilgisi bulunamadı');
+      return;
+    }
+
+    // Onay kontrolü
+    if (deleteConfirmText !== 'HESABIMI SIL') {
+      toast.error('Lütfen onay metnini doğru yazın');
+      return;
+    }
+
+    try {
+      setIsDeletingAccount(true);
+
+      // Ön kontrol - hesap silinebilir mi?
+      const checkResult = await canDeleteAccount(userProfile);
+      if (!checkResult.canDelete) {
+        toast.error(checkResult.reason || 'Hesap silinemiyor');
+        setShowDeleteDialog(false);
+        return;
+      }
+
+      // Hesabı sil
+      await deleteUserAccount(currentUser, userProfile);
+
+      toast.success('Hesabınız başarıyla silindi. Verileriniz kalıcı olarak silindi.');
+      
+      // Logout ve login sayfasına yönlendir
+      await logout();
+      navigate('/login');
+      
+    } catch (error: any) {
+      console.error('Hesap silme hatası:', error);
+      toast.error(error.message || 'Hesap silinirken bir hata oluştu');
+    } finally {
+      setIsDeletingAccount(false);
+      setShowDeleteDialog(false);
+      setDeleteConfirmText('');
+    }
   };
 
   return (
@@ -685,6 +734,120 @@ const ProfileSettings: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Hesap Silme - TEHLİKELİ BÖLGE */}
+            <Card className="border-red-200 dark:border-red-800">
+              <CardHeader className="bg-red-50 dark:bg-red-900/20">
+                <h3 className="text-lg font-semibold flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <AlertTriangle className="h-5 w-5" />
+                  Tehlikeli Bölge
+                </h3>
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  Bu işlem geri alınamaz!
+                </p>
+              </CardHeader>
+              <CardContent>
+                <Alert variant="destructive" className="mb-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>UYARI:</strong> Hesabınızı sildiğinizde:
+                    <ul className="mt-2 ml-4 text-xs list-disc space-y-1">
+                      <li>Tüm kişisel verileriniz kalıcı olarak silinecek</li>
+                      <li>Profil bilgileriniz ve fotoğraflarınız silinecek</li>
+                      <li>Oluşturduğunuz içerikler (varsa) silinecek</li>
+                      <li>Bu işlem <strong>GERİ ALINAMAZ</strong></li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Hesabınızı silmek istediğinizden emin misiniz? Bu işlem kalıcıdır ve tüm verileriniz silinecektir.
+                  </p>
+
+                  <button
+                    onClick={() => setShowDeleteDialog(true)}
+                    disabled={isDeletingAccount}
+                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Hesabımı Sil
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Hesap Silme Onay Dialogu */}
+        {showDeleteDialog && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-md w-full p-6"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-full">
+                  <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  Hesabı Sil
+                </h3>
+              </div>
+
+              <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Bu işlem <strong>GERİ ALINAMAZ!</strong> Tüm verileriniz kalıcı olarak silinecektir.
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Devam etmek için aşağıya <strong className="text-red-600">HESABIMI SIL</strong> yazın:
+                </p>
+
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="HESABIMI SIL"
+                  className="w-full px-4 py-2 border-2 border-red-300 dark:border-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white"
+                  autoFocus
+                />
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowDeleteDialog(false);
+                      setDeleteConfirmText('');
+                    }}
+                    disabled={isDeletingAccount}
+                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                  >
+                    İptal
+                  </button>
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={deleteConfirmText !== 'HESABIMI SIL' || isDeletingAccount}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isDeletingAccount ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                        Siliniyor...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4" />
+                        Hesabı Sil
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </div>
         )}
 

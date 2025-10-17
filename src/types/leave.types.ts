@@ -105,10 +105,10 @@ export const LEAVE_TYPES = {
 
 // Vardiya Tipleri
 export const SHIFT_TYPES = {
-  sabah: { label: 'Sabah', time: '08:00-16:00', color: 'yellow' },
-  ogle: { label: 'Öğle', time: '12:00-20:00', color: 'orange' },
-  aksam: { label: 'Akşam', time: '16:00-24:00', color: 'blue' },
-  gece: { label: 'Gece', time: '00:00-08:00', color: 'indigo' },
+  sabah: { label: 'Sabah', time: '08:00-10:00', color: 'yellow' },
+  ogle: { label: 'Öğle', time: '15:00-17:00', color: 'orange' },
+  aksam: { label: 'Akşam', time: '20:00-22:00', color: 'blue' },
+  gece: { label: 'Gece', time: '03:00-05:00', color: 'indigo' },
   tatil: { label: 'Tatil', time: '-', color: 'green' },
   izinli: { label: 'İzinli', time: '-', color: 'gray' }
 } as const;
