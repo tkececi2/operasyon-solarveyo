@@ -136,12 +136,19 @@ export const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({
       try {
         const vardiyalar = await getAllVardiyaBildirimleri(companyId);
         vardiyalar.slice(0, 5).forEach((vardiya: VardiyaBildirimi) => {
+          // Tarih güvenli dönüş
+          const vardiyaTarihi = vardiya.tarih && typeof vardiya.tarih.toDate === 'function' 
+            ? vardiya.tarih.toDate() 
+            : vardiya.olusturmaTarihi && typeof vardiya.olusturmaTarihi.toDate === 'function'
+            ? vardiya.olusturmaTarihi.toDate()
+            : new Date();
+            
           allItems.push({
             id: vardiya.id,
             type: 'vardiya',
-            title: `Vardiya - ${vardiya.bekciAdi}`,
+            title: `Vardiya - ${vardiya.sahaAdi || 'Saha'}${vardiya.santralAdi ? ` (${vardiya.santralAdi})` : ''}`,
             subtitle: vardiya.vardiyaTipi?.toUpperCase() || 'Vardiya',
-            date: vardiya.tarih?.toDate ? vardiya.tarih.toDate() : new Date(),
+            date: vardiyaTarihi,
             status: vardiya.durum,
             icon: <Shield className="h-4 w-4" />,
             color: vardiya.durum === 'acil' ? 'text-red-500' : 
