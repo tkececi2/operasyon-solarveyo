@@ -164,10 +164,18 @@ const ensureStorageCapacity = async (companyId: string, bytesToAdd: number) => {
     const usedMB = metricsDoc?.storageUsedMB || 0;
     const addMB = bytesToAdd / (1024 * 1024);
     
-    // Modern SaaS config kullanarak limit al
-    const planId = company?.subscriptionPlan || 'trial';
-    const plan = getPlanById(planId);
-    const limitMB = plan ? plan.limits.storageGB * 1024 : 500; // Default 500MB for trial
+    // Firestore'daki subscriptionLimits.storageLimit'i kullan (MB cinsinden)
+    // Fallback: subscriptionPlan'dan hesapla
+    let limitMB: number;
+    if (company?.subscriptionLimits?.storageLimit) {
+      // Firestore'daki gerçek limit (MB cinsinden)
+      limitMB = company.subscriptionLimits.storageLimit;
+    } else {
+      // Fallback: SAAS_CONFIG'den hesapla
+      const planId = company?.subscriptionPlan || 'trial';
+      const plan = getPlanById(planId);
+      limitMB = plan ? plan.limits.storageGB * 1024 : 500; // Default 500MB for trial
+    }
 
     if (usedMB + addMB > limitMB) {
       const remainingMB = Math.max(0, limitMB - usedMB);
