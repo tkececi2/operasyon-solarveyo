@@ -20,7 +20,7 @@ service firebase.storage {
     }
     function getStorageUsedMB(companyId) {
       let c = getCompany(companyId);
-      return c != null && c.metrics.storageUsedMB != null ? c.metrics.storageUsedMB : 0;
+      return c != null && c.metrics != null && c.metrics.storageUsedMB != null ? c.metrics.storageUsedMB : 0;
     }
     function getPlanStorageLimitMB(plan) {
       // Varsayılan plan-limit eşlemesi (SAAS_CONFIG/remote ile uyumlu tutulmalı)
@@ -40,7 +40,10 @@ service firebase.storage {
     }
     function canUpload(companyId, sizeBytes) {
       // request.resource null ise (delete) true döndür
-      return request.resource == null || (getStorageUsedMB(companyId) + (sizeBytes / (1024 * 1024))) <= getStorageLimitMB(companyId);
+      let used = getStorageUsedMB(companyId);
+      let limit = getStorageLimitMB(companyId);
+      let uploadSizeMB = sizeBytes / (1024 * 1024);
+      return request.resource == null || (used + uploadSizeMB) <= limit;
     }
     
     // Envanter fotoğrafları ve belgeleri
@@ -49,7 +52,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024)
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024 && canUpload(companyId, request.resource.size))
         );
     }
     match /companies/{companyId}/envanter/{envanterId}/docs/{fileName} {
@@ -57,7 +60,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.size < 50 * 1024 * 1024 && (
+          (request.resource.size < 50 * 1024 * 1024 && canUpload(companyId, request.resource.size) && (
             request.resource.contentType in [
               'application/pdf',
               'application/msword',
@@ -79,7 +82,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.contentType.matches('image/.*') && request.resource.size < 5 * 1024 * 1024)
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 5 * 1024 * 1024 && canUpload(companyId, request.resource.size))
         );
     }
     
@@ -94,7 +97,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024)
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024 && canUpload(companyId, request.resource.size))
         );
     }
     
@@ -115,7 +118,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024)
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024 && canUpload(companyId, request.resource.size))
         );
     }
     
@@ -125,7 +128,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024)
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024 && canUpload(companyId, request.resource.size))
         );
     }
     
@@ -167,7 +170,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.contentType.matches('image/.*') && request.resource.size < 5 * 1024 * 1024)
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 5 * 1024 * 1024 && canUpload(companyId, request.resource.size))
         );
       allow delete: if request.auth != null;
     }
@@ -190,7 +193,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024)
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024 && canUpload(companyId, request.resource.size))
         );
     }
     
@@ -200,7 +203,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024)
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024 && canUpload(companyId, request.resource.size))
         );
     }
     
@@ -210,7 +213,7 @@ service firebase.storage {
       allow write: if request.auth != null &&
         (
           request.resource == null ||
-          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024)
+          (request.resource.contentType.matches('image/.*') && request.resource.size < 10 * 1024 * 1024 && canUpload(companyId, request.resource.size))
         );
     }
 
