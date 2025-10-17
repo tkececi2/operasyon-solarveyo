@@ -214,15 +214,7 @@ const VardiyaBildirimleri: React.FC = () => {
 
   // Saha adına göre icon ve renk belirle
   const getSiteIcon = (sahaAdi?: string) => {
-    if (!sahaAdi) return <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
-    
-    if (sahaAdi.includes('Büğüdüz') || sahaAdi.includes('BÜĞÜDÜZ')) {
-      return <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
-    } else if (sahaAdi.includes('Çankırı') || sahaAdi.includes('ÇANKIRI')) {
-      return <Bolt className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
-    } else if (sahaAdi.includes('Necati') || sahaAdi.includes('NECATİ')) {
-      return <Wind className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
-    }
+    // Tüm güneş enerjisi santralları için Sun icon
     return <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
   };
 
