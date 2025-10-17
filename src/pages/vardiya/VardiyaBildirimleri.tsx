@@ -1015,8 +1015,21 @@ const VardiyaBildirimleri: React.FC = () => {
 
                   return (
                     <div key={sahaKey} className="bg-white rounded-lg p-2 sm:p-3 md:p-4 shadow-sm">
-                      {/* Saha Başlığı - Kompakt */}
-                      <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
+                      {/* Saha Başlığı - Kompakt - Accordion */}
+                      <div 
+                        onClick={() => {
+                          setExpandedSahalar(prev => {
+                            const newSet = new Set(prev);
+                            if (newSet.has(sahaKey)) {
+                              newSet.delete(sahaKey);
+                            } else {
+                              newSet.add(sahaKey);
+                            }
+                            return newSet;
+                          });
+                        }}
+                        className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200 cursor-pointer hover:bg-gray-50 px-2 py-1.5 rounded transition-colors"
+                      >
                         <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
                           <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
                             <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />
@@ -1027,8 +1040,8 @@ const VardiyaBildirimleri: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* İstatistikler - Kompakt */}
-                        <div className="flex gap-1 flex-shrink-0">
+                        {/* İstatistikler + Chevron */}
+                        <div className="flex gap-1 flex-shrink-0 items-center">
                           {sahaStats.normal > 0 && (
                             <span className="px-1 sm:px-1.5 md:px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-[9px] sm:text-[10px] md:text-xs font-medium">
                               {sahaStats.normal}
@@ -1044,11 +1057,18 @@ const VardiyaBildirimleri: React.FC = () => {
                               {sahaStats.acil}
                             </span>
                           )}
+                          <ChevronRight 
+                            className={`h-4 w-4 text-gray-500 transition-transform ml-1 flex-shrink-0 ${
+                              expandedSahalar.has(sahaKey) ? 'rotate-90' : ''
+                            }`}
+                          />
                         </div>
                       </div>
 
-                      {/* Vardiya Grupları - Yan Yana Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 min-w-0">
+                      {/* Vardiya Grupları - Yan Yana Grid - Açılı olunca göster */}
+                      {expandedSahalar.has(sahaKey) && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 min-w-0 mt-2"
+                      >
                         {vardiyaTipKeys.map((vardiyaTip) => {
                           const vardiyalar = vardiyaTipGroups[vardiyaTip];
                           const vardiyaLabel = getVardiyaLabel(vardiyaTip);
