@@ -22,7 +22,10 @@ import {
   ChevronRight,
   LayoutGrid,
   List,
-  Trash2
+  Trash2,
+  Zap,
+  Bolt,
+  Wind
 } from 'lucide-react';
 import { 
   Button, 
@@ -207,6 +210,33 @@ const VardiyaBildirimleri: React.FC = () => {
       case 'gece': return '03:00 - 05:00';
       default: return '';
     }
+  };
+
+  // Saha adına göre icon ve renk belirle
+  const getSiteIcon = (sahaAdi?: string) => {
+    if (!sahaAdi) return <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
+    
+    if (sahaAdi.includes('Büğüdüz') || sahaAdi.includes('BÜĞÜDÜZ')) {
+      return <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
+    } else if (sahaAdi.includes('Çankırı') || sahaAdi.includes('ÇANKIRI')) {
+      return <Bolt className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
+    } else if (sahaAdi.includes('Necati') || sahaAdi.includes('NECATİ')) {
+      return <Wind className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
+    }
+    return <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />;
+  };
+
+  const getSiteGradient = (sahaAdi?: string) => {
+    if (!sahaAdi) return 'from-blue-500 to-indigo-600';
+    
+    if (sahaAdi.includes('Büğüdüz') || sahaAdi.includes('BÜĞÜDÜZ')) {
+      return 'from-yellow-500 to-orange-600'; // Sarı-Turuncu
+    } else if (sahaAdi.includes('Çankırı') || sahaAdi.includes('ÇANKIRI')) {
+      return 'from-amber-500 to-yellow-600'; // Turuncu-Sarı
+    } else if (sahaAdi.includes('Necati') || sahaAdi.includes('NECATİ')) {
+      return 'from-orange-500 to-red-600'; // Kızıl-Kırmızı
+    }
+    return 'from-blue-500 to-indigo-600';
   };
 
   // Vardiya silme
@@ -1036,8 +1066,8 @@ const VardiyaBildirimleri: React.FC = () => {
                         className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200 cursor-pointer hover:bg-gray-50 px-2 py-1.5 rounded transition-colors"
                       >
                         <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-white" />
+                          <div className={`w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-gradient-to-br ${getSiteGradient(sahaAdi)} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                            {getSiteIcon(sahaAdi)}
                           </div>
                           <div className="min-w-0 flex-1">
                             <h3 className="text-xs sm:text-sm md:text-base font-bold text-gray-900 truncate">{sahaAdi}</h3>
