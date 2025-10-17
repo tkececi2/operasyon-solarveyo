@@ -240,27 +240,33 @@ const VardiyaBildirimleri: React.FC = () => {
         yorum.trim()
       );
       
+      const newYorum = {
+        id: `${Date.now()}-${Math.random()}`,
+        userId: userProfile.id,
+        userAdi: userProfile.ad,
+        userRol: userProfile.rol,
+        yorum: yorum.trim(),
+        tarih: new Date() as any // Timestamp olarak gönderilir
+      };
+      
       // State'i direkt güncelle - sayfayı yenileme
       setVardiyaBildirimleri(prev => prev.map(v => {
         if (v.id === vardiyaId) {
           return {
             ...v,
-            yorumlar: [
-              ...(v.yorumlar || []),
-              {
-                id: `${Date.now()}-${Math.random()}`,
-                kullaniciId: userProfile.id,
-                kullaniciAdi: userProfile.ad,
-                rol: userProfile.rol,
-                metin: yorum.trim(),
-                tarih: new Date(),
-                begeniSayisi: 0
-              }
-            ]
-          };
+            yorumlar: [...(v.yorumlar || []), newYorum]
+          } as VardiyaBildirimi;
         }
         return v;
       }));
+      
+      // Modal açıksa selectedVardiya'yı da güncelle
+      if (selectedVardiya?.id === vardiyaId) {
+        setSelectedVardiya(prev => prev ? {
+          ...prev,
+          yorumlar: [...(prev.yorumlar || []), newYorum]
+        } : null);
+      }
       
       // Bu kart için input'u temizle
       setYorumInputs(prev => ({...prev, [vardiyaId]: ''}));
@@ -283,20 +289,19 @@ const VardiyaBildirimleri: React.FC = () => {
       // State'i direkt güncelle
       setVardiyaBildirimleri(prev => prev.map(v => {
         if (v.id === vardiyaId) {
-          const reactions = v.reactions || {};
-          const currentCount = reactions[reactionType] || 0;
-          const hasReacted = (v.myReactions || []).includes(reactionType);
+          const reactions = v.reactions || { tamam: [], tamamlandi: [] };
+          const userIds = reactions[reactionType] || [];
+          const hasReacted = userIds.includes(userProfile.id);
           
           return {
             ...v,
             reactions: {
               ...reactions,
-              [reactionType]: hasReacted ? currentCount - 1 : currentCount + 1
-            },
-            myReactions: hasReacted 
-              ? (v.myReactions || []).filter(r => r !== reactionType)
-              : [...(v.myReactions || []), reactionType]
-          };
+              [reactionType]: hasReacted 
+                ? userIds.filter(id => id !== userProfile.id)
+                : [...userIds, userProfile.id]
+            }
+          } as VardiyaBildirimi;
         }
         return v;
       }));
@@ -1346,6 +1351,7 @@ const VardiyaBildirimleri: React.FC = () => {
                           );
                         })}
                       </div>
+                      )}
                     </div>
                   );
                 });
@@ -1466,7 +1472,7 @@ const VardiyaBildirimleri: React.FC = () => {
                       lng: (v as any).konum.lng,
                       title: v.sahaAdi,
                       subtitle: v.santralAdi ? v.santralAdi : `${getVardiyaLabel(v.vardiyaTipi)} • ${v.vardiyaSaatleri?.baslangic || ''}-${v.vardiyaSaatleri?.bitis || ''}`,
-                      status: v.durum === 'acil' ? 'ariza' : v.durum === 'dikkat' ? 'bakim' : 'normal',
+                      status: (v.durum === 'acil' ? 'ariza' : v.durum === 'dikkat' ? 'bakim' : 'normal') as 'normal' | 'ariza' | 'bakim',
                       shiftType: v.vardiyaTipi as any,
                       details: [
                         { label: 'Vardiya', value: getVardiyaLabel(v.vardiyaTipi) },
