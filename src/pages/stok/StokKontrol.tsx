@@ -730,36 +730,175 @@ const StokKontrol: React.FC = () => {
               <p className="text-gray-600">Yeni malzeme ekleyerek başlayın</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <div className="inline-block min-w-full align-middle">
-                <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Resim
-                    </th>
-                    <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Malzeme
-                    </th>
-                    <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Konum
-                    </th>
-                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Stok Durumu
-                    </th>
-                    <th className="px-2 sm:px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Değer
-                    </th>
-                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Durum
-                    </th>
-                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      İşlemler
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredStoklar.map((stok) => (
+            <>
+              {/* Mobil Görünüm - Kart Temelinde */}
+              <div className="sm:hidden space-y-3">
+                {filteredStoklar.map((stok) => (
+                  <div key={stok.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    {/* Resim + Malzeme Adı + Işlemler */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex gap-3 flex-1 min-w-0">
+                        {/* Resim */}
+                        {stok.resimler && stok.resimler.length > 0 ? (
+                          <img 
+                            src={stok.resimler[0]} 
+                            alt={stok.malzemeAdi}
+                            className="h-14 w-14 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="h-14 w-14 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <ImageIcon className="h-6 w-6 text-gray-400" />
+                          </div>
+                        )}
+                        {/* Malzeme Adı + Kategori */}
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-sm font-semibold text-gray-900 truncate">
+                            {stok.malzemeAdi}
+                          </h4>
+                          <p className="text-xs text-gray-500 truncate">
+                            {stok.kategori}
+                          </p>
+                          {stok.tedarikci && (
+                            <p className="text-xs text-gray-500 truncate">
+                              {stok.tedarikci}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Durum Badge */}
+                      <div className="flex-shrink-0">
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getDurumBadge(stok.durum)}`}>
+                          {getDurumIcon(stok.durum)}
+                          <span className="hidden">{getDurumText(stok.durum)}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Konum Bilgisi */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-gray-600 font-medium">Saha:</span>
+                        <p className="text-gray-900 font-semibold truncate">
+                          {getSahaName(stok.sahaId)}
+                        </p>
+                      </div>
+                      {stok.santralId && (
+                        <div>
+                          <span className="text-gray-600 font-medium">Santral:</span>
+                          <p className="text-gray-900 font-semibold truncate">
+                            {getSantralName(stok.santralId)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Stok Bilgisi */}
+                    <div className="grid grid-cols-3 gap-2 bg-gray-50 p-3 rounded">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-600">Mevcut</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {stok.mevcutStok}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-600">Minimum</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {stok.minimumStokSeviyesi}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-600">Değer</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {formatCurrency((stok.mevcutStok * stok.birimFiyat) / 1000)}k
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* İşlemler */}
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        className="flex-1 px-3 py-2 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
+                        onClick={() => {
+                          setSelectedStok(stok);
+                          setShowHareketModal(true);
+                        }}
+                      >
+                        <ArrowUpDown className="h-3 w-3 inline mr-1" />
+                        Hareket
+                      </button>
+                      {canPerformAction('stok_duzenle') && (
+                        <button
+                          className="flex-1 px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                          onClick={() => {
+                            setSelectedStok(stok);
+                            setFormData({
+                              malzemeAdi: stok.malzemeAdi,
+                              kategori: stok.kategori,
+                              birim: stok.birim,
+                              mevcutStok: stok.mevcutStok,
+                              minimumStokSeviyesi: stok.minimumStokSeviyesi,
+                              birimFiyat: stok.birimFiyat,
+                              tedarikci: stok.tedarikci || '',
+                              sahaId: stok.sahaId || '',
+                              santralId: stok.santralId || '',
+                              konum: stok.konum || '',
+                              notlar: stok.notlar || '',
+                              resimler: stok.resimler || []
+                            });
+                            setUploadedImages(stok.resimler || []);
+                            setShowEditModal(true);
+                          }}
+                        >
+                          <Edit className="h-3 w-3 inline mr-1" />
+                          Düzenle
+                        </button>
+                      )}
+                      {canPerformAction('stok_sil') && (
+                        <button
+                          className="flex-1 px-3 py-2 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors"
+                          onClick={() => handleDeleteStok(stok.id)}
+                        >
+                          <Trash2 className="h-3 w-3 inline mr-1" />
+                          Sil
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Görünüm - Tablo */}
+              <div className="hidden sm:block overflow-x-auto">
+                <div className="inline-block min-w-full align-middle">
+                  <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        Resim
+                      </th>
+                      <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        Malzeme
+                      </th>
+                      <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        Konum
+                      </th>
+                      <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        Stok Durumu
+                      </th>
+                      <th className="px-2 sm:px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        Değer
+                      </th>
+                      <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        Durum
+                      </th>
+                      <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        İşlemler
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredStoklar.map((stok) => (
                     <tr key={stok.id} className="hover:bg-gray-50">
                       <td className="px-2 sm:px-3 py-2 sm:py-3">
                         <div className="flex justify-center">
