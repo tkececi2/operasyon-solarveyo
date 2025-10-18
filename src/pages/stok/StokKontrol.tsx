@@ -672,9 +672,9 @@ const StokKontrol: React.FC = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-6">
-          <div className={`grid grid-cols-1 lg:grid-cols-6 gap-4 ${showMobileFilters ? '' : 'hidden md:grid lg:grid'}`}>
-            <div className="lg:col-span-2">
+        <CardContent className="p-4 sm:p-6">
+          <div className={`space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 ${showMobileFilters ? '' : 'hidden sm:grid'}`}>
+            <div className="sm:col-span-2 md:col-span-2 lg:col-span-2">
               <Input
                 placeholder="Malzeme adı veya tedarikçi ara..."
                 value={searchTerm}
