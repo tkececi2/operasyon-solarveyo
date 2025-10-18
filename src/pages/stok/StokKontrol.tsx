@@ -38,6 +38,7 @@ const StokKontrol: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sahaFilter, setSahaFilter] = useState<string>('all');
+  const [santralFilter, setSantralFilter] = useState<string>('all');
 
   // Gerçek veriler
   const [stoklar, setStoklar] = useState<(StokItem & { durum: 'normal' | 'dusuk' | 'kritik' })[]>([]);
@@ -188,6 +189,11 @@ const StokKontrol: React.FC = () => {
       fetchData();
     }
   }, [company?.id, userProfile?.companyId, userProfile?.rol, userProfile?.sahalar, userProfile?.santraller]);
+
+  // Saha değişince santral filtresini sıfırla
+  useEffect(() => {
+    setSantralFilter('all');
+  }, [sahaFilter]);
 
   // Resim seçme
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -459,7 +465,8 @@ const StokKontrol: React.FC = () => {
         filters: {
           category: categoryFilter !== 'all' ? categoryFilter : undefined,
           status: statusFilter !== 'all' ? statusFilter : undefined,
-          saha: sahaFilter !== 'all' && sahaFilter !== '' ? sahaFilter : undefined
+          saha: sahaFilter !== 'all' && sahaFilter !== '' ? sahaFilter : undefined,
+          santral: santralFilter !== 'all' && santralFilter !== '' ? santralFilter : undefined
         }
       });
 
@@ -512,7 +519,8 @@ const StokKontrol: React.FC = () => {
     const matchesCategory = categoryFilter === 'all' || stok.kategori === categoryFilter;
     const matchesStatus = statusFilter === 'all' || stok.durum === statusFilter;
     const matchesSaha = sahaFilter === 'all' || stok.sahaId === sahaFilter || (!sahaFilter && !stok.sahaId);
-    return matchesSearch && matchesCategory && matchesStatus && matchesSaha;
+    const matchesSantral = santralFilter === 'all' || stok.santralId === santralFilter || (!santralFilter && !stok.santralId);
+    return matchesSearch && matchesCategory && matchesStatus && matchesSaha && matchesSantral;
   });
 
   const getDurumBadge = (durum: 'normal' | 'dusuk' | 'kritik') => {
@@ -546,11 +554,11 @@ const StokKontrol: React.FC = () => {
 
   // İstatistikler
   const stats = {
-    toplam: stoklar.length,
-    normal: stoklar.filter(s => s.durum === 'normal').length,
-    dusuk: stoklar.filter(s => s.durum === 'dusuk').length,
-    kritik: stoklar.filter(s => s.durum === 'kritik').length,
-    toplamDeger: stoklar.reduce((sum, stok) => sum + (stok.mevcutStok * stok.birimFiyat), 0)
+    toplam: filteredStoklar.length,
+    normal: filteredStoklar.filter(s => s.durum === 'normal').length,
+    dusuk: filteredStoklar.filter(s => s.durum === 'dusuk').length,
+    kritik: filteredStoklar.filter(s => s.durum === 'kritik').length,
+    toplamDeger: filteredStoklar.reduce((sum, stok) => sum + (stok.mevcutStok * stok.birimFiyat), 0)
   };
 
   if (isLoading) {
@@ -665,7 +673,7 @@ const StokKontrol: React.FC = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className={`grid grid-cols-1 lg:grid-cols-5 gap-4 ${showMobileFilters ? '' : 'hidden md:grid lg:grid'}`}>
+          <div className={`grid grid-cols-1 lg:grid-cols-6 gap-4 ${showMobileFilters ? '' : 'hidden md:grid lg:grid'}`}>
             <div className="lg:col-span-2">
               <Input
                 placeholder="Malzeme adı veya tedarikçi ara..."
@@ -693,6 +701,17 @@ const StokKontrol: React.FC = () => {
               ]}
               value={sahaFilter}
               onChange={(e) => setSahaFilter(e.target.value)}
+            />
+            <Select
+              options={[
+                { value: 'all', label: 'Tüm Santraller' },
+                ...(sahaFilter && sahaFilter !== 'all' 
+                  ? getSantrallerBySaha(sahaFilter).map(s => ({ value: s.id, label: s.ad }))
+                  : santraller.map(s => ({ value: s.id, label: s.ad }))
+                )
+              ]}
+              value={santralFilter}
+              onChange={(e) => setSantralFilter(e.target.value)}
             />
           </div>
         </CardContent>
@@ -908,7 +927,7 @@ const StokKontrol: React.FC = () => {
       </Card>
 
       {/* Kritik Stok Uyarıları */}
-      {stoklar.filter(s => s.durum === 'kritik' || s.durum === 'dusuk').length > 0 && (
+      {filteredStoklar.filter(s => s.durum === 'kritik' || s.durum === 'dusuk').length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center text-red-600">
@@ -918,7 +937,7 @@ const StokKontrol: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stoklar
+              {filteredStoklar
                 .filter(s => s.durum === 'kritik' || s.durum === 'dusuk')
                 .map((stok) => (
                   <div key={stok.id} className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
