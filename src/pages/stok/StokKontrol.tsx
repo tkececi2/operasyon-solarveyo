@@ -627,44 +627,44 @@ const StokKontrol: React.FC = () => {
       {/* İstatistikler - Mobilde 2 sütun */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
         <Card>
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-2 sm:p-3 lg:p-4">
             <div className="text-center">
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{stats.toplam}</div>
-              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Toplam Malzeme</div>
+              <div className="text-base sm:text-lg lg:text-2xl font-bold text-gray-900">{stats.toplam}</div>
+              <div className="text-[9px] sm:text-xs lg:text-sm text-gray-600 leading-tight">Toplam Malzeme</div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-2 sm:p-3 lg:p-4">
             <div className="text-center">
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">{stats.normal}</div>
-              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Normal Stok</div>
+              <div className="text-base sm:text-lg lg:text-2xl font-bold text-green-600">{stats.normal}</div>
+              <div className="text-[9px] sm:text-xs lg:text-sm text-gray-600 leading-tight">Normal Stok</div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-2 sm:p-3 lg:p-4">
             <div className="text-center">
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-600">{stats.dusuk}</div>
-              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Düşük Stok</div>
+              <div className="text-base sm:text-lg lg:text-2xl font-bold text-yellow-600">{stats.dusuk}</div>
+              <div className="text-[9px] sm:text-xs lg:text-sm text-gray-600 leading-tight">Düşük Stok</div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-3 sm:p-4">
+          <CardContent className="p-2 sm:p-3 lg:p-4">
             <div className="text-center">
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-red-600">{stats.kritik}</div>
-              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Kritik Stok</div>
+              <div className="text-base sm:text-lg lg:text-2xl font-bold text-red-600">{stats.kritik}</div>
+              <div className="text-[9px] sm:text-xs lg:text-sm text-gray-600 leading-tight">Kritik Stok</div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-3 sm:p-4">
+        <Card className="col-span-2 sm:col-span-1">
+          <CardContent className="p-2 sm:p-3 lg:p-4">
             <div className="text-center">
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-primary-600">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold text-primary-600 truncate">
                 {formatCurrency(stats.toplamDeger)}
               </div>
-              <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">Toplam Değer</div>
+              <div className="text-[9px] sm:text-xs lg:text-sm text-gray-600 leading-tight">Toplam Değer</div>
             </div>
           </CardContent>
         </Card>
@@ -672,9 +672,9 @@ const StokKontrol: React.FC = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4 sm:p-6">
-          <div className={`space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 ${showMobileFilters ? '' : 'hidden sm:grid'}`}>
-            <div className="sm:col-span-2 md:col-span-2 lg:col-span-2">
+        <CardContent className="p-3 sm:p-4 lg:p-6">
+          <div className={`grid grid-cols-1 lg:grid-cols-6 gap-3 sm:gap-4 ${showMobileFilters ? '' : 'hidden md:grid lg:grid'}`}>
+            <div className="lg:col-span-2">
               <Input
                 placeholder="Malzeme adı veya tedarikçi ara..."
                 value={searchTerm}
@@ -731,105 +731,110 @@ const StokKontrol: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Mobil Görünüm - Kart Temelinde */}
-              <div className="sm:hidden space-y-3">
+              {/* Mobil Kart Görünümü */}
+              <div className="md:hidden space-y-3">
                 {filteredStoklar.map((stok) => (
-                  <div key={stok.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    {/* Resim + Malzeme Adı + Işlemler */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex gap-3 flex-1 min-w-0">
-                        {/* Resim */}
-                        {stok.resimler && stok.resimler.length > 0 ? (
+                  <div key={stok.id} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
+                    <div className="flex items-start gap-3 mb-3">
+                      {/* Resim */}
+                      {stok.resimler && stok.resimler.length > 0 ? (
+                        <div 
+                          className="relative cursor-pointer flex-shrink-0"
+                          onClick={() => {
+                            setSelectedStok(stok);
+                            setShowImageModal(true);
+                          }}
+                        >
                           <img 
                             src={stok.resimler[0]} 
                             alt={stok.malzemeAdi}
-                            className="h-14 w-14 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+                            className="h-16 w-16 object-cover rounded-lg border border-gray-200"
                           />
-                        ) : (
-                          <div className="h-14 w-14 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <ImageIcon className="h-6 w-6 text-gray-400" />
-                          </div>
-                        )}
-                        {/* Malzeme Adı + Kategori */}
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-sm font-semibold text-gray-900 truncate">
-                            {stok.malzemeAdi}
-                          </h4>
-                          <p className="text-xs text-gray-500 truncate">
-                            {stok.kategori}
-                          </p>
-                          {stok.tedarikci && (
-                            <p className="text-xs text-gray-500 truncate">
-                              {stok.tedarikci}
-                            </p>
+                          {stok.resimler.length > 1 && (
+                            <div className="absolute -bottom-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                              +{stok.resimler.length - 1}
+                            </div>
                           )}
                         </div>
-                      </div>
+                      ) : (
+                        <div className="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <ImageIcon className="h-8 w-8 text-gray-400" />
+                        </div>
+                      )}
                       
-                      {/* Durum Badge */}
-                      <div className="flex-shrink-0">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getDurumBadge(stok.durum)}`}>
+                      {/* Ana Bilgiler */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 text-sm truncate">{stok.malzemeAdi}</h3>
+                        <p className="text-xs text-gray-500">{stok.kategori}</p>
+                        <div className="flex items-center gap-2 mt-1">
                           {getDurumIcon(stok.durum)}
-                          <span className="hidden">{getDurumText(stok.durum)}</span>
-                        </span>
+                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getDurumBadge(stok.durum)}`}>
+                            {getDurumText(stok.durum)}
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Konum Bilgisi */}
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    {/* Detay Bilgiler */}
+                    <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                       <div>
-                        <span className="text-gray-600 font-medium">Saha:</span>
-                        <p className="text-gray-900 font-semibold truncate">
-                          {getSahaName(stok.sahaId)}
-                        </p>
+                        <span className="text-gray-500">Stok:</span>
+                        <span className="ml-1 font-semibold text-gray-900">{stok.mevcutStok} {stok.birim}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Min:</span>
+                        <span className="ml-1 font-semibold text-gray-900">{stok.minimumStokSeviyesi} {stok.birim}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-gray-500">Değer:</span>
+                        <span className="ml-1 font-semibold text-primary-600">{formatCurrency(stok.mevcutStok * stok.birimFiyat)}</span>
+                      </div>
+                      <div className="col-span-2 flex items-center">
+                        <Building2 className="h-3 w-3 text-gray-400 mr-1" />
+                        <span className="text-gray-700 truncate">{getSahaName(stok.sahaId)}</span>
                       </div>
                       {stok.santralId && (
-                        <div>
-                          <span className="text-gray-600 font-medium">Santral:</span>
-                          <p className="text-gray-900 font-semibold truncate">
-                            {getSantralName(stok.santralId)}
-                          </p>
+                        <div className="col-span-2 flex items-center">
+                          <Sun className="h-3 w-3 text-gray-400 mr-1" />
+                          <span className="text-gray-700 truncate">{getSantralName(stok.santralId)}</span>
                         </div>
                       )}
                     </div>
 
-                    {/* Stok Bilgisi */}
-                    <div className="grid grid-cols-3 gap-2 bg-gray-50 p-3 rounded">
-                      <div className="text-center">
-                        <p className="text-xs text-gray-600">Mevcut</p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {stok.mevcutStok}
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-600">Minimum</p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {stok.minimumStokSeviyesi}
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs text-gray-600">Değer</p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {formatCurrency((stok.mevcutStok * stok.birimFiyat) / 1000)}k
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* İşlemler */}
-                    <div className="flex gap-2 pt-2">
+                    {/* Aksiyon Butonları */}
+                    <div className="flex justify-end gap-1 pt-2 border-t border-gray-100">
+                      {stok.resimler && stok.resimler.length > 0 && (
+                        <button
+                          className="p-2 hover:bg-gray-100 rounded"
+                          onClick={() => {
+                            setSelectedStok(stok);
+                            setShowImageModal(true);
+                          }}
+                          title="Resim"
+                        >
+                          <ImageIcon className="h-4 w-4 text-gray-600" />
+                        </button>
+                      )}
                       <button
-                        className="flex-1 px-3 py-2 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
+                        className="p-2 hover:bg-gray-100 rounded"
                         onClick={() => {
                           setSelectedStok(stok);
                           setShowHareketModal(true);
                         }}
+                        title="Hareket"
                       >
-                        <ArrowUpDown className="h-3 w-3 inline mr-1" />
-                        Hareket
+                        <ArrowUpDown className="h-4 w-4 text-gray-600" />
+                      </button>
+                      <button
+                        className="p-2 hover:bg-gray-100 rounded"
+                        onClick={() => handleShowHareketGecmisi(stok)}
+                        title="Geçmiş"
+                      >
+                        <History className="h-4 w-4 text-gray-600" />
                       </button>
                       {canPerformAction('stok_duzenle') && (
                         <button
-                          className="flex-1 px-3 py-2 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                          className="p-2 hover:bg-gray-100 rounded"
                           onClick={() => {
                             setSelectedStok(stok);
                             setFormData({
@@ -849,18 +854,18 @@ const StokKontrol: React.FC = () => {
                             setUploadedImages(stok.resimler || []);
                             setShowEditModal(true);
                           }}
+                          title="Düzenle"
                         >
-                          <Edit className="h-3 w-3 inline mr-1" />
-                          Düzenle
+                          <Edit className="h-4 w-4 text-gray-600" />
                         </button>
                       )}
                       {canPerformAction('stok_sil') && (
                         <button
-                          className="flex-1 px-3 py-2 text-xs bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors"
+                          className="p-2 hover:bg-red-100 rounded"
                           onClick={() => handleDeleteStok(stok.id)}
+                          title="Sil"
                         >
-                          <Trash2 className="h-3 w-3 inline mr-1" />
-                          Sil
+                          <Trash2 className="h-4 w-4 text-red-600" />
                         </button>
                       )}
                     </div>
@@ -868,37 +873,37 @@ const StokKontrol: React.FC = () => {
                 ))}
               </div>
 
-              {/* Desktop Görünüm - Tablo */}
-              <div className="hidden sm:block overflow-x-auto">
+              {/* Tablet ve Masaüstü Tablo Görünümü */}
+              <div className="hidden md:block overflow-x-auto">
                 <div className="inline-block min-w-full align-middle">
                   <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Resim
-                      </th>
-                      <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Malzeme
-                      </th>
-                      <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Konum
-                      </th>
-                      <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Stok Durumu
-                      </th>
-                      <th className="px-2 sm:px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Değer
-                      </th>
-                      <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Durum
-                      </th>
-                      <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        İşlemler
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredStoklar.map((stok) => (
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Resim
+                    </th>
+                    <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Malzeme
+                    </th>
+                    <th className="px-2 sm:px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Konum
+                    </th>
+                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Stok Durumu
+                    </th>
+                    <th className="px-2 sm:px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Değer
+                    </th>
+                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Durum
+                    </th>
+                    <th className="px-2 sm:px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      İşlemler
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredStoklar.map((stok) => (
                     <tr key={stok.id} className="hover:bg-gray-50">
                       <td className="px-2 sm:px-3 py-2 sm:py-3">
                         <div className="flex justify-center">
@@ -1056,11 +1061,12 @@ const StokKontrol: React.FC = () => {
                         </div>
                       </td>
                     </tr>
-                    ))}
-                  </tbody>
+                  ))}
+                </tbody>
                 </table>
               </div>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -1079,17 +1085,17 @@ const StokKontrol: React.FC = () => {
               {filteredStoklar
                 .filter(s => s.durum === 'kritik' || s.durum === 'dusuk')
                 .map((stok) => (
-                  <div key={stok.id} className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                    <div className="flex items-center">
-                      {getDurumIcon(stok.durum)}
-                      <div className="ml-3">
-                        <div className="font-medium text-gray-900">
+                  <div key={stok.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-3 bg-red-50 rounded-lg">
+                    <div className="flex items-start sm:items-center gap-2">
+                      <div className="flex-shrink-0">{getDurumIcon(stok.durum)}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 text-sm sm:text-base">
                           {stok.malzemeAdi}
-                          <span className="text-sm text-gray-600 ml-2">
+                          <span className="text-xs sm:text-sm text-gray-600 ml-2">
                             ({getSahaName(stok.sahaId)})
                           </span>
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-xs sm:text-sm text-gray-600">
                           Mevcut: {stok.mevcutStok} {stok.birim} | 
                           Minimum: {stok.minimumStokSeviyesi} {stok.birim}
                         </div>
@@ -1098,6 +1104,7 @@ const StokKontrol: React.FC = () => {
                     <Button 
                       size="sm" 
                       variant="danger"
+                      className="w-full sm:w-auto flex-shrink-0"
                       onClick={() => {
                         setSelectedStok(stok);
                         setHareketForm({ ...hareketForm, hareketTipi: 'giris' });
