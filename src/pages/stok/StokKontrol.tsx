@@ -1056,8 +1056,8 @@ const StokKontrol: React.FC = () => {
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
+                    ))}
+                  </tbody>
                 </table>
               </div>
             </div>
