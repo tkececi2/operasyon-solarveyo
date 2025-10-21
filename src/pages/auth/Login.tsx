@@ -67,6 +67,12 @@ const Login: React.FC = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
+    
+    // Network timeout koruması (30 saniye)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('TIMEOUT')), 30000);
+    });
+    
     try {
       // Önce kullanıcının 2FA durumunu kontrol et
       const userQuery = await getDoc(doc(db, 'kullanicilar', data.email));
@@ -131,6 +137,14 @@ const Login: React.FC = () => {
       } catch (loginError: any) {
         // Login hatası detaylı göster
         console.error('Login error:', loginError);
+        console.error('Login error code:', loginError?.code);
+        console.error('Login error message:', loginError?.message);
+        
+        // Timeout hatası
+        if (loginError?.message === 'TIMEOUT') {
+          toast.error('Bağlantı zaman aşımına uğradı. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.');
+          return;
+        }
         
         // Firebase hata kodlarına göre özel mesajlar
         if (loginError?.code === 'auth/invalid-email') {
@@ -139,14 +153,20 @@ const Login: React.FC = () => {
           toast.error('Bu hesap devre dışı bırakılmış');
         } else if (loginError?.code === 'auth/user-not-found') {
           toast.error('Kullanıcı bulunamadı');
-        } else if (loginError?.code === 'auth/wrong-password') {
-          toast.error('Hatalı şifre');
+        } else if (loginError?.code === 'auth/wrong-password' || loginError?.code === 'auth/invalid-credential') {
+          toast.error('Email veya şifre hatalı. Lütfen kontrol edip tekrar deneyin.');
         } else if (loginError?.code === 'auth/network-request-failed') {
-          toast.error('Ağ bağlantısı hatası. İnternet bağlantınızı kontrol edin.');
+          toast.error('İnternet bağlantısı hatası. Lütfen bağlantınızı kontrol edin.');
+        } else if (loginError?.code === 'auth/too-many-requests') {
+          toast.error('Çok fazla başarısız deneme. Lütfen birkaç dakika sonra tekrar deneyin.');
         } else if (loginError?.message === 'account-disabled') {
           toast.error('Hesabınız pasif durumda. Yöneticinizle iletişime geçin.');
         } else {
-          toast.error(loginError?.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
+          // Genel hata - detaylı bilgi ver
+          const errorMsg = loginError?.message || 'Bilinmeyen hata';
+          const errorCode = loginError?.code || 'No error code';
+          toast.error(`Giriş başarısız: ${errorMsg} (${errorCode})`);
+          console.error('Detailed error:', JSON.stringify(loginError, null, 2));
         }
       }
     } finally {

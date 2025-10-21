@@ -150,10 +150,23 @@ const EkipYonetimi: React.FC = () => {
         return;
       }
 
+      // Email'i temizle: trim + lowercase (production bug fix)
+      const cleanEmail = inviteForm.email.trim().toLowerCase();
+      
+      // Email validation - daha güçlü kontrol
+      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+        toast.error('Geçerli bir email adresi girin (örn: ahmet@sirket.com)');
+        console.error('Geçersiz email formatı:', cleanEmail); // Debug için
+        return;
+      }
+      
+      console.log('✅ Email doğrulandı:', cleanEmail); // Debug için
+      
       const ekipData = {
-        email: inviteForm.email,
-        ad: inviteForm.ad,
-        telefon: inviteForm.telefon,
+        email: cleanEmail,
+        ad: inviteForm.ad.trim(),
+        telefon: inviteForm.telefon.trim(),
         rol: inviteForm.rol as UserRole,
         companyId: company.id,
         sahalar: inviteForm.sahalar,

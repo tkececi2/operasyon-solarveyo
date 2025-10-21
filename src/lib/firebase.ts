@@ -9,14 +9,14 @@ import { Preferences } from '@capacitor/preferences';
 // Platform kontrolü
 const isNativePlatform = Capacitor.isNativePlatform();
 
-// iOS için özel Firebase config - authDomain'i localhost yap
+// Firebase config - iOS için production authDomain kullan
 export const firebaseConfig = {
   apiKey: "AIzaSyAZdHmOkHazCMnRZuZ6STP17wjG4QMHaxk",
-  authDomain: isNativePlatform ? "localhost" : "yenisirket-2ec3b.firebaseapp.com",
+  authDomain: "yenisirket-2ec3b.firebaseapp.com", // iOS için de production domain kullan
   projectId: "yenisirket-2ec3b",
   storageBucket: "yenisirket-2ec3b.firebasestorage.app",
   messagingSenderId: "155422395281",
-  appId: "1:155422395281:web:b496b7e93ae3d0a280a830" // Her zaman web app ID kullan
+  appId: "1:155422395281:web:b496b7e93ae3d0a280a830"
 };
 
 // Initialize Firebase
@@ -40,7 +40,7 @@ if (isNativePlatform) {
     cacheSizeBytes: 50 * 1024 * 1024 // 50MB cache
   });
   
-  console.log('🔧 Firebase iOS modunda başlatıldı - IndexedDB persistence + logout flag kontrolü');
+  console.log('🔧 Firebase iOS modunda başlatıldı - Production config + IndexedDB persistence');
 } else {
   // Web için normal initialization
   auth = getAuth(app);

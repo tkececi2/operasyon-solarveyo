@@ -1,0 +1,141 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                     🚀 SolarVeyo - Pazarlama Özeti                         ║
+║                 (Hızlı Referans - 1 Sayfa Özet)                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROBLEM (Neden İhtiyaç Var?)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ 1,500+ Türk santralının 80%+ hala Excel'de çalışıyor
+❌ Arızalar haftalar sonra tespit ediliyor  
+❌ Ekip koordinasyonu WhatsApp'ta oluyor
+❌ Raporlar 5 gün manuel hazırlanıyor
+❌ Stok yönetimi karışık, acil alımlar çok
+
+SONUÇ: Müşteri memnuniyeti ↓, Maliyetler ↑, Büyüme Zorlaşıyor
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ÇÖZÜM (SolarVeyo Nedir?)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SolarVeyo = Güneş Santralları İçin Real-Time Operasyon Management Platform
+
+📱 DASHBOARD - Santral sağlığını bir bakışta görmek
+🔧 ARIZA YÖNETİMİ - Kategoriler, durumlar, fotoğraf, malzeme, süre takibi
+🔨 BAKIM PLANLAMA - Elektrik/mekanik, checklist, otomatik hatırlatma
+📊 ÜRETİM TAKİBİ - Günlük/aylık kWh, CO₂, performans %
+📦 STOK KONTROL - Hangi malzeme nerede, minimum uyarısı
+👥 EKIP YÖNETİMİ - 6 rol: Yönetici, Mühendis, Tekniker, Müşteri, Bekçi
+📧 RAPORLAMA - Otomatik PDF/Excel, grafik, istatistik
+🔔 BİLDİRİMLER - SMS, Email, WhatsApp, Push
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SONUÇLAR (Sayılarla)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Arıza Çözüm Süresi:        8 saat  →  2 saat       (-75%) ✅
+Rapor Hazırlama:           5 gün   →  5 dakika     (-99%) ✅
+Stok Tedariği Delay:       3-5 gün →  1 gün        (-70%) ✅
+Ekip Koordinasyon:         2 saat  →  30 dakika    (-75%) ✅
+Veri Hataları:             %15     →  %0           (-100%) ✅
+
+PARASAL KAZANIM (12 AY):
+  Ekip Verimliliği:        ₺240,000
+  Müşteri Memnuniyeti:     ₺180,000
+  Stok Tasarrufu:          ₺120,000
+  Üretim Artışı:           ₺300,000
+  İdari Giderler:          ₺80,000
+  ─────────────────────────────────
+  TOPLAM:                  ₺920,000/yıl
+
+Platform Maliyeti:         ₺30,000/yıl
+ROI:                       %3,068 🎯
+Geri Ödeme:                10 gün
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEMO AKIŞI (Pazartesi Sabahı Arıza Senaryosu)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  Teknisyen arıza kaydı yapıyor (30 saniye)
+2️⃣  Sistem otomatik yönetici/mühendise bildirim gönderiyor
+3️⃣  Yönetici canlı dashboard'ta takip ediyor
+4️⃣  Teknisyen sahada çözveriyor, stok çekiyor, fotoğraf çekiyor
+5️⃣  Sistem otomatik rapor oluşturuyor (2 dakika)
+
+SONUÇ: Arıza 2 saatte çözüldü, rapor hazır, müşteri memnun ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEKNIK (Google Backed)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Backend:      Firebase (Google tarafından yönetiliyor)
+Veritabanı:   Firestore (Real-time, ultra hızlı)
+Güvenlik:     Military-grade encryption (AES-256)
+Sertifi:      KVKK uyumlu, GDPR uyumlu
+Ölçek:        1000 santral, 100 şirket → Sıfır sorun
+Performans:   Dashboard <2sn, Arıza <30sn, Rapor <5sn
+Yedekleme:    Otomatik günlük backup
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIYATLANDIRMA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRIAL                    STARTER              PROFESSIONAL ⭐      ENTERPRISE
+─────────────────────────────────────────────────────────────────────────────
+🆓 14 gün                ₺999/ay              ₺2,499/ay            ₺4,999/ay
+3 kullanıcı              5 kullanıcı          20 kullanıcı          Sınırsız
+2 saha                   5 saha               20 saha              Sınırsız
+1GB                      5GB                  50GB                 Sınırsız
+Email                    Email                WhatsApp+Email       24/7 Telefon
+Tüm özellikler           Temel               Tam paket            Custom
+
+İLK 100 MÜŞTERİ: %50 İNDİRİM (İlk 30 gün)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HEDEF KİTLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ O&M Şirketleri (5-50 MW portföyü, 3-15 teknisyen)
+✅ EPC Firmaları (Kurulum → Operasyon yönetimi)
+✅ Santral Sahibi Firmalar (Endüstriyel, yatırımcı)
+✅ Enerji Danışmalık Firmaları
+
+PAZARI (Türkiye):
+  13 GW+ kurulu kapasite
+  1,500+ aktif santral
+  %25+ yıllık büyüme
+  $50M+ dijital dönüşüm yatırımı
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BAŞLAMA (5 GÜN)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Gün 1 (1 saat):     Account oluştur, 3 kullanıcı ekle, eğitim
+Gün 2:              Santrallar yükle, ekip bilgisi gir
+Gün 3-4:            Test arızaları kaydet, test raporları oluştur
+Gün 5:              Go-Live → İlk gerçek arıza kaydedilir
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CALL TO ACTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 Ücretsiz Deneye Başla        →  solarveyo.com/register
+📞 Demo İçin Arayın             →  +90 (XXX) XXX-XXXX
+📧 Bilgi İste                   →  hello@solarveyo.com
+🗣️  Stratejik Ortaklık          →  partnership@solarveyo.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Kredi kartı gerekmez
+✅ 5 dakikada kurulum
+✅ 14 gün ücretsiz
+✅ İlk 30 gün %50 indirim
+
+"Türkiye'nin güneş enerjisi sektörü hızlı büyüyor. 
+ Ama teknoloji henüz çok geride.
+ 
+ SolarVeyo, bu boşluğu dolduruyor."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+© 2025 SolarVeyo - Türkiye'nin İlk GES Management SaaS Platform
