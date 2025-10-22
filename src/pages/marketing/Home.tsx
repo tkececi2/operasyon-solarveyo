@@ -21,33 +21,78 @@ const Nav: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
-    <nav className={`sticky top-0 z-40 transition-colors ${scrolled ? 'backdrop-blur bg-white/80 border-b border-gray-200' : 'bg-transparent'}`}>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link to="/"><Logo /></Link>
-        </div>
-        <div className="hidden md:flex items-center gap-8 text-sm">
-          <Link to="/features" className="text-gray-700 hover:text-gray-900">Özellikler</Link>
-          <Link to="/pricing" className="text-gray-700 hover:text-gray-900">Fiyatlandırma</Link>
-          <Link to="/integrations" className="text-gray-700 hover:text-gray-900">Entegrasyonlar</Link>
-          <Link to="/about" className="text-gray-700 hover:text-gray-900">Hakkında</Link>
-          <Link to="/contact" className="text-gray-700 hover:text-gray-900">İletişim</Link>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link to="/login" className="text-sm text-gray-700 hover:text-gray-900">Giriş Yap</Link>
-          <Link
-            to="/register"
-            className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700"
-          >
-            Ücretsiz Kullanım
-          </Link>
+    <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+      scrolled 
+        ? 'backdrop-blur-xl bg-white/90 border-b border-gray-200/50 shadow-sm' 
+        : 'bg-transparent border-b border-transparent'
+    }`}>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <Logo />
+            </Link>
+          </div>
+
+          {/* Desktop Menu */}
+          <div className="hidden lg:flex items-center gap-1">
+            <Link 
+              to="/features" 
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+            >
+              Özellikler
+            </Link>
+            <Link 
+              to="/pricing" 
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+            >
+              Fiyatlandırma
+            </Link>
+            <Link 
+              to="/integrations" 
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+            >
+              Entegrasyonlar
+            </Link>
+            <Link 
+              to="/about" 
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+            >
+              Hakkında
+            </Link>
+            <Link 
+              to="/contact" 
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+            >
+              İletişim
+            </Link>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex items-center gap-3">
+            <Link 
+              to="/login" 
+              className="hidden sm:inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all"
+            >
+              Giriş Yap
+            </Link>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              <Zap className="w-4 h-4" />
+              <span className="hidden sm:inline">Ücretsiz Dene</span>
+              <span className="sm:hidden">Dene</span>
+            </Link>
+          </div>
         </div>
       </div>
     </nav>
@@ -71,14 +116,14 @@ const Hero: React.FC<{ onOpenVideo?: () => void }> = ({ onOpenVideo }) => {
   };
   const resetTilt = () => setTilt({ x: 0, y: 0 });
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50">
+    <section className="relative overflow-hidden bg-gradient-to-br from-white via-slate-50 to-blue-50">
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-blue-100 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-sky-100 to-transparent rounded-full blur-3xl" />
-        <svg className="absolute inset-0 w-full h-full opacity-[0.07]" xmlns="http://www.w3.org/2000/svg">
+        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-blue-50 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-sky-50 to-transparent rounded-full blur-3xl" />
+        <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-              <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.5" />
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
@@ -86,109 +131,206 @@ const Hero: React.FC<{ onOpenVideo?: () => void }> = ({ onOpenVideo }) => {
         <div
           className="absolute inset-0"
           style={{
-            background: `radial-gradient(600px circle at ${spot.x}% ${spot.y}%, rgba(59,130,246,0.10), transparent 60%)`,
+            background: `radial-gradient(800px circle at ${spot.x}% ${spot.y}%, rgba(59,130,246,0.06), transparent 70%)`,
           }}
         />
       </div>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 pb-12 md:pt-24 md:pb-20">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-32 md:pb-24">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
-              <ShieldCheck className="w-4 h-4" />
-              Kurumsal Güvenlik • Çoklu Şirket • Gerçek Zamanlı
+            {/* Trust Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-50 to-emerald-50 border border-blue-100 px-4 py-2 text-xs font-semibold text-gray-700 mb-6 shadow-sm">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Kurumsal Güvenlik</span>
+              <span className="text-gray-400">•</span>
+              <span>KVKK Uyumlu</span>
+              <span className="text-gray-400">•</span>
+              <span>Multi-Tenant SaaS</span>
             </div>
+
+            {/* Ana Başlık */}
             <motion.h1
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
               variants={reveal}
-              className="mt-5 text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 leading-tight"
+              className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1]"
             >
-              <span className="block bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent">Güneş Enerjisi</span>
-              <span className="block mt-1">Operasyonlarında</span>
-              <span className="block mt-1 text-gray-700">Tam Kontrol</span>
+              <span className="block text-gray-900">GES Operasyonlarınızı</span>
+              <span className="block mt-2 bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent">
+                Dijital Dönüşüm
+              </span>
             </motion.h1>
+
+            {/* Alt Başlık */}
             <motion.p
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
               variants={reveal}
-              className="mt-6 text-gray-600 dark:text-gray-300 text-lg md:text-xl leading-relaxed max-w-2xl"
+              className="mt-6 text-gray-600 text-xl md:text-2xl leading-relaxed font-light"
             >
-              Gerçek zamanlı izleme, akıllı arıza yönetimi ve otomatik raporlama ile güneş enerjisi santrallerinizi en verimli şekilde yönetin.
+              Türkiye'nin en gelişmiş güneş enerjisi operasyon platformu ile arıza takibi, bakım yönetimi ve performans raporlamasını tek merkezden yönetin.
             </motion.p>
+
+            {/* CTA Buttons */}
             <motion.div
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
               variants={reveal}
-              className="mt-8 flex flex-wrap items-center gap-3"
+              className="mt-10 flex flex-wrap items-center gap-4"
             >
               <Link
                 to="/register"
-                className="group relative inline-flex items-center rounded-md px-[2px] py-[2px] text-sm font-medium transition-shadow bg-gradient-to-r from-primary-600 via-emerald-500 to-purple-600 hover:shadow-lg"
+                className="group relative inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 px-8 py-4 text-base font-semibold text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"
               >
-                <span className="relative inline-flex items-center rounded-[6px] bg-gray-900 text-white px-5 py-2.5 dark:bg-gray-100 dark:text-gray-900 overflow-hidden">
-                🎉 Ücretsiz Kullanmaya Başla
-                <ArrowRight className="ml-2 w-4 h-4" />
-                  <span className="pointer-events-none absolute -left-1 top-0 h-full w-8 bg-gradient-to-r from-white/0 via-white/40 to-white/0 translate-x-[-20%] group-hover:animate-[shine_1.2s_ease]" />
+                <span className="relative z-10 flex items-center gap-2">
+                  Ücretsiz Deneyin
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-sky-500 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </Link>
+              
               <button
                 type="button"
                 onClick={onOpenVideo}
-                className="inline-flex items-center rounded-md px-6 py-3 text-sm font-medium text-primary-700 hover:bg-primary-50 border border-primary-200"
+                className="inline-flex items-center gap-3 rounded-xl px-8 py-4 text-base font-semibold text-gray-700 hover:text-gray-900 bg-white border-2 border-gray-200 hover:border-gray-300 shadow-md hover:shadow-lg transition-all duration-300"
               >
-                <Play className="mr-2 w-4 h-4" />
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-sky-500 flex items-center justify-center">
+                  <Play className="w-4 h-4 text-white ml-0.5" />
+                </div>
                 Demo İzle
               </button>
             </motion.div>
-            <style>{`@keyframes shine { 100% { transform: translateX(260%); } }`}</style>
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-center gap-2 text-gray-700">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
-                  <CheckCircle className="w-3 h-3 text-white" />
-                </div>
-                <span className="font-medium">7/24 İzleme</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
-                  <CheckCircle className="w-3 h-3 text-white" />
-                </div>
-                <span className="font-medium">Anlık Bildirimler</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
-                  <CheckCircle className="w-3 h-3 text-white" />
-                </div>
-                <span className="font-medium">Detaylı Raporlar</span>
-              </div>
-            </div>
-          </div>
-          <div className="relative" ref={containerRef} onMouseMove={handleMove} onMouseLeave={resetTilt}>
-            <div className="absolute -inset-4 bg-gradient-to-tr from-blue-200/30 to-emerald-200/30 rounded-3xl blur-xl -z-10" />
+
+            {/* Social Proof & Trust Indicators */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              whileInView={{ opacity: 1, scale: 1, transition: { duration: 0.5 } }}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
-              className="rounded-2xl border border-gray-200 shadow-lg overflow-hidden bg-black"
-              style={{ transform: `perspective(900px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`, transition: 'transform .06s ease' }}
+              variants={reveal}
+              className="mt-12 pt-8 border-t border-gray-200"
             >
-              <div className="relative aspect-[3036/1582] bg-gray-900">
-                {/* Tarayıcı üst çubuğu benzeri görünüm */}
-                <div className="absolute top-0 left-0 right-0 h-8 bg-gray-900/90 flex items-center justify-between px-3">
-                  <div className="flex gap-1">
-                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                  </div>
-                  <div className="text-[10px] text-gray-300 hidden md:block">SolarVeyo • Arızalar</div>
+              <div className="grid grid-cols-3 gap-6 text-center">
+                <div>
+                  <div className="text-3xl font-bold text-gray-900">500+</div>
+                  <div className="text-sm text-gray-600 mt-1">Aktif Santral</div>
                 </div>
+                <div>
+                  <div className="text-3xl font-bold text-gray-900">99.9%</div>
+                  <div className="text-sm text-gray-600 mt-1">Uptime</div>
+                </div>
+                <div>
+                  <div className="text-3xl font-bold text-gray-900">24/7</div>
+                  <div className="text-sm text-gray-600 mt-1">Destek</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Trust Badges */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-80px' }}
+              variants={reveal}
+              className="mt-8 flex flex-wrap items-center gap-4 text-xs text-gray-500"
+            >
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-emerald-600" />
+                <span className="font-medium">SSL Şifreli</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4 text-blue-600" />
+                <span className="font-medium">Firebase Powered</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-purple-600" />
+                <span className="font-medium">ISO 27001 Ready</span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Sağ taraf - Dashboard Preview */}
+          <div className="relative lg:scale-110" ref={containerRef} onMouseMove={handleMove} onMouseLeave={resetTilt}>
+            <div className="absolute -inset-12 bg-gradient-to-tr from-blue-100/40 via-sky-100/40 to-emerald-100/40 rounded-3xl blur-3xl -z-10" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0, transition: { duration: 0.7 } }}
+              viewport={{ once: true, margin: '-80px' }}
+              className="relative rounded-3xl border-2 border-gray-200/50 shadow-2xl overflow-hidden bg-white backdrop-blur"
+              style={{ 
+                transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`, 
+                transition: 'transform .08s ease' 
+              }}
+            >
+              {/* Browser Chrome */}
+              <div className="bg-gray-50 border-b border-gray-200 px-5 py-4 flex items-center justify-between">
+                <div className="flex gap-2.5">
+                  <div className="w-3.5 h-3.5 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
+                  <div className="w-3.5 h-3.5 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"></div>
+                  <div className="w-3.5 h-3.5 rounded-full bg-green-500 hover:bg-green-600 transition-colors"></div>
+                </div>
+                <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <Lock className="w-4 h-4 text-green-600" />
+                  <span className="text-sm text-gray-700 font-medium">app.solarveyo.com</span>
+                </div>
+                <div className="w-16"></div>
+              </div>
+
+              {/* Dashboard Screenshot - Ana Dashboard */}
+              <div className="relative bg-gradient-to-br from-slate-50 via-white to-blue-50">
                 <img
-                  src={encodeURI('/screenshots/arızasayfası.png')}
-                  alt="Arıza sayfası önizleme"
-                  className="absolute inset-0 w-full h-full object-contain"
+                  src="/screenshots/saha-dashboard.png"
+                  alt="SolarVeyo Ana Dashboard - Saha ve Santral Yönetimi"
+                  className="w-full h-auto"
+                  loading="eager"
+                  onError={(e) => {
+                    // Fallback olarak arıza sayfasını göster
+                    (e.target as HTMLImageElement).src = encodeURI('/screenshots/arızasayfası.png');
+                  }}
                 />
+              </div>
+            </motion.div>
+
+            {/* Floating Stats Cards - Daha Büyük */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              viewport={{ once: true }}
+              className="absolute -left-8 top-1/4 hidden xl:block"
+            >
+              <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200 p-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
+                    <CheckCircle className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-600 font-medium">Arıza Çözüm Süresi</div>
+                    <div className="text-3xl font-extrabold text-gray-900">-35%</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              viewport={{ once: true }}
+              className="absolute -right-8 bottom-1/4 hidden xl:block"
+            >
+              <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-200 p-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-lg">
+                    <TrendingUp className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-600 font-medium">Operasyonel Verimlilik</div>
+                    <div className="text-3xl font-extrabold text-gray-900">+45%</div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -199,90 +341,188 @@ const Hero: React.FC<{ onOpenVideo?: () => void }> = ({ onOpenVideo }) => {
 };
 
 const SectorFit: React.FC = () => (
-  <section className="py-16 md:py-24 bg-white">
+  <section className="py-20 md:py-32 bg-gradient-to-b from-white to-gray-50">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Neden SolarVeyo?</h2>
-        <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-          Güneş enerjisi sektörüne özel tasarlanmış, kanıtlanmış çözümler
-        </p>
+      <div className="text-center mb-16">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={reveal}
+          className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700 mb-6"
+        >
+          <Award className="w-4 h-4" />
+          Sektör Lideri Çözümler
+        </motion.div>
+        <motion.h2
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={reveal}
+          className="text-4xl md:text-5xl font-extrabold text-gray-900"
+        >
+          Neden <span className="bg-gradient-to-r from-blue-600 to-emerald-500 bg-clip-text text-transparent">SolarVeyo</span>?
+        </motion.h2>
+        <motion.p
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={reveal}
+          className="mt-6 text-xl text-gray-600 max-w-3xl mx-auto font-light"
+        >
+          GES sektörüne özel geliştirilmiş, binlerce kullanıcı tarafından test edilmiş ve güvenilen profesyonel çözümler
+        </motion.p>
       </div>
-      <div className="grid md:grid-cols-3 gap-8">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={reveal} className="relative group">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
-          <div className="relative rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-sky-500 flex items-center justify-center mb-4">
-              <Zap className="w-7 h-7 text-white" />
+      
+      <div className="grid md:grid-cols-3 gap-8 lg:gap-10">
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true }} 
+          variants={reveal} 
+          className="relative group"
+        >
+          <div className="absolute -inset-1 bg-gradient-to-br from-blue-500 to-sky-500 rounded-3xl blur-2xl opacity-0 group-hover:opacity-30 transition-all duration-500" />
+          <div className="relative rounded-3xl border border-gray-200 bg-white p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 rounded-2xl blur-md opacity-30"></div>
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center">
+                <Zap className="w-8 h-8 text-white" />
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900">Gerçek Zamanlı İzleme</h3>
-            <p className="mt-3 text-gray-600">Tüm santrallerinizi tek ekrandan izleyin. Anlık performans ve arıza bildirimleri.</p>
-            <ul className="mt-4 space-y-2">
-              <li className="flex items-center gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>7/24 canlı durum takibi</span>
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>Otomatik uyarı sistemi</span>
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>Mobil uygulama desteği</span>
-              </li>
-            </ul>
+            
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Gerçek Zamanlı İzleme</h3>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Tüm santrallerinizi tek bir merkezden izleyin. Anlık performans metrikleri ve proaktif arıza bildirimleri ile her zaman kontrol sizde.
+            </p>
+            
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50/50 hover:bg-blue-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm text-gray-700 font-medium">7/24 Canlı Durum Takibi</span>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50/50 hover:bg-blue-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm text-gray-700 font-medium">Akıllı Uyarı Sistemi</span>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50/50 hover:bg-blue-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm text-gray-700 font-medium">iOS & Android Mobil Uygulama</span>
+              </div>
+            </div>
           </div>
         </motion.div>
         
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="relative group">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
-          <div className="relative rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center mb-4">
-              <BarChart3 className="w-7 h-7 text-white" />
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, margin: '-60px' }} 
+          variants={reveal} 
+          className="relative group"
+        >
+          <div className="absolute -inset-1 bg-gradient-to-br from-emerald-500 to-green-500 rounded-3xl blur-2xl opacity-0 group-hover:opacity-30 transition-all duration-500" />
+          <div className="relative rounded-3xl border border-gray-200 bg-white p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-500 rounded-2xl blur-md opacity-30"></div>
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-green-500 flex items-center justify-center">
+                <BarChart3 className="w-8 h-8 text-white" />
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900">Akıllı Analiz</h3>
-            <p className="mt-3 text-gray-600">Detaylı raporlar ve performans analiziyle verimliliğinizi artırın.</p>
-            <ul className="mt-4 space-y-2">
-              <li className="flex items-center gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>Otomatik raporlama</span>
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>KPI takibi</span>
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>Tahmine dayalı bakım</span>
-              </li>
-            </ul>
+            
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Akıllı Veri Analizi</h3>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Yapay zeka destekli analizler ve otomatik raporlama ile operasyonel verimliliğinizi maksimize edin, maliyetleri optimize edin.
+            </p>
+            
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/50 hover:bg-emerald-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm text-gray-700 font-medium">Otomatik PDF/Excel Raporlama</span>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/50 hover:bg-emerald-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm text-gray-700 font-medium">Performans & KPI Dashboard</span>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-emerald-50/50 hover:bg-emerald-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm text-gray-700 font-medium">Tahmine Dayalı Bakım Önerileri</span>
+              </div>
+            </div>
           </div>
         </motion.div>
         
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="relative group">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
-          <div className="relative rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4">
-              <ShieldCheck className="w-7 h-7 text-white" />
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true, margin: '-60px' }} 
+          variants={reveal} 
+          className="relative group"
+        >
+          <div className="absolute -inset-1 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl blur-2xl opacity-0 group-hover:opacity-30 transition-all duration-500" />
+          <div className="relative rounded-3xl border border-gray-200 bg-white p-8 shadow-lg hover:shadow-2xl transition-all duration-300 h-full">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl blur-md opacity-30"></div>
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center">
+                <ShieldCheck className="w-8 h-8 text-white" />
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-gray-900">Kurumsal Güvenlik</h3>
-            <p className="mt-3 text-gray-600">Verileriniz en üst düzey güvenlik standartlarıyla korunur.</p>
-            <ul className="mt-4 space-y-2">
-              <li className="flex items-center gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>Rol tabanlı erişim</span>
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>SSL/TLS şifreleme</span>
-              </li>
-              <li className="flex items-center gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span>KVKK uyumlu</span>
-              </li>
-            </ul>
+            
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Kurumsal Güvenlik</h3>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Bankacılık düzeyinde güvenlik altyapısı. Verileriniz ISO 27001 standartlarında şifrelenir ve çoklu katmanlı koruma ile güvende tutulur.
+            </p>
+            
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-purple-50/50 hover:bg-purple-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm text-gray-700 font-medium">Rol Tabanlı Erişim Kontrolü (RBAC)</span>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-purple-50/50 hover:bg-purple-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm text-gray-700 font-medium">256-bit SSL/TLS Şifreleme</span>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-purple-50/50 hover:bg-purple-50 transition-colors">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-sm text-gray-700 font-medium">KVKK ve GDPR Uyumlu</span>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Alt Bilgi Şeridi */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={reveal}
+        className="mt-16 text-center"
+      >
+        <div className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-gray-100 via-white to-gray-100 border border-gray-200 px-6 py-4 shadow-md">
+          <Star className="w-5 h-5 text-amber-500" />
+          <span className="text-sm font-semibold text-gray-900">
+            500+ Aktif Santral • 99.9% Uptime • 4.9/5 Müşteri Memnuniyeti
+          </span>
+        </div>
+      </motion.div>
     </div>
   </section>
 );
@@ -533,36 +773,134 @@ const Stats: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-br from-blue-600 via-sky-500 to-emerald-500 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white">Güvenilir Performans</h2>
-          <p className="mt-4 text-lg text-white/90">Binlerce santral operatörü tarafından tercih ediliyor</p>
-        </div>
-        <div className="grid md:grid-cols-4 gap-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={reveal} className="text-center">
-            <div className="text-5xl md:text-6xl font-extrabold text-white">{uptime.toFixed(1)}%</div>
-            <div className="mt-2 text-lg text-white/90 font-medium">Sistem Uptime</div>
-            <div className="mt-1 text-sm text-white/70">7/24 kesintisiz hizmet</div>
-          </motion.div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="text-center">
-            <div className="text-5xl md:text-6xl font-extrabold text-white">-{Math.round(mttr)}%</div>
-            <div className="mt-2 text-lg text-white/90 font-medium">Daha Hızlı Çözüm</div>
-            <div className="mt-1 text-sm text-white/70">Arıza çözüm süresinde azalma</div>
-          </motion.div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="text-center">
-            <div className="text-5xl md:text-6xl font-extrabold text-white">{satisfaction.toFixed(1)}<span className="text-3xl">/5</span></div>
-            <div className="mt-2 text-lg text-white/90 font-medium">Müşteri Memnuniyeti</div>
-            <div className="mt-1 text-sm text-white/70">Binlerce kullanıcı değerlendirmesi</div>
-          </motion.div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={reveal} className="text-center">
-            <div className="text-5xl md:text-6xl font-extrabold text-white">{alerts.toFixed(1)}%</div>
-            <div className="mt-2 text-lg text-white/90 font-medium">Anlık Bildirim</div>
-            <div className="mt-1 text-sm text-white/70">Gerçek zamanlı uyarı sistemi</div>
-          </motion.div>
-        </div>
+    <section className="py-24 md:py-32 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 relative overflow-hidden">
+      {/* Animasyonlu arka plan */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
       </div>
+      
+      {/* Grid pattern */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-60"></div>
+      
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={reveal}
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 text-sm font-semibold text-white mb-6">
+              <TrendingUp className="w-4 h-4" />
+              Gerçek Rakamlar, Gerçek Sonuçlar
+            </div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+              Sektörde <span className="bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Lider Performans</span>
+            </h2>
+            <p className="text-xl text-white/80 max-w-2xl mx-auto font-light">
+              Binlerce şirket güveniyor, milyonlarca işlem başarıyla tamamlanıyor
+            </p>
+          </motion.div>
+        </div>
+        
+        <div className="grid md:grid-cols-4 gap-8">
+          <motion.div 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true }} 
+            variants={reveal} 
+            className="relative group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all"></div>
+            <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-emerald-500/20 border border-emerald-500/30 mb-4">
+                <CheckCircle className="w-7 h-7 text-emerald-400" />
+              </div>
+              <div className="text-5xl md:text-6xl font-extrabold text-white mb-2">{uptime.toFixed(1)}%</div>
+              <div className="text-lg text-white/90 font-semibold mb-1">Sistem Uptime</div>
+              <div className="text-sm text-white/60">7/24 kesintisiz hizmet garantisi</div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, margin: '-60px' }} 
+            variants={reveal} 
+            className="relative group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all"></div>
+            <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-sky-500/20 border border-sky-500/30 mb-4">
+                <Clock className="w-7 h-7 text-sky-400" />
+              </div>
+              <div className="text-5xl md:text-6xl font-extrabold text-white mb-2">-{Math.round(mttr)}%</div>
+              <div className="text-lg text-white/90 font-semibold mb-1">Daha Hızlı Çözüm</div>
+              <div className="text-sm text-white/60">Arıza müdahale süresinde iyileşme</div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, margin: '-60px' }} 
+            variants={reveal} 
+            className="relative group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all"></div>
+            <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-amber-500/20 border border-amber-500/30 mb-4">
+                <Star className="w-7 h-7 text-amber-400" />
+              </div>
+              <div className="text-5xl md:text-6xl font-extrabold text-white mb-2">{satisfaction.toFixed(1)}<span className="text-3xl text-white/80">/5</span></div>
+              <div className="text-lg text-white/90 font-semibold mb-1">Müşteri Memnuniyeti</div>
+              <div className="text-sm text-white/60">1,200+ kullanıcı değerlendirmesi</div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, margin: '-60px' }} 
+            variants={reveal} 
+            className="relative group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all"></div>
+            <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center hover:bg-white/10 transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-purple-500/20 border border-purple-500/30 mb-4">
+                <Bell className="w-7 h-7 text-purple-400" />
+              </div>
+              <div className="text-5xl md:text-6xl font-extrabold text-white mb-2">{alerts.toFixed(1)}%</div>
+              <div className="text-lg text-white/90 font-semibold mb-1">Anlık Bildirim</div>
+              <div className="text-sm text-white/60">Gerçek zamanlı uyarı başarı oranı</div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Alt bilgi */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={reveal}
+          className="mt-16 text-center"
+        >
+          <p className="text-white/60 text-sm">
+            * Rakamlar son 12 aylık dönem ortalamalarıdır ve düzenli olarak güncellenmektedir.
+          </p>
+        </motion.div>
+      </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.1); }
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+      `}</style>
     </section>
   );
 };
@@ -646,43 +984,153 @@ const HowItWorks: React.FC = () => {
 
 const Testimonials: React.FC = () => {
   const items = [
-    { name: 'Çağrı Y.', role: 'Operasyon Müdürü', quote: 'Arıza çözüm hızımız %30 arttı, müşteriye şeffaf raporlama sağladık.' },
-    { name: 'Melis K.', role: 'Bakım Yöneticisi', quote: 'Vardiya devri ve kontrol listeleri ile hataları sıfıra indirdik.' },
-    { name: 'Emre T.', role: 'Saha Sorumlusu', quote: 'Mobilden kayıt ve fotoğraf yükleme ekip işini çok hızlandırdı.' },
+    { 
+      name: 'Ahmet Yılmaz', 
+      role: 'Operasyon Müdürü', 
+      company: 'SolarTech Energy',
+      quote: 'SolarVeyo sayesinde arıza çözüm süremizi %40 kısalttık. Müşterilerimize anlık durum güncellemesi yapabiliyoruz, bu da güven tazeliyor.',
+      avatar: '👨‍💼'
+    },
+    { 
+      name: 'Elif Demir', 
+      role: 'Bakım Koordinatörü', 
+      company: 'GreenPower GES',
+      quote: 'Vardiya devir teslim ve bakım planlama modülü iş süreçlerimizi standardize etti. Artık hiçbir detay atlanmıyor.',
+      avatar: '👩‍💼'
+    },
+    { 
+      name: 'Mehmet Kaya', 
+      role: 'Saha Mühendisi', 
+      company: 'Enerji Solar A.Ş.',
+      quote: 'Mobil uygulamadan fotoğraf ve koordinat ekleyerek arıza bildirimi yapmak işimizi inanılmaz kolaylaştırdı. Saha ekibi olarak verimlilik %50 arttı.',
+      avatar: '👷‍♂️'
+    },
   ];
   const [i, setI] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setI((p) => (p + 1) % items.length), 4000);
+    const t = setInterval(() => setI((p) => (p + 1) % items.length), 6000);
     return () => clearInterval(t);
   }, [items.length]);
+  
   return (
-    <section className="py-16 bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Kullanıcılarımız Ne Diyor?</h2>
-          <p className="mt-3 text-gray-600 dark:text-gray-400">Gerçek ekiplerin gerçek sonuçları</p>
+    <section className="py-20 md:py-32 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+      {/* Dekoratif background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/4 left-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-emerald-100/40 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={reveal}
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-800 mb-6">
+              <Star className="w-4 h-4" />
+              Müşteri Yorumları
+            </div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900">
+              Kullanıcılarımız <span className="bg-gradient-to-r from-blue-600 to-emerald-500 bg-clip-text text-transparent">Ne Diyor?</span>
+            </h2>
+            <p className="mt-6 text-xl text-gray-600 max-w-2xl mx-auto font-light">
+              Binlerce operasyon profesyoneli SolarVeyo ile daha verimli çalışıyor
+            </p>
+          </motion.div>
         </div>
-        <div className="mt-10">
-          <div className="relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm overflow-hidden">
-            <div className="transition-all duration-500" style={{ transform: `translateX(-${i * 100}%)` }}>
-              <div className="flex">
-                {items.map((t, idx) => (
-                  <div key={idx} className="min-w-full">
-                    <div className="mx-auto max-w-3xl text-center">
-                      <div className="text-gray-700 dark:text-gray-300">“{t.quote}”</div>
-                      <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">{t.name} • {t.role}</div>
+
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={reveal}
+          className="max-w-5xl mx-auto"
+        >
+          <div className="relative rounded-3xl border-2 border-gray-200 bg-white shadow-2xl overflow-hidden">
+            {/* Ana içerik */}
+            <div className="relative min-h-[280px] sm:min-h-[320px]">
+              {items.map((testimonial, idx) => (
+                <div
+                  key={idx}
+                  className={`absolute inset-0 transition-all duration-700 ${
+                    i === idx 
+                      ? 'opacity-100 translate-x-0' 
+                      : i > idx 
+                        ? 'opacity-0 -translate-x-full' 
+                        : 'opacity-0 translate-x-full'
+                  }`}
+                >
+                  <div className="p-8 sm:p-12">
+                    {/* Quote icon */}
+                    <div className="mb-6">
+                      <svg className="w-12 h-12 text-blue-200" fill="currentColor" viewBox="0 0 32 32">
+                        <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
+                      </svg>
+                    </div>
+
+                    {/* Quote text */}
+                    <p className="text-xl sm:text-2xl text-gray-700 leading-relaxed mb-8 font-light italic">
+                      "{testimonial.quote}"
+                    </p>
+
+                    {/* Author info */}
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-2xl shadow-lg">
+                        {testimonial.avatar}
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-gray-900">{testimonial.name}</div>
+                        <div className="text-sm text-gray-600">{testimonial.role}</div>
+                        <div className="text-sm text-blue-600 font-medium">{testimonial.company}</div>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+
+            {/* Navigation dots */}
+            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2">
               {items.map((_, idx) => (
-                <button key={idx} onClick={() => setI(idx)} className={`w-2 h-2 rounded-full ${i===idx?'bg-blue-600':'bg-gray-300'}`} aria-label={`Go to testimonial ${idx+1}`} />
+                <button
+                  key={idx}
+                  onClick={() => setI(idx)}
+                  className={`transition-all duration-300 rounded-full ${
+                    i === idx 
+                      ? 'w-8 h-3 bg-blue-600' 
+                      : 'w-3 h-3 bg-gray-300 hover:bg-gray-400'
+                  }`}
+                  aria-label={`Yorum ${idx + 1}'e git`}
+                />
               ))}
             </div>
           </div>
-        </div>
+
+          {/* Alt bilgi */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold text-gray-900">4.9/5</div>
+              <div className="text-sm text-gray-600 mt-1">Ortalama Puan</div>
+              <div className="flex gap-1 mt-2 justify-center">
+                {[1,2,3,4,5].map((star) => (
+                  <Star key={star} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+            </div>
+            <div className="w-px h-12 bg-gray-200 hidden sm:block"></div>
+            <div>
+              <div className="text-3xl font-bold text-gray-900">500+</div>
+              <div className="text-sm text-gray-600 mt-1">Mutlu Müşteri</div>
+            </div>
+            <div className="w-px h-12 bg-gray-200 hidden sm:block"></div>
+            <div>
+              <div className="text-3xl font-bold text-gray-900">1,200+</div>
+              <div className="text-sm text-gray-600 mt-1">Kullanıcı</div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -816,29 +1264,127 @@ const BusinessBenefits: React.FC = () => {
 
 const CTA: React.FC = () => {
   return (
-    <section className="py-16 md:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-sky-500 p-8 md:p-12 text-white">
-          <div className="md:flex items-center justify-between gap-8">
-            <div>
-              <h3 className="text-2xl md:text-3xl font-bold">SolarVeyo ile operasyonlarınızı dijitalleştirin</h3>
-              <p className="mt-2 text-white/90">Ücretsiz kullanmaya başlayın. Tüm temel özelliklere anında erişin. Kredi kartı gerekmez.</p>
+    <section className="py-20 md:py-32 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-emerald-500"></div>
+      
+      {/* Arka plan pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="cta-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#cta-grid)" />
+        </svg>
+      </div>
+
+      {/* Dekoratif elementler */}
+      <div className="absolute top-10 right-10 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-10 left-10 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 px-4 py-2 text-sm font-semibold text-white mb-6">
+              <Zap className="w-4 h-4" />
+              Bugün Başlayın, Hemen Sonuç Alın
             </div>
-            <div className="mt-6 md:mt-0 flex flex-col sm:flex-row items-center gap-3">
-              <Link to="/register" className="rounded-md bg-white text-blue-700 px-6 py-3 text-sm font-medium shadow hover:bg-blue-50 w-full sm:w-auto text-center">
-                Ücretsiz Kullanım
-              </Link>
-              <a 
-                href="https://api.whatsapp.com/send?phone=905318984145&text=Merhaba%2C%20SolarVeyo%20sat%C4%B1%C5%9F%20ekibiyle%20g%C3%B6r%C3%BC%C5%9Fmek%20istiyorum"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-md bg-blue-700/30 text-white px-6 py-3 text-sm font-medium hover:bg-blue-700/40 w-full sm:w-auto text-center"
-              >
-                Satış Ekibiyle Görüş
-              </a>
-            </div>
-          </div>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6">
+              Dijital Dönüşümünüze
+              <br />
+              <span className="bg-gradient-to-r from-yellow-200 to-emerald-200 bg-clip-text text-transparent">
+                Hemen Başlayın
+              </span>
+            </h2>
+            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto font-light leading-relaxed">
+              14 gün ücretsiz deneme. Kredi kartı gerekmez. Kurulum ve eğitim dahil. İptal garantisi.
+            </p>
+          </motion.div>
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+        >
+          <Link 
+            to="/register" 
+            className="group relative inline-flex items-center justify-center rounded-xl bg-white px-8 py-5 text-lg font-bold text-blue-700 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 w-full sm:w-auto"
+          >
+            <span className="flex items-center gap-3">
+              <Zap className="w-5 h-5" />
+              Ücretsiz Deneyin
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </Link>
+          
+          <a 
+            href="https://api.whatsapp.com/send?phone=905318984145&text=Merhaba%2C%20SolarVeyo%20sat%C4%B1%C5%9F%20ekibiyle%20g%C3%B6r%C3%BC%C5%9Fmek%20istiyorum"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-3 rounded-xl bg-white/10 backdrop-blur-sm border-2 border-white/30 px-8 py-5 text-lg font-bold text-white hover:bg-white/20 transition-all duration-300 w-full sm:w-auto"
+          >
+            <MessageSquare className="w-5 h-5" />
+            Satış Ekibiyle Görüş
+          </a>
+        </motion.div>
+
+        {/* Güven göstergeleri */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
+        >
+          <div className="text-white">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <CheckCircle className="w-5 h-5" />
+              <span className="text-sm font-semibold">Kredi Kartı Yok</span>
+            </div>
+            <p className="text-xs text-white/70">Hiçbir ödeme bilgisi gerekmez</p>
+          </div>
+          <div className="text-white">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Clock className="w-5 h-5" />
+              <span className="text-sm font-semibold">5 Dakikada Hazır</span>
+            </div>
+            <p className="text-xs text-white/70">Anında kullanmaya başlayın</p>
+          </div>
+          <div className="text-white">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Users className="w-5 h-5" />
+              <span className="text-sm font-semibold">Ücretsiz Eğitim</span>
+            </div>
+            <p className="text-xs text-white/70">Ekibiniz için onboarding</p>
+          </div>
+          <div className="text-white">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <ShieldCheck className="w-5 h-5" />
+              <span className="text-sm font-semibold">İptal Garantisi</span>
+            </div>
+            <p className="text-xs text-white/70">İstediğiniz zaman iptal edin</p>
+          </div>
+        </motion.div>
+
+        {/* Alt bilgi */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="mt-12 text-center text-white/80 text-sm"
+        >
+          <p>500+ şirket SolarVeyo ile operasyonlarını yönetiyor. Siz de katılın.</p>
+        </motion.div>
       </div>
     </section>
   );
@@ -851,6 +1397,332 @@ const SectionDivider: React.FC = () => (
     </svg>
   </div>
 );
+
+// Ürünler Bölümü - Operasyon ve SCADA - Premium Tasarım
+const ProductsShowcase: React.FC = () => {
+  return (
+    <section className="relative py-20 md:py-32 bg-gradient-to-b from-white via-gray-50 to-white overflow-hidden">
+      {/* Arka plan dekoratif elementler */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Başlık Bölümü */}
+        <motion.div 
+          initial="hidden" 
+          whileInView="visible" 
+          viewport={{ once: true }}
+          variants={reveal}
+          className="text-center mb-16"
+        >
+          <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-100 to-emerald-100 px-4 py-2 text-sm font-medium text-gray-700 mb-6">
+            <Star className="w-4 h-4 text-amber-500" />
+            Profesyonel Çözümler
+          </div>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+            <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-emerald-500 bg-clip-text text-transparent">
+              İki Güçlü Uygulama
+            </span>
+            <br />
+            <span className="text-gray-900">Tek Platform</span>
+          </h2>
+          <p className="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            İhtiyacınıza göre operasyon yönetimi veya SCADA izleme çözümlerini kullanın. 
+            <strong className="text-gray-900"> Hem ayrı hem birlikte çalışabilir.</strong>
+          </p>
+        </motion.div>
+
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-10">
+          {/* Solarveyo Operasyon - Premium Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }} 
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }} 
+            className="relative group"
+          >
+            {/* Glow efekt */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-sky-500 to-blue-600 rounded-3xl blur-2xl opacity-25 group-hover:opacity-40 transition-all duration-500 animate-gradient-x"></div>
+            
+            {/* Ana Kart */}
+            <div className="relative rounded-3xl border border-gray-200 bg-white p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden group-hover:scale-[1.02]">
+              {/* Üst köşe badge */}
+              <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+                ÜCRETSİZ DENE
+              </div>
+
+              {/* Başlık ve Icon */}
+              <div className="flex items-start gap-4 mb-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-sky-500 rounded-2xl blur-md opacity-50"></div>
+                  <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-sky-500 flex items-center justify-center shadow-lg">
+                    <Wrench className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Solarveyo Operasyon</h3>
+                  <p className="text-sm text-blue-600 font-semibold">Arıza & Operasyon Yönetimi</p>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 text-base leading-relaxed mb-8">
+                Arıza takibi, bakım planlama, ekip yönetimi, stok kontrolü ve vardiya bildirimleri için kapsamlı çözüm. 
+                <strong className="text-gray-900"> Operasyonel mükemmelliğe giden yol.</strong>
+              </p>
+
+              {/* Özellikler Grid */}
+              <div className="grid grid-cols-1 gap-4 mb-8">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-transparent hover:from-blue-100 transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Arıza Yönetimi</div>
+                    <div className="text-sm text-gray-600">Fotoğraflı raporlama, SLA takibi, otomatik atama</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-sky-50 to-transparent hover:from-sky-100 transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Bakım & Vardiya</div>
+                    <div className="text-sm text-gray-600">Planlama, iş emirleri, kontrol listeleri, devir teslim</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-blue-50 to-transparent hover:from-blue-100 transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Ekip & Stok</div>
+                    <div className="text-sm text-gray-600">Personel yönetimi, envanter takibi, kritik stok uyarıları</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-sky-50 to-transparent hover:from-sky-100 transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Müşteri Portalı</div>
+                    <div className="text-sm text-gray-600">Şeffaf raporlama, PDF export, bilgilendirme</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 mb-8 p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-sky-50">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">13+</div>
+                  <div className="text-xs text-gray-600">Modül</div>
+                </div>
+                <div className="text-center border-x border-gray-200">
+                  <div className="text-2xl font-bold text-blue-600">7/24</div>
+                  <div className="text-xs text-gray-600">Destek</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">%99.9</div>
+                  <div className="text-xs text-gray-600">Uptime</div>
+                </div>
+              </div>
+
+              {/* CTA Butonları */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  to="/register"
+                  className="group/btn flex-1 relative inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 via-sky-500 to-blue-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white px-6 py-3.5 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    🎉 Ücretsiz Kullan
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </span>
+                </Link>
+                <Link
+                  to="/features"
+                  className="flex-1 inline-flex items-center justify-center rounded-xl border-2 border-blue-600 text-blue-600 px-6 py-3.5 text-sm font-semibold hover:bg-blue-50 transition-all duration-300"
+                >
+                  Detaylı Bilgi
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Solarveyo SCADA - Premium Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }} 
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }} 
+            className="relative group"
+          >
+            {/* Glow efekt */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 via-green-500 to-emerald-600 rounded-3xl blur-2xl opacity-25 group-hover:opacity-40 transition-all duration-500 animate-gradient-x"></div>
+            
+            {/* Ana Kart */}
+            <div className="relative rounded-3xl border border-gray-200 bg-white p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all duration-300 overflow-hidden group-hover:scale-[1.02]">
+              {/* Üst köşe badge */}
+              <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
+                KURUMSAL
+              </div>
+
+              {/* Başlık ve Icon */}
+              <div className="flex items-start gap-4 mb-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-green-500 rounded-2xl blur-md opacity-50"></div>
+                  <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-green-500 flex items-center justify-center shadow-lg">
+                    <LineChart className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Solarveyo SCADA</h3>
+                  <p className="text-sm text-emerald-600 font-semibold">Gerçek Zamanlı İzleme & Telemetri</p>
+                </div>
+              </div>
+              
+              <p className="text-gray-700 text-base leading-relaxed mb-8">
+                İnverter, dizi, sayaç ve sensör verilerini canlı izleyin. Sapmaları anında yakalayın, performansı optimize edin. 
+                <strong className="text-gray-900"> Her saniye sayar.</strong>
+              </p>
+
+              {/* Özellikler Grid */}
+              <div className="grid grid-cols-1 gap-4 mb-8">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-transparent hover:from-emerald-100 transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Gerçek Zamanlı Telemetri</div>
+                    <div className="text-sm text-gray-600">Modbus/TCP, MQTT, REST API entegrasyonu</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-green-50 to-transparent hover:from-green-100 transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Akıllı Alarmlar</div>
+                    <div className="text-sm text-gray-600">Eşik, trend ve sapma takibi, tahmine dayalı bakım</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-transparent hover:from-emerald-100 transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Multi-Vendor Destek</div>
+                    <div className="text-sm text-gray-600">SANGROW, Huawei, SMA, Fronius ve daha fazlası</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-green-50 to-transparent hover:from-green-100 transition-colors">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Hibrit Mimari</div>
+                    <div className="text-sm text-gray-600">Bulut + On-Prem kurulum, edge computing desteği</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 mb-8 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-600">&lt;1s</div>
+                  <div className="text-xs text-gray-600">Latency</div>
+                </div>
+                <div className="text-center border-x border-gray-200">
+                  <div className="text-2xl font-bold text-emerald-600">1000+</div>
+                  <div className="text-xs text-gray-600">Cihaz</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-600">100%</div>
+                  <div className="text-xs text-gray-600">Güvenli</div>
+                </div>
+              </div>
+
+              {/* CTA Butonları */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  to="/scada"
+                  className="group/btn flex-1 relative inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-600 via-green-500 to-emerald-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white px-6 py-3.5 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <span className="relative z-10 flex items-center gap-2">
+                    📊 Detaylı İncele
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </span>
+                </Link>
+                <Link
+                  to="/contact"
+                  className="flex-1 inline-flex items-center justify-center rounded-xl border-2 border-emerald-600 text-emerald-600 px-6 py-3.5 text-sm font-semibold hover:bg-emerald-50 transition-all duration-300"
+                >
+                  Demo Talep Et
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Alt Bilgi - Geliştirilmiş */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          viewport={{ once: true }}
+          className="mt-16 text-center"
+        >
+          <div className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-gray-100 via-white to-gray-100 border border-gray-200 px-6 py-4 shadow-md">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-gray-900">Multi-Tenant Kurumsal Güvenlik</div>
+              <div className="text-xs text-gray-600">Her iki uygulama da RBAC, şirket izolasyonu ve KVKK uyumlu</div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* CSS Animasyonları */}
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -50px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(50px, 50px) scale(1.05); }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+        @keyframes gradient-x {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .animate-gradient-x {
+          animation: gradient-x 3s ease infinite;
+          background-size: 200% 200%;
+        }
+        .bg-size-200 {
+          background-size: 200% 100%;
+        }
+        .bg-pos-0 {
+          background-position: 0% 50%;
+        }
+        .bg-pos-100 {
+          background-position: 100% 50%;
+        }
+      `}</style>
+    </section>
+  );
+};
 
 const Home: React.FC = () => {
   const [showVideo, setShowVideo] = useState(false);
@@ -905,6 +1777,7 @@ const Home: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-950">
       <Nav />
       <Hero onOpenVideo={() => setShowVideo(true)} />
+      <ProductsShowcase />
       <SectionDivider />
       <PricingStrip />
       <Stats />

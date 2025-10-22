@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Card, CardContent, CardHeader, CardTitle, LoadingSpinner, SubscriptionStatusWidget, StorageWarningWidget, PullToRefresh } from '../../components/ui';
 import { KPICards, FaultStatusChart } from '../../components/charts';
 import { CompactWeatherWidget } from '../../components/weather/CompactWeatherWidget';
-import { RecentItemsWidget } from '../../components/dashboard/RecentItemsWidget';
 import { arizaService, bakimService } from '../../services';
 import { notificationService, Notification } from '../../services/notificationService';
 import { getGoogleMapsApiKey, generateGoogleMapsUrls } from '../../utils/googleMaps';
@@ -655,55 +654,40 @@ const Dashboard: React.FC = () => {
 
       </div>
 
-      {/* Grid: Aylık Aktivite Özeti + Yeni Eklenenler */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
-        {/* Aylık Aktivite Özeti - Kompakt */}
-        <div className="lg:col-span-2">
-          <Card padding="sm" className="h-full">
-            <CardHeader className="mb-2 pb-2">
-              <CardTitle className="text-sm md:text-base font-semibold flex items-center gap-2">
-                <Sun className="h-4 w-4 text-blue-600" />
-                {currentMonth} Aktivite Özeti
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                <div className="flex items-start gap-2 rounded-lg border border-gray-200 p-2 md:p-3 hover:shadow-md transition-all">
-                  <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-gray-500 font-medium">Bildirilen Arızalar</div>
-                    <div className="text-xl md:text-2xl font-bold text-gray-900">{dashboardStats.aylikArizalar}</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2 rounded-lg border border-gray-200 p-2 md:p-3 hover:shadow-md transition-all">
-                  <Wrench className="h-6 w-6 text-blue-600 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-gray-500 font-medium">Yapılan Bakımlar</div>
-                    <div className="text-xl md:text-2xl font-bold text-gray-900">{dashboardStats.aylikBakimlar}</div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2 rounded-lg border border-gray-200 p-2 md:p-3 hover:shadow-md transition-all">
-                  <AlertTriangle className="h-6 w-6 text-yellow-600 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-gray-500 font-medium">Kritik Stok Uyarıları</div>
-                    <div className="text-xl md:text-2xl font-bold text-gray-900">{dashboardStats.aktifStokUyarilari}</div>
-                  </div>
-                </div>
+      {/* Ekim 2025 Aktivite Özeti - Tam Genişlik */}
+      <Card padding="sm">
+        <CardHeader className="mb-2 pb-2">
+          <CardTitle className="text-sm md:text-base font-semibold flex items-center gap-2">
+            <Sun className="h-4 w-4 text-blue-600" />
+            {currentMonth} Aktivite Özeti
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="flex items-start gap-2 rounded-lg border border-gray-200 p-2 md:p-3 hover:shadow-md transition-all">
+              <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] text-gray-500 font-medium">Bildirilen Arızalar</div>
+                <div className="text-xl md:text-2xl font-bold text-gray-900">{dashboardStats.aylikArizalar}</div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Yeni Eklenenler Widget */}
-        <div>
-          <RecentItemsWidget 
-            companyId={userProfile?.companyId || ''} 
-            userRole={userProfile?.rol}
-            userSahalar={userProfile?.sahalar}
-            userSantraller={userProfile?.santraller}
-          />
-        </div>
-      </div>
+            </div>
+            <div className="flex items-start gap-2 rounded-lg border border-gray-200 p-2 md:p-3 hover:shadow-md transition-all">
+              <Wrench className="h-6 w-6 text-blue-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] text-gray-500 font-medium">Yapılan Bakımlar</div>
+                <div className="text-xl md:text-2xl font-bold text-gray-900">{dashboardStats.aylikBakimlar}</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 rounded-lg border border-gray-200 p-2 md:p-3 hover:shadow-md transition-all">
+              <AlertTriangle className="h-6 w-6 text-yellow-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] text-gray-500 font-medium">Kritik Stok Uyarıları</div>
+                <div className="text-xl md:text-2xl font-bold text-gray-900">{dashboardStats.aktifStokUyarilari}</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Operasyon Haritası - Tam genişlik */}
       <Card padding="sm">
