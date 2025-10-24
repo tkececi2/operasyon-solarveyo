@@ -396,6 +396,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             storageGB: 1,
             storageLimit: 1024 // MB cinsinden
           },
+          metrics: {
+            storageUsedMB: 0,
+            fileCount: 0,
+            lastStorageCalculation: now,
+            breakdown: {
+              logos: 0,
+              arizaPhotos: 0,
+              bakimPhotos: 0,
+              vardiyaPhotos: 0,
+              documents: 0,
+              other: 0
+            }
+          },
           settings: {
             theme: 'light',
             language: 'tr',

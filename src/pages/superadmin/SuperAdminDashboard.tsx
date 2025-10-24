@@ -18,7 +18,7 @@ import {
   type AdminActivityLog
 } from '../../services/superAdminService';
 import { deleteCompanyCompletely } from '../../services/companyDeletionService';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { cleanupOdemeDurumuFields } from '../../utils/cleanupOdemeDurumu';
 import { SAAS_CONFIG } from '../../config/saas.config';
@@ -72,6 +72,7 @@ const SuperAdminDashboard: React.FC = () => {
   const [orphanCompanyName, setOrphanCompanyName] = useState('');
   const [orphanFoundId, setOrphanFoundId] = useState<string>('');
   const [orphanBusy, setOrphanBusy] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   // Yetki kontrolü
   if (!userProfile || userProfile.rol !== 'superadmin') {
@@ -91,6 +92,85 @@ const SuperAdminDashboard: React.FC = () => {
       </div>
     );
   }
+
+  // Company Metrics Migration - Tüm şirketlere metrics alanı ekle
+  const migrateCompanyMetrics = async () => {
+    const confirmed = window.confirm(
+      '⚠️ Bu işlem TÜM şirketlere metrics alanı ekleyecek.\n\n' +
+      'Zaten metrics olan şirketler atlanacak.\n' +
+      'Devam etmek istiyor musunuz?'
+    );
+    
+    if (!confirmed) return;
+    
+    setIsMigrating(true);
+    const toastId = toast.loading('Şirketler güncelleniyor...');
+    
+    try {
+      const companiesRef = collection(db, 'companies');
+      const snapshot = await getDocs(companiesRef);
+      
+      let updatedCount = 0;
+      let skippedCount = 0;
+      
+      for (const docSnap of snapshot.docs) {
+        const companyData = docSnap.data();
+        const companyId = docSnap.id;
+        
+        // Eğer metrics yoksa veya eksikse ekle
+        if (!companyData.metrics || !companyData.metrics.storageUsedMB) {
+          const now = Timestamp.now();
+          
+          const updates: any = {
+            'metrics.storageUsedMB': 0,
+            'metrics.fileCount': 0,
+            'metrics.lastStorageCalculation': now,
+            'metrics.breakdown.logos': 0,
+            'metrics.breakdown.arizaPhotos': 0,
+            'metrics.breakdown.bakimPhotos': 0,
+            'metrics.breakdown.vardiyaPhotos': 0,
+            'metrics.breakdown.documents': 0,
+            'metrics.breakdown.other': 0,
+          };
+          
+          // subscriptionLimits kontrolü
+          if (!companyData.subscriptionLimits) {
+            updates.subscriptionLimits = {
+              users: 3,
+              sahalar: 2,
+              santraller: 3,
+              storageGB: 1,
+              storageLimit: 1024 // MB cinsinden
+            };
+          } else if (!companyData.subscriptionLimits.storageLimit) {
+            // StorageLimit yoksa GB'den hesapla
+            const storageGB = companyData.subscriptionLimits.storageGB || 1;
+            updates['subscriptionLimits.storageLimit'] = storageGB * 1024;
+          }
+          
+          await updateDoc(doc(db, 'companies', companyId), updates);
+          updatedCount++;
+        } else {
+          skippedCount++;
+        }
+      }
+      
+      toast.success(
+        `✅ Migration tamamlandı!\n` +
+        `📊 Güncellenen: ${updatedCount} şirket\n` +
+        `⏭️ Atlanan: ${skippedCount} şirket`,
+        { id: toastId, duration: 5000 }
+      );
+      
+      // Verileri yeniden yükle
+      await loadData();
+    } catch (error) {
+      console.error('Migration hatası:', error);
+      toast.error('Migration sırasında hata oluştu!', { id: toastId });
+    } finally {
+      setIsMigrating(false);
+    }
+  };
 
   // Verileri yükle
   const loadData = async () => {
@@ -313,6 +393,15 @@ const SuperAdminDashboard: React.FC = () => {
           >
             <HardDrive className="h-4 w-4" />
             Depolama Yönetimi
+          </Button>
+          <Button 
+            onClick={migrateCompanyMetrics}
+            disabled={isMigrating}
+            variant="outline"
+            className="flex items-center gap-2 bg-green-50 hover:bg-green-100 text-green-700"
+          >
+            <Zap className="h-4 w-4" />
+            {isMigrating ? 'Güncelleniyor...' : 'Metrics Düzelt'}
           </Button>
           <Button 
             onClick={async () => {

@@ -31,9 +31,11 @@ service firebase.storage {
     }
     function getStorageLimitMB(companyId) {
       let c = getCompany(companyId);
-      return c.subscriptionLimits.storageLimit != null
-        ? c.subscriptionLimits.storageLimit
-        : getPlanStorageLimitMB(c.subscriptionPlan);
+      // Null check: Eğer company yoksa, varsayılan trial limit dön
+      return c == null ? 500 
+        : (c.subscriptionLimits != null && c.subscriptionLimits.storageLimit != null) 
+          ? c.subscriptionLimits.storageLimit
+          : (c.subscriptionPlan != null ? getPlanStorageLimitMB(c.subscriptionPlan) : 500);
     }
     function normalizeCompanyId(id) {
       return (id + '').replace('company_', '');
@@ -43,7 +45,7 @@ service firebase.storage {
       let used = getStorageUsedMB(companyId);
       let limit = getStorageLimitMB(companyId);
       let uploadSizeMB = sizeBytes / (1024 * 1024);
-      return request.resource == null || (used + uploadSizeMB) <= limit;
+      return request.resource == null || limit == 0 || (used + uploadSizeMB) <= limit;
     }
     
     // Envanter fotoğrafları ve belgeleri
