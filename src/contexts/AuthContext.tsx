@@ -187,23 +187,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // ✅ EMAIL DOĞRULAMA KONTROLÜ - AKTİF
-      // En güncel durumu al
-      await user.reload();
-      
-      if (!user.emailVerified) {
-        await signOut(auth);
-        // Email doğrulama linki tekrar gönder
-        try {
-          await sendEmailVerification(user);
-          throw new Error('Email adresinizi doğrulamanız gerekiyor. Yeni bir doğrulama linki gönderildi. Lütfen gelen kutunuzu kontrol edin.');
-        } catch (emailError) {
-          throw new Error('Email adresinizi doğrulamanız gerekiyor. Lütfen email kutunuzdaki doğrulama linkine tıklayın.');
-        }
-      }
-
-      // Kullanıcı profili getir veya oluştur
+      // Kullanıcı profili getir (email kontrolü için)
       let userProfile = await fetchUserProfile(user.uid);
+
+      // ✅ EMAIL DOĞRULAMA KONTROLÜ - Sadece gerekli ise
+      // Register sayfasından kayıt olanlar için zorunlu
+      // Ekip yönetiminden eklenenler için zorunlu değil
+      const requiresVerification = userProfile?.requiresEmailVerification !== false;
+      
+      if (requiresVerification) {
+        // En güncel durumu al
+        await user.reload();
+        
+        if (!user.emailVerified) {
+          await signOut(auth);
+          // Email doğrulama linki tekrar gönder
+          try {
+            await sendEmailVerification(user);
+            throw new Error('Email adresinizi doğrulamanız gerekiyor. Yeni bir doğrulama linki gönderildi. Lütfen gelen kutunuzu kontrol edin.');
+          } catch (emailError) {
+            throw new Error('Email adresinizi doğrulamanız gerekiyor. Lütfen email kutunuzdaki doğrulama linkine tıklayın.');
+          }
+        }
+      } else {
+        console.log('✅ Email doğrulama kontrolü atlandı (ekip üyesi)');
+      }
       
       // Kullanıcı pasif ise giriş yapmasına izin verme
       if (userProfile && userProfile.aktif === false) {
@@ -212,6 +220,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // ✅ ADMIN ONAY KONTROLÜ
+      // Not: Ekip üyeleri için adminApproved kontrolü opsiyonel
       if (userProfile && userProfile.adminApproved === false) {
         await signOut(auth);
         throw new Error('Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen yöneticinizle iletişime geçin.');

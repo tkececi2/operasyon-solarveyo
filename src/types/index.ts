@@ -92,11 +92,15 @@ export interface User {
   denemeSuresiBaslangic?: Timestamp;
   denemeSuresiBitis?: Timestamp;
   emailVerified: boolean;
+  requiresEmailVerification?: boolean; // Register'dan gelenler: true, Ekip yönetiminden: false
+  adminApproved?: boolean; // Admin onayı gerekli mi?
+  aktif?: boolean; // Kullanıcı aktif mi?
   fotoURL?: string;
   olusturmaTarihi?: Timestamp;
   guncellenmeTarihi?: Timestamp;
   davetTarihi?: Timestamp;
   davetEden?: string;
+  sonGiris?: Timestamp;
 }
 
 // Santral

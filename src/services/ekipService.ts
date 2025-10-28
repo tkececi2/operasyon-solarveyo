@@ -42,20 +42,21 @@ export const createEkipUyesi = async (
     
     const userId = userCredential.user.uid;
     
-    // Email doğrulama maili gönder
-    await firebaseSendEmailVerification(userCredential.user);
+    // NOT: Ekip üyeleri için email doğrulama GEREKMİYOR
+    // Çünkü yönetici güvenilir kişi tarafından eklenmiştir
+    // Email doğrulama sadece register sayfasından kayıt olanlar için gereklidir
     
     // Firestore'a kullanıcı bilgilerini kaydet
     const userDocRef = doc(db, 'kullanicilar', userId);
     await setDoc(userDocRef, {
       ...ekipData,
       id: userId,
-      emailVerified: false,
+      emailVerified: true, // ✅ Yönetici tarafından eklendiği için otomatik onaylı
+      requiresEmailVerification: false, // ✅ Email doğrulama kontrolü yapılmayacak
       olusturmaTarihi: serverTimestamp(),
       guncellenmeTarihi: serverTimestamp(),
       davetTarihi: serverTimestamp(),
-      // secondary kullanıldığı için davet eden bilgisi bilinmiyor; istenirse parametre olarak alınabilir
-      davetEden: 'admin'
+      davetEden: 'admin' // İleride gerçek yönetici ID'si eklenebilir
     });
     
     console.log('Ekip üyesi oluşturuldu:', userId);
