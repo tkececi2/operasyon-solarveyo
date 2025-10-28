@@ -12,7 +12,8 @@ import {
   Timestamp
 } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, sendEmailVerification as firebaseSendEmailVerification, getAuth } from 'firebase/auth';
-import { db } from '../lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../lib/firebase';
 import { initializeApp } from 'firebase/app';
 import { firebaseConfig } from '../lib/firebase';
 import type { User, UserRole } from '../types';
@@ -323,16 +324,25 @@ export const getUsersBySantral = async (santralId: string): Promise<EkipUyesi[]>
   }
 };
 
-// Ekip üyesini sil (sadece Firestore'dan, Auth'dan silmez)
+// Ekip üyesini sil (hem Firestore'dan hem Firebase Auth'tan)
 export const deleteEkipUyesi = async (userId: string): Promise<void> => {
   try {
-    const userDocRef = doc(db, 'kullanicilar', userId);
-    await deleteDoc(userDocRef);
+    // Cloud Function ile hem Auth'tan hem Firestore'dan sil
+    const deleteUserAccount = httpsCallable(functions, 'deleteUserAccount');
+    const result = await deleteUserAccount({ userId });
     
-    console.log('Ekip üyesi silindi:', userId);
-  } catch (error) {
-    console.error('Ekip üyesi silme hatası:', error);
-    throw error;
+    console.log('✅ Ekip üyesi başarıyla silindi (Auth + Firestore):', userId, result.data);
+  } catch (error: any) {
+    console.error('❌ Ekip üyesi silme hatası:', error);
+    
+    // Kullanıcı dostu hata mesajı
+    if (error?.code === 'functions/not-found') {
+      throw new Error('Silme fonksiyonu bulunamadı. Lütfen Functions deploy edildiğinden emin olun.');
+    } else if (error?.code === 'functions/unauthenticated') {
+      throw new Error('Bu işlem için giriş yapmalısınız.');
+    } else {
+      throw new Error(error?.message || 'Kullanıcı silinirken bir hata oluştu.');
+    }
   }
 };
 

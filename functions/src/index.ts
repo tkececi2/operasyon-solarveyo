@@ -418,6 +418,71 @@ export const sendPushOnNotificationCreate = functions
   });
 
 /**
+ * deleteUserAccount
+ * Kullanıcıyı hem Firebase Authentication'dan hem de Firestore'dan siler
+ * Girdi:
+ *  - userId: string (zorunlu) - Silinecek kullanıcının UID'si
+ */
+export const deleteUserAccount = functions
+  .region("us-central1")
+  .https.onCall(async (data: any, context: functions.https.CallableContext) => {
+    try {
+      const { userId } = data || {};
+
+      console.log("🗑️ deleteUserAccount çağrıldı:", { userId: userId || "YOK" });
+
+      // Yetki kontrolü - sadece authenticated kullanıcılar silebilir
+      if (!context.auth) {
+        throw new functions.https.HttpsError(
+          "unauthenticated",
+          "Bu işlem için giriş yapmalısınız"
+        );
+      }
+
+      if (!userId) {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          "userId zorunludur"
+        );
+      }
+
+      const db = admin.firestore();
+      
+      // 1. Firestore'dan kullanıcıyı kontrol et
+      const userDoc = await db.collection("kullanicilar").doc(userId).get();
+      if (!userDoc.exists) {
+        console.warn("⚠️ Kullanıcı Firestore'da bulunamadı, sadece Auth'tan silinecek:", userId);
+      } else {
+        // Firestore'dan sil
+        await db.collection("kullanicilar").doc(userId).delete();
+        console.log("✅ Kullanıcı Firestore'dan silindi:", userId);
+      }
+
+      // 2. Firebase Authentication'dan sil
+      try {
+        await admin.auth().deleteUser(userId);
+        console.log("✅ Kullanıcı Firebase Auth'tan silindi:", userId);
+      } catch (authError: any) {
+        // Kullanıcı Auth'ta yoksa hata atma, zaten silinmiş demektir
+        if (authError.code === 'auth/user-not-found') {
+          console.warn("⚠️ Kullanıcı Auth'ta bulunamadı (zaten silinmiş):", userId);
+        } else {
+          throw authError;
+        }
+      }
+
+      console.log("✅ Kullanıcı başarıyla silindi:", userId);
+      return { success: true, userId };
+    } catch (err: any) {
+      console.error("❌ deleteUserAccount hata:", err);
+      throw new functions.https.HttpsError(
+        "internal",
+        err?.message || "Kullanıcı silinirken hata oluştu"
+      );
+    }
+  });
+
+/**
  * createScopedNotification
  * Kullanıcı atamalarına göre (sahaId/santralId) hedeflenen bildirimleri kullanıcıya özel dokümanlar olarak oluşturur.
  * Girdi:
