@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Sun, Mail, Lock, Eye, EyeOff, Home } from 'lucide-react';
+import { Sun, Mail, Lock, Eye, EyeOff, Home, AlertCircle, CheckCircle } from 'lucide-react';
 import Logo from '../../components/ui/Logo';
 import { useAuth } from '../../contexts/AuthContext';
 import { platform } from '../../utils/platform';
@@ -15,6 +15,7 @@ import { twoFactorService } from '../../services/twoFactorService';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { trackEvent } from '../../lib/posthog-events';
+import { getAuth, sendEmailVerification as firebaseSendEmailVerification } from 'firebase/auth';
 
 const loginSchema = z.object({
   email: z.string().email('Geçerli bir email adresi giriniz'),
@@ -25,9 +26,20 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, userProfile } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [registerMessage, setRegisterMessage] = useState<string | null>(null);
+
+  // Register'dan gelen mesajı göster
+  useEffect(() => {
+    if (location.state?.message) {
+      setRegisterMessage(location.state.message);
+      // State'i temizle
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   // Login sonrası otomatik redirect
   useEffect(() => {
@@ -94,22 +106,116 @@ const Login: React.FC = () => {
         setTempCredentials(data);
         setShow2FA(true);
       } else {
-      // 2FA yoksa normal giriş
-      await login(data.email, data.password);
-      
-      // iOS için bilgileri kaydet
-      if (platform.isNative()) {
-        await IOSAuthService.saveCredentials(data.email, data.password);
-        console.log('📱 iOS: Login bilgileri kaydedildi');
-      }
-      
-      // Login başarılı - AuthContext handle edecek
-      console.log('✅ Login başarılı - AuthContext otomatik redirect yapacak');
+        // 2FA yoksa normal giriş
+        await login(data.email, data.password);
+        
+        // ✅ EMAIL DOĞRULAMA KONTROLÜ
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+        
+        if (currentUser) {
+          // Firebase Auth'tan email doğrulama durumunu kontrol et
+          await currentUser.reload(); // En güncel durumu al
+          
+          if (!currentUser.emailVerified) {
+            // Email doğrulanmamış - çıkış yap ve uyar
+            await auth.signOut();
+            
+            // Email doğrulama linki tekrar gönder
+            try {
+              await firebaseSendEmailVerification(currentUser);
+              toast.error(
+                'Email adresinizi doğrulamanız gerekiyor. Yeni bir doğrulama linki gönderildi.',
+                { duration: 6000 }
+              );
+            } catch (emailError) {
+              toast.error(
+                'Email adresinizi doğrulamanız gerekiyor. Lütfen gelen kutunuzu kontrol edin.',
+                { duration: 6000 }
+              );
+            }
+            setIsLoading(false);
+            return;
+          }
+          
+          // Admin onay kontrolü (Firestore'dan)
+          const userDocRef = doc(db, 'kullanicilar', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            
+            // Admin onayı gerekli mi kontrol et
+            if (userData.adminApproved === false) {
+              // Admin onayı bekliyor - çıkış yap ve uyar
+              await auth.signOut();
+              toast.error(
+                'Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen yöneticinizle iletişime geçin.',
+                { duration: 6000 }
+              );
+              setIsLoading(false);
+              return;
+            }
+          }
+        }
+        
+        // iOS için bilgileri kaydet
+        if (platform.isNative()) {
+          await IOSAuthService.saveCredentials(data.email, data.password);
+          console.log('📱 iOS: Login bilgileri kaydedildi');
+        }
+        
+        // Login başarılı - AuthContext handle edecek
+        console.log('✅ Login başarılı - AuthContext otomatik redirect yapacak');
       }
     } catch (error: any) {
       // Email ile bulunamazsa, auth ile dene
       try {
         await login(data.email, data.password);
+        
+        // ✅ EMAIL DOĞRULAMA KONTROLÜ (Catch bloğu)
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+        
+        if (currentUser) {
+          // Firebase Auth'tan email doğrulama durumunu kontrol et
+          await currentUser.reload();
+          
+          if (!currentUser.emailVerified) {
+            await auth.signOut();
+            try {
+              await firebaseSendEmailVerification(currentUser);
+              toast.error(
+                'Email adresinizi doğrulamanız gerekiyor. Yeni bir doğrulama linki gönderildi.',
+                { duration: 6000 }
+              );
+            } catch (emailError) {
+              toast.error(
+                'Email adresinizi doğrulamanız gerekiyor. Lütfen gelen kutunuzu kontrol edin.',
+                { duration: 6000 }
+              );
+            }
+            setIsLoading(false);
+            return;
+          }
+          
+          // Admin onay kontrolü
+          const userDocRef = doc(db, 'kullanicilar', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userData.adminApproved === false) {
+              await auth.signOut();
+              toast.error(
+                'Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen yöneticinizle iletişime geçin.',
+                { duration: 6000 }
+              );
+              setIsLoading(false);
+              return;
+            }
+          }
+        }
         
         // iOS için bilgileri kaydet
         if (platform.isNative()) {
@@ -118,13 +224,13 @@ const Login: React.FC = () => {
         }
         
         // Giriş başarılı, şimdi 2FA kontrolü yap
-        const { currentUser } = await import('firebase/auth').then(m => ({ currentUser: m.getAuth().currentUser }));
+        const { currentUser: user2FA } = await import('firebase/auth').then(m => ({ currentUser: m.getAuth().currentUser }));
         
-        if (currentUser) {
-          const status = await twoFactorService.check2FAStatus(currentUser.uid);
+        if (user2FA) {
+          const status = await twoFactorService.check2FAStatus(user2FA.uid);
           
           if (status.isEnabled) {
-            setTempUserId(currentUser.uid);
+            setTempUserId(user2FA.uid);
             setTemp2FAPhone(status.phoneNumber || '');
             setTempCredentials(data);
             setShow2FA(true);
@@ -232,6 +338,24 @@ const Login: React.FC = () => {
           </div>
           <p className="text-gray-600 mt-3">Solar Enerji Santralı Yönetim Sistemi</p>
         </div>
+
+        {/* Register Başarı Mesajı */}
+        {registerMessage && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-green-800">{registerMessage}</p>
+            </div>
+            <button
+              onClick={() => setRegisterMessage(null)}
+              className="text-green-600 hover:text-green-800"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
 
         {/* Giriş Formu */}
         <Card>
