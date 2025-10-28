@@ -193,7 +193,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // ✅ EMAIL DOĞRULAMA KONTROLÜ - Sadece gerekli ise
       // Register sayfasından kayıt olanlar için zorunlu
       // Ekip yönetiminden eklenenler için zorunlu değil
-      const requiresVerification = userProfile?.requiresEmailVerification !== false;
+      // 
+      // ÖNEMLI: requiresEmailVerification === true ise KONTROL YAP
+      // Diğer tüm durumlarda (false, undefined, yok) KONTROL YAPMA
+      const requiresVerification = userProfile?.requiresEmailVerification === true;
       
       if (requiresVerification) {
         // En güncel durumu al
@@ -210,7 +213,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } else {
-        console.log('✅ Email doğrulama kontrolü atlandı (ekip üyesi)');
+        console.log('✅ Email doğrulama kontrolü atlandı (requiresEmailVerification !== true)');
       }
       
       // Kullanıcı pasif ise giriş yapmasına izin verme
