@@ -187,11 +187,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Email doğrulaması kontrolü (şimdilik devre dışı)
-      // if (!user.emailVerified) {
-      //   await signOut(auth);
-      //   throw new Error('Lütfen email adresinizi doğrulayın.');
-      // }
+      // ✅ EMAIL DOĞRULAMA KONTROLÜ - AKTİF
+      // En güncel durumu al
+      await user.reload();
+      
+      if (!user.emailVerified) {
+        await signOut(auth);
+        // Email doğrulama linki tekrar gönder
+        try {
+          await sendEmailVerification(user);
+          throw new Error('Email adresinizi doğrulamanız gerekiyor. Yeni bir doğrulama linki gönderildi. Lütfen gelen kutunuzu kontrol edin.');
+        } catch (emailError) {
+          throw new Error('Email adresinizi doğrulamanız gerekiyor. Lütfen email kutunuzdaki doğrulama linkine tıklayın.');
+        }
+      }
 
       // Kullanıcı profili getir veya oluştur
       let userProfile = await fetchUserProfile(user.uid);
@@ -200,6 +209,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (userProfile && userProfile.aktif === false) {
         await signOut(auth); // Otomatik çıkış yap
         throw new Error('account-disabled');
+      }
+      
+      // ✅ ADMIN ONAY KONTROLÜ
+      if (userProfile && userProfile.adminApproved === false) {
+        await signOut(auth);
+        throw new Error('Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen yöneticinizle iletişime geçin.');
       }
       
       // Son giriş tarihini güncelle

@@ -3,7 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Sun, Mail, Lock, Eye, EyeOff, Home, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Home, CheckCircle } from 'lucide-react';
 import Logo from '../../components/ui/Logo';
 import { useAuth } from '../../contexts/AuthContext';
 import { platform } from '../../utils/platform';
@@ -15,7 +15,6 @@ import { twoFactorService } from '../../services/twoFactorService';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { trackEvent } from '../../lib/posthog-events';
-import { getAuth, sendEmailVerification as firebaseSendEmailVerification } from 'firebase/auth';
 
 const loginSchema = z.object({
   email: z.string().email('Geçerli bir email adresi giriniz'),
@@ -106,58 +105,8 @@ const Login: React.FC = () => {
         setTempCredentials(data);
         setShow2FA(true);
       } else {
-        // 2FA yoksa normal giriş
+        // 2FA yoksa normal giriş (email ve admin kontrolü AuthContext'te yapılıyor)
         await login(data.email, data.password);
-        
-        // ✅ EMAIL DOĞRULAMA KONTROLÜ
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        
-        if (currentUser) {
-          // Firebase Auth'tan email doğrulama durumunu kontrol et
-          await currentUser.reload(); // En güncel durumu al
-          
-          if (!currentUser.emailVerified) {
-            // Email doğrulanmamış - çıkış yap ve uyar
-            await auth.signOut();
-            
-            // Email doğrulama linki tekrar gönder
-            try {
-              await firebaseSendEmailVerification(currentUser);
-              toast.error(
-                'Email adresinizi doğrulamanız gerekiyor. Yeni bir doğrulama linki gönderildi.',
-                { duration: 6000 }
-              );
-            } catch (emailError) {
-              toast.error(
-                'Email adresinizi doğrulamanız gerekiyor. Lütfen gelen kutunuzu kontrol edin.',
-                { duration: 6000 }
-              );
-            }
-            setIsLoading(false);
-            return;
-          }
-          
-          // Admin onay kontrolü (Firestore'dan)
-          const userDocRef = doc(db, 'kullanicilar', currentUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            
-            // Admin onayı gerekli mi kontrol et
-            if (userData.adminApproved === false) {
-              // Admin onayı bekliyor - çıkış yap ve uyar
-              await auth.signOut();
-              toast.error(
-                'Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen yöneticinizle iletişime geçin.',
-                { duration: 6000 }
-              );
-              setIsLoading(false);
-              return;
-            }
-          }
-        }
         
         // iOS için bilgileri kaydet
         if (platform.isNative()) {
@@ -167,60 +116,17 @@ const Login: React.FC = () => {
         
         // Login başarılı - AuthContext handle edecek
         console.log('✅ Login başarılı - AuthContext otomatik redirect yapacak');
+        trackEvent.login('email'); // PostHog event
       }
     } catch (error: any) {
       // Email ile bulunamazsa, auth ile dene
       try {
         await login(data.email, data.password);
         
-        // ✅ EMAIL DOĞRULAMA KONTROLÜ (Catch bloğu)
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        
-        if (currentUser) {
-          // Firebase Auth'tan email doğrulama durumunu kontrol et
-          await currentUser.reload();
-          
-          if (!currentUser.emailVerified) {
-            await auth.signOut();
-            try {
-              await firebaseSendEmailVerification(currentUser);
-              toast.error(
-                'Email adresinizi doğrulamanız gerekiyor. Yeni bir doğrulama linki gönderildi.',
-                { duration: 6000 }
-              );
-            } catch (emailError) {
-              toast.error(
-                'Email adresinizi doğrulamanız gerekiyor. Lütfen gelen kutunuzu kontrol edin.',
-                { duration: 6000 }
-              );
-            }
-            setIsLoading(false);
-            return;
-          }
-          
-          // Admin onay kontrolü
-          const userDocRef = doc(db, 'kullanicilar', currentUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            if (userData.adminApproved === false) {
-              await auth.signOut();
-              toast.error(
-                'Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen yöneticinizle iletişime geçin.',
-                { duration: 6000 }
-              );
-              setIsLoading(false);
-              return;
-            }
-          }
-        }
-        
         // iOS için bilgileri kaydet
         if (platform.isNative()) {
           await IOSAuthService.saveCredentials(data.email, data.password);
-          console.log('📱 iOS: Login bilgileri kaydedildi (catch bloğu)');
+          console.log('📱 iOS: Login bilgileri kaydedildi');
         }
         
         // Giriş başarılı, şimdi 2FA kontrolü yap
@@ -238,6 +144,7 @@ const Login: React.FC = () => {
             await import('firebase/auth').then(m => m.signOut(m.getAuth()));
           } else {
             // Navigate useEffect'te handle ediliyor
+            trackEvent.login('email'); // PostHog event
           }
         }
       } catch (loginError: any) {
