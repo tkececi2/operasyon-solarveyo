@@ -14,7 +14,8 @@ import {
   deleteObject,
   getStorage 
 } from 'firebase/storage';
-import { db } from '../lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../lib/firebase';
 import { logUserAction } from './auditLogService';
 import { getDocs as getDocsFs } from 'firebase/firestore';
 
@@ -118,16 +119,36 @@ export const deleteCompanyCompletely = async (
     
     console.log(`📋 ${companyName} şirketinin verileri siliniyor...`);
     
-    // 2. Kullanıcıları sil
+    // 2. Kullanıcıları sil (HEM Firestore HEM Firebase Auth'tan)
     try {
       const usersQuery = query(collection(db, 'kullanicilar'), where('companyId', '==', companyId));
       const usersSnapshot = await getDocs(usersQuery);
       
+      console.log(`🔄 ${usersSnapshot.docs.length} kullanıcı siliniyor (Auth + Firestore)...`);
+      
+      // Cloud Function ile hem Auth'tan hem Firestore'dan sil
+      const deleteUserAccount = httpsCallable(functions, 'deleteUserAccount');
+      
       for (const userDoc of usersSnapshot.docs) {
-        await deleteDoc(doc(db, 'kullanicilar', userDoc.id));
-        result.deletedCounts.users++;
+        try {
+          // deleteUserAccount Cloud Function'ı hem Auth'tan hem Firestore'dan siler
+          await deleteUserAccount({ userId: userDoc.id });
+          result.deletedCounts.users++;
+          console.log(`  ✅ Kullanıcı silindi: ${userDoc.id}`);
+        } catch (userError: any) {
+          console.error(`  ❌ Kullanıcı silinemedi (${userDoc.id}):`, userError?.message || userError);
+          result.errors.push(`Kullanıcı silme hatası (${userDoc.id}): ${userError?.message || userError}`);
+          
+          // Eğer Cloud Function çalışmazsa, en azından Firestore'dan sil
+          try {
+            await deleteDoc(doc(db, 'kullanicilar', userDoc.id));
+            console.log(`  ⚠️ Kullanıcı sadece Firestore'dan silindi (fallback): ${userDoc.id}`);
+          } catch (fallbackError) {
+            console.error(`  ❌ Firestore fallback başarısız:`, fallbackError);
+          }
+        }
       }
-      console.log(`✅ ${result.deletedCounts.users} kullanıcı silindi`);
+      console.log(`✅ ${result.deletedCounts.users} kullanıcı silindi (Auth + Firestore)`);
     } catch (error) {
       console.error('Kullanıcı silme hatası:', error);
       result.errors.push(`Kullanıcı silme hatası: ${error}`);
