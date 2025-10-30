@@ -1132,15 +1132,12 @@ const VideoGuide: React.FC<{ onVideoClick: (videoId: string, title: string) => v
               <div className="relative rounded-2xl overflow-hidden bg-white border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 {/* Thumbnail */}
                 <div className="relative aspect-video bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden">
-                  {/* YouTube Thumbnail Image */}
+                  {/* YouTube Thumbnail Image - sddefault.jpg her zaman var ve iyi kalite */}
                   <img 
-                    src={`https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`}
+                    src={`https://img.youtube.com/vi/${video.id}/sddefault.jpg`}
                     alt={video.title}
                     className="absolute inset-0 w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback to hqdefault if maxresdefault doesn't exist
-                      e.currentTarget.src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
-                    }}
+                    loading="lazy"
                   />
                   
                   {/* Dark Overlay */}
