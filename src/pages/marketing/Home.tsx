@@ -7,7 +7,7 @@ import {
   Sun, Zap, BarChart3, ShieldCheck, Users, Wrench, 
   Building2, LineChart, MessageSquare, Lock, Database, 
   Globe, Cpu, CheckCircle, ArrowRight, CreditCard,
-  Play, Calendar, Check, TrendingUp, Clock, Award, X,
+  Play, Calendar, Check, TrendingUp, Award, X,
   Image, List, Grid3X3, PieChart, Camera, MapPin,
   Package, Truck, AlertTriangle, Star, Bell, Settings,
   Youtube, BookOpen, Monitor
@@ -1143,16 +1143,10 @@ const VideoGuide: React.FC<{ onVideoClick: (videoId: string, title: string) => v
                   {/* Dark Overlay */}
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-all duration-300" />
                   
-                  {/* Play Button & Duration */}
+                  {/* Play Button */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-red-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
-                        <Play className="w-8 h-8 text-white ml-1" />
-                      </div>
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-sm font-medium shadow-lg">
-                        <Clock className="w-3 h-3" />
-                        {video.duration}
-                      </span>
+                    <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
+                      <Play className="w-8 h-8 text-white ml-1" />
                     </div>
                   </div>
                   
