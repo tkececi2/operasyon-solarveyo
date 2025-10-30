@@ -1041,12 +1041,20 @@ const VideoGuide: React.FC<{ onVideoClick: (videoId: string, title: string) => v
       thumbnail: 'https://img.youtube.com/vi/jqUxREoxLjY/maxresdefault.jpg'
     },
     {
-      id: 'YOUR_VIDEO_ID_10',
-      title: 'Mobil Uygulama Kullanımı',
-      description: 'Mobil uygulamada tüm işlemleri gerçekleştirme',
-      duration: '5:00',
-      category: 'basics',
-      thumbnail: 'https://img.youtube.com/vi/YOUR_VIDEO_ID_10/maxresdefault.jpg'
+      id: 'CWtCjg8Pjeo',
+      title: 'Detaylı Ay Sonu Raporu İndirme',
+      description: 'Aylık performans raporlarını indirme ve analiz etme',
+      duration: '4:20',
+      category: 'advanced',
+      thumbnail: 'https://img.youtube.com/vi/CWtCjg8Pjeo/maxresdefault.jpg'
+    },
+    {
+      id: 'nAwBiQvzTeI',
+      title: 'Vardiya Bildirim Sayfası Kullanımı',
+      description: 'Vardiya bildirimi oluşturma ve devir teslim işlemleri',
+      duration: '5:10',
+      category: 'operations',
+      thumbnail: 'https://img.youtube.com/vi/nAwBiQvzTeI/maxresdefault.jpg'
     },
   ];
 
