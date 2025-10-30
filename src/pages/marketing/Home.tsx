@@ -9,7 +9,8 @@ import {
   Globe, Cpu, CheckCircle, ArrowRight, CreditCard,
   Play, Calendar, Check, TrendingUp, Clock, Award, X,
   Image, List, Grid3X3, PieChart, Camera, MapPin,
-  Package, Truck, AlertTriangle, Star, Bell, Settings
+  Package, Truck, AlertTriangle, Star, Bell, Settings,
+  Youtube, BookOpen, Monitor
 } from 'lucide-react';
 const reveal = {
   hidden: { opacity: 0, y: 16 },
@@ -197,10 +198,10 @@ const Hero: React.FC<{ onOpenVideo?: () => void }> = ({ onOpenVideo }) => {
                 onClick={onOpenVideo}
                 className="inline-flex items-center gap-3 rounded-xl px-8 py-4 text-base font-semibold text-gray-700 hover:text-gray-900 bg-white border-2 border-gray-200 hover:border-gray-300 shadow-md hover:shadow-lg transition-all duration-300"
               >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-sky-500 flex items-center justify-center">
-                  <Play className="w-4 h-4 text-white ml-0.5" />
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center">
+                  <Youtube className="w-5 h-5 text-white" />
                 </div>
-                Demo İzle
+                Eğitimleri İzle
               </button>
             </motion.div>
 
@@ -955,6 +956,259 @@ const LivePreview: React.FC = () => (
   </section>
 );
 
+// Video Rehber Bölümü
+const VideoGuide: React.FC<{ onVideoClick: (videoId: string, title: string) => void }> = ({ onVideoClick }) => {
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+
+  const videoCategories = [
+    { id: 'all', label: 'Tümü', icon: <Grid3X3 className="w-4 h-4" /> },
+    { id: 'basics', label: 'Başlangıç', icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'operations', label: 'İşlemler', icon: <Settings className="w-4 h-4" /> },
+    { id: 'advanced', label: 'İleri Seviye', icon: <Monitor className="w-4 h-4" /> },
+  ];
+
+  const videos = [
+    {
+      id: 'iYQu4BeAXXI',
+      title: 'SolarVeyo Operasyon Uygulaması - Kayıt Olma',
+      description: 'SolarVeyo platformuna nasıl kayıt olacağınızı öğrenin',
+      duration: '3:45',
+      category: 'basics',
+      thumbnail: 'https://img.youtube.com/vi/iYQu4BeAXXI/maxresdefault.jpg'
+    },
+    {
+      id: 'JIKJyu2owPo',
+      title: 'Saha Ekleme',
+      description: 'Sisteme yeni saha nasıl eklenir, adım adım rehber',
+      duration: '4:20',
+      category: 'operations',
+      thumbnail: 'https://img.youtube.com/vi/JIKJyu2owPo/maxresdefault.jpg'
+    },
+    {
+      id: 'eJnka6wWmpY',
+      title: 'Santral Ekleme',
+      description: 'GES santral bilgilerini sisteme kaydetme ve yapılandırma',
+      duration: '5:15',
+      category: 'operations',
+      thumbnail: 'https://img.youtube.com/vi/eJnka6wWmpY/maxresdefault.jpg'
+    },
+    {
+      id: 'PZJ3cjgM_xg',
+      title: 'Ekip Üyesi Ekleme',
+      description: 'Yeni ekip üyesi ekleme, rol atama ve yetkilendirme',
+      duration: '4:30',
+      category: 'advanced',
+      thumbnail: 'https://img.youtube.com/vi/PZJ3cjgM_xg/maxresdefault.jpg'
+    },
+    {
+      id: 'GPndxyjw7Xc',
+      title: 'Arıza Ekleme',
+      description: 'Arıza kaydı nasıl açılır? Detaylı arıza bildirimi oluşturma',
+      duration: '5:45',
+      category: 'operations',
+      thumbnail: 'https://img.youtube.com/vi/GPndxyjw7Xc/maxresdefault.jpg'
+    },
+    {
+      id: 'gpCO_JmJA5A',
+      title: 'Elektrik Kesintisi Oluşturma',
+      description: 'Elektrik kesintisi kaydı oluşturma ve takip işlemleri',
+      duration: '4:10',
+      category: 'operations',
+      thumbnail: 'https://img.youtube.com/vi/gpCO_JmJA5A/maxresdefault.jpg'
+    },
+    {
+      id: '4ZKzo7b9q7Q',
+      title: 'Elektrik & Mekanik Bakım - Yapılan İşler Ekleme',
+      description: 'Bakım kayıtlarına yapılan işlemleri ekleme ve dokümantasyon',
+      duration: '6:00',
+      category: 'operations',
+      thumbnail: 'https://img.youtube.com/vi/4ZKzo7b9q7Q/maxresdefault.jpg'
+    },
+    {
+      id: 'r3R1dgv2TcE',
+      title: 'Üretim Verileri Girişi Sayfası Kullanımı',
+      description: 'Santral üretim verilerini sisteme kaydetme ve takip etme',
+      duration: '5:30',
+      category: 'operations',
+      thumbnail: 'https://img.youtube.com/vi/r3R1dgv2TcE/maxresdefault.jpg'
+    },
+    {
+      id: 'jqUxREoxLjY',
+      title: 'Stok ve Envanter Ekleme Sayfası',
+      description: 'Yedek parça stok ekleme ve envanter yönetimi işlemleri',
+      duration: '4:45',
+      category: 'advanced',
+      thumbnail: 'https://img.youtube.com/vi/jqUxREoxLjY/maxresdefault.jpg'
+    },
+    {
+      id: 'YOUR_VIDEO_ID_10',
+      title: 'Mobil Uygulama Kullanımı',
+      description: 'Mobil uygulamada tüm işlemleri gerçekleştirme',
+      duration: '5:00',
+      category: 'basics',
+      thumbnail: 'https://img.youtube.com/vi/YOUR_VIDEO_ID_10/maxresdefault.jpg'
+    },
+  ];
+
+  const filteredVideos = activeCategory === 'all' 
+    ? videos 
+    : videos.filter(v => v.category === activeCategory);
+
+  return (
+    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Başlık */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={reveal}
+          className="text-center max-w-3xl mx-auto mb-12"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 mb-6">
+            <Youtube className="w-5 h-5 text-red-600" />
+            <span className="text-sm font-semibold text-red-600">Video Rehber</span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Platformu Nasıl Kullanırsınız?
+          </h2>
+          <p className="text-lg text-gray-600">
+            Adım adım video eğitimler ile SolarVeyo'nun tüm özelliklerini keşfedin ve hemen başlayın
+          </p>
+        </motion.div>
+
+        {/* Kategori Filtreleri */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={reveal}
+          className="flex flex-wrap items-center justify-center gap-3 mb-12"
+        >
+          {videoCategories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`
+                inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-300
+                ${activeCategory === cat.id
+                  ? 'bg-gradient-to-r from-blue-600 to-sky-500 text-white shadow-lg scale-105'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:border-blue-300 hover:shadow-md'
+                }
+              `}
+            >
+              {cat.icon}
+              <span>{cat.label}</span>
+              <span className={`
+                text-xs px-2 py-0.5 rounded-full
+                ${activeCategory === cat.id ? 'bg-white/20' : 'bg-gray-100'}
+              `}>
+                {cat.id === 'all' ? videos.length : videos.filter(v => v.category === cat.id).length}
+              </span>
+            </button>
+          ))}
+        </motion.div>
+
+        {/* Video Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredVideos.map((video, index) => (
+            <motion.div
+              key={video.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="group cursor-pointer"
+              onClick={() => onVideoClick(video.id, video.title)}
+            >
+              <div className="relative rounded-2xl overflow-hidden bg-white border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                {/* Thumbnail */}
+                <div className="relative aspect-video bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden">
+                  {/* YouTube Thumbnail Image */}
+                  <img 
+                    src={`https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`}
+                    alt={video.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to hqdefault if maxresdefault doesn't exist
+                      e.currentTarget.src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+                    }}
+                  />
+                  
+                  {/* Dark Overlay */}
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-all duration-300" />
+                  
+                  {/* Play Button & Duration */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-red-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-xl">
+                        <Play className="w-8 h-8 text-white ml-1" />
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-black/70 backdrop-blur-sm text-white text-sm font-medium shadow-lg">
+                        <Clock className="w-3 h-3" />
+                        {video.duration}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Hover Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+
+                {/* İçerik */}
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                    {video.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {video.description}
+                  </p>
+                  
+                  {/* Alt bilgi */}
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500">
+                      <Youtube className="w-4 h-4 text-red-600" />
+                      Video Eğitim
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Alt CTA */}
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={reveal}
+          className="mt-16 text-center"
+        >
+          <div className="inline-flex flex-col sm:flex-row items-center gap-4 p-6 rounded-2xl bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-100">
+            <div className="flex-1 text-left">
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                Daha fazla öğrenmek ister misiniz?
+              </h3>
+              <p className="text-sm text-gray-600">
+                Canlı demo oturumu için bizimle iletişime geçin
+              </p>
+            </div>
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              <MessageSquare className="w-5 h-5" />
+              Demo Talep Et
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
 const HowItWorks: React.FC = () => {
   const steps = [
     { icon: <Zap className="w-6 h-6" />, title: 'Bildir', desc: 'Arıza/Bakım/Vardiya kaydını oluşturun' },
@@ -1177,18 +1431,38 @@ const WhatsAppBubble: React.FC = () => (
   </a>
 );
 
-const VideoModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+const VideoModal: React.FC<{ open: boolean; onClose: () => void; videoId?: string; title?: string }> = ({ 
+  open, 
+  onClose, 
+  videoId = 'dQw4w9WgXcQ',
+  title = 'Demo Video' 
+}) => {
   if (!open) return null;
+  
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-2xl w-[90vw] max-w-3xl overflow-hidden">
-        <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-md bg-white/80 border hover:bg-white"><X className="w-4 h-4" /></button>
-        <div className="aspect-video w-full">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      <div 
+        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-50 to-sky-50">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Youtube className="w-5 h-5 text-red-600" />
+            {title}
+          </h3>
+          <button 
+            onClick={onClose} 
+            className="p-2 rounded-lg bg-white hover:bg-gray-100 border transition-all"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="aspect-video w-full bg-black">
           <iframe
             className="w-full h-full"
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-            title="Demo Video"
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+            title={title}
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -1726,6 +2000,23 @@ const ProductsShowcase: React.FC = () => {
 
 const Home: React.FC = () => {
   const [showVideo, setShowVideo] = useState(false);
+  const [currentVideoId, setCurrentVideoId] = useState<string>('dQw4w9WgXcQ');
+  const [currentVideoTitle, setCurrentVideoTitle] = useState<string>('Demo Video');
+  const videoGuideRef = React.useRef<HTMLDivElement>(null);
+
+  const handleVideoClick = (videoId: string, title: string) => {
+    setCurrentVideoId(videoId);
+    setCurrentVideoTitle(title);
+    setShowVideo(true);
+  };
+
+  const scrollToVideos = () => {
+    videoGuideRef.current?.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    });
+  };
+
   useEffect(() => {
     document.title = 'SolarVeyo — Güneş Enerjisi Yönetim Platformu';
     const meta = document.querySelector('meta[name="description"]');
@@ -1776,11 +2067,14 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-950">
       <Nav />
-      <Hero onOpenVideo={() => setShowVideo(true)} />
+      <Hero onOpenVideo={scrollToVideos} />
       <ProductsShowcase />
       <SectionDivider />
       <PricingStrip />
       <Stats />
+      <div ref={videoGuideRef}>
+        <VideoGuide onVideoClick={handleVideoClick} />
+      </div>
       <SectorFit />
       {/* AppPagesOverview kaldırıldı */}
       <FeatureShowcase />
@@ -1792,7 +2086,12 @@ const Home: React.FC = () => {
       <Testimonials />
       <FloatingCTA />
       <WhatsAppBubble />
-      <VideoModal open={showVideo} onClose={() => setShowVideo(false)} />
+      <VideoModal 
+        open={showVideo} 
+        onClose={() => setShowVideo(false)} 
+        videoId={currentVideoId}
+        title={currentVideoTitle}
+      />
       <Footer />
     </div>
   );

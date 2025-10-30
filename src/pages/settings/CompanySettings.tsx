@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { 
   Building2, 
   Users, 
-  Bell, 
-  Palette, 
   Globe, 
   CreditCard,
   Upload,
@@ -21,8 +19,7 @@ import {
   Input,
   Textarea,
   Select,
-  Badge,
-  NotificationSettings
+  Badge
 } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCompany } from '../../contexts/CompanyContext';
@@ -31,8 +28,6 @@ import { getCompanyStatistics, getSubscriptionUsageStats } from '../../services/
 import { analyzeStorageQuota } from '../../services/storageAnalyticsService';
 import { createDemoData } from '../../utils/demoData';
 import { getMergedPlans } from '../../services/planConfigService';
-import TwoFactorSetup from '../../components/auth/TwoFactorSetup';
-import ThemeSettings from '../../components/settings/ThemeSettings';
 import toast from 'react-hot-toast';
 
 const CompanySettings: React.FC = () => {
@@ -131,21 +126,6 @@ const CompanySettings: React.FC = () => {
     loadStatistics();
   }, [company?.id]);
 
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    smsNotifications: false,
-    pushNotifications: true,
-    weeklyReports: true,
-    monthlyReports: true,
-    criticalAlerts: true,
-  });
-
-  const [themeSettings, setThemeSettings] = useState({
-    theme: company?.settings?.theme || 'light',
-    language: company?.settings?.language || 'tr',
-    primaryColor: '#3B82F6',
-  });
-
   const handleLogoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -222,9 +202,7 @@ const CompanySettings: React.FC = () => {
       const updateData: any = {
         ...companyInfo,
         settings: {
-          ...company.settings,
-          ...themeSettings,
-          notificationSettings
+          ...company.settings
         }
       };
 
@@ -473,78 +451,7 @@ const CompanySettings: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Bildirim Ayarları */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Bell className="h-5 w-5 mr-2" />
-                Bildirim Ayarları
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Object.entries(notificationSettings).map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
-                    {key === 'emailNotifications' && 'Email Bildirimleri'}
-                    {key === 'smsNotifications' && 'SMS Bildirimleri'}
-                    {key === 'pushNotifications' && 'Push Bildirimleri'}
-                    {key === 'weeklyReports' && 'Haftalık Raporlar'}
-                    {key === 'monthlyReports' && 'Aylık Raporlar'}
-                    {key === 'criticalAlerts' && 'Kritik Uyarılar'}
-                  </label>
-                  <input
-                    type="checkbox"
-                    checked={value}
-                    onChange={(e) => setNotificationSettings(prev => ({
-                      ...prev,
-                      [key]: e.target.checked
-                    }))}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
 
-          {/* İki Faktörlü Doğrulama */}
-          <TwoFactorSetup />
-
-          {/* Tema Ayarları */}
-          <ThemeSettings />
-
-          {/* Diğer Ayarlar */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Palette className="h-5 w-5 mr-2" />
-                Tema ve Görünüm
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Select
-                  label="Tema"
-                  value={themeSettings.theme}
-                  options={[
-                    { value: 'light', label: 'Açık Tema' },
-                    { value: 'dark', label: 'Koyu Tema' },
-                    { value: 'auto', label: 'Sistem Ayarı' }
-                  ]}
-                  onChange={(e) => setThemeSettings(prev => ({ ...prev, theme: e.target.value }))}
-                />
-                
-                <Select
-                  label="Dil"
-                  value={themeSettings.language}
-                  options={[
-                    { value: 'tr', label: 'Türkçe' },
-                    { value: 'en', label: 'English' }
-                  ]}
-                  onChange={(e) => setThemeSettings(prev => ({ ...prev, language: e.target.value }))}
-                />
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Sağ Kolon - Abonelik Bilgileri */}

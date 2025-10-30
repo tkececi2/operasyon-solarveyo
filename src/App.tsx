@@ -57,7 +57,6 @@ const Bildirimler = React.lazy(() => import('./pages/bildirimler/Bildirimler'));
 const CompanySettings = React.lazy(() => import('./pages/settings/CompanySettings'));
 const BackupManagement = React.lazy(() => import('./pages/settings/BackupManagement'));
 const GoogleMapsTestPage = React.lazy(() => import('./pages/test/GoogleMapsTestPage'));
-const TestNotifications = React.lazy(() => import('./pages/test/TestNotifications'));
 const TestPhoneAuth = React.lazy(() => import('./pages/test/TestPhoneAuth'));
 const DevPhoneAuthTest = React.lazy(() => import('./pages/test/DevPhoneAuthTest'));
 // const EmailTestPage = React.lazy(() => import('./pages/test/EmailTestPage')); // Email test kaldırıldı
@@ -411,7 +410,6 @@ function App() {
                 
                 {/* Test Pages */}
                 <Route path="test/google-maps" element={<GoogleMapsTestPage />} />
-                <Route path="test/notifications" element={<TestNotifications />} />
                 <Route path="test/phone-auth" element={<TestPhoneAuth />} />
                 <Route path="test/dev-phone-auth" element={<DevPhoneAuthTest />} />
                 <Route path="test/password-change" element={<TestPasswordChange />} />
