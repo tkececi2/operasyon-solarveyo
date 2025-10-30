@@ -146,7 +146,7 @@ export async function createLeaveRequest(
       userId: data.userId,
       userName: data.userName || 'İsimsiz Kullanıcı',
       userRole: data.userRole,
-      userPhotoUrl: data.userPhotoUrl || userProfile.fotoURL,
+      userPhotoUrl: data.userPhotoUrl || userProfile.fotoURL || null,
       companyId: userProfile.companyId,
       leaveType: data.leaveType,
       startDate: data.startDate,
