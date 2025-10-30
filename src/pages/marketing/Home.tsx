@@ -7,7 +7,7 @@ import {
   Sun, Zap, BarChart3, ShieldCheck, Users, Wrench, 
   Building2, LineChart, MessageSquare, Lock, Database, 
   Globe, Cpu, CheckCircle, ArrowRight, CreditCard,
-  Play, Calendar, Check, TrendingUp, Award, X,
+  Play, Calendar, Check, TrendingUp, Clock, Award, X,
   Image, List, Grid3X3, PieChart, Camera, MapPin,
   Package, Truck, AlertTriangle, Star, Bell, Settings,
   Youtube, BookOpen, Monitor
